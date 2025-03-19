@@ -23,7 +23,7 @@ class APIRequestsClient {
   }
   async getToken(username: string, password: string) {
     console.log(username, password)
-    let date: Date = new Date(); // Explicit type declaration
+    const date: Date = new Date(); // Explicit type declaration
     const api = new APIRequests();
     await api.init();
     const authEndpoint = `${process.env.url}/api/Account/GenerateToken`; // Замените на ваш URL
@@ -32,7 +32,7 @@ class APIRequestsClient {
       password: password,
     }; // Замените на ваши учетные данные
     const userinfo = await api.authorize(authEndpoint, credentials);
-    let auth = {
+    const auth = {
       info: userinfo,
       expires_at: date,
       userid: userinfo.currentUser.id,

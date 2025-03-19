@@ -139,7 +139,7 @@ export class BidPage {
         await this.page.locator(`textarea[name="comment_${index}"]`).fill(pointComment);
       }
 
-      if (pointPhoneNumber != undefined) {
+      if (pointPhoneNumber != undefined && pointPhoneUser != undefined) {
         await this.page.locator(`input[name="phoneNumber_${index}"]`).fill(pointPhoneNumber);
         await this.page.locator(`input[name="name_${index}"]`).fill(pointPhoneUser);
       }
@@ -155,6 +155,7 @@ export class BidPage {
     await this.SetBidPoint(0, "withdrawalКалиниградская", "Набережные Челны", "200", "15.03.2025 21:10", "19.03.2025 22:10", "20.03.2025 22:10");
     await this.SetBidPoint(1, "withdrawalКалиниградская", "Елабуга", "500", "23.03.2025 21:10", "24.03.2025 22:10", "25.03.2025 22:10");
     await this.page.locator("//INPUT[@type='submit']").click();
-    await this.page.locator("//DIV[@class='message'][text()='Ваш запрос выполнен успешно.']");
+    await this.page.locator("//DIV[@class='message'][text()='Ваш запрос выполнен успешно.']").isVisible();
+    await this.page.locator("//SPAN[@class='badge badge-light'][text()='Черновик']").isVisible();
   }
 }
