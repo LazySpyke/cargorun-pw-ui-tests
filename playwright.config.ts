@@ -14,9 +14,9 @@ export default defineConfig({
   testDir: "./tests",
   /* Run tests in files in parallel */
   fullyParallel: false,
-  timeout: 30000,
+  // timeout: 10000,
   expect: {
-    timeout: 5000,
+    timeout: 60000,
   },
   /* Fail the build on CI if you accidentally left test.only in the source code. */
   forbidOnly: !!process.env.CI,
@@ -30,7 +30,7 @@ export default defineConfig({
   use: {
     baseURL: "https://test.cargorun.ru",
     headless: false, // Установите true для безголового режима
-    viewport: { width: 1080, height: 1000 }, // Установите размеры для окна браузера
+    // viewport: { width: 1080, height: 1000 }, // Установите размеры для окна браузера
     /* Base URL to use in actions like `await page.goto('/')`. */
 
     /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */

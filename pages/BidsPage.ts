@@ -1,223 +1,160 @@
 import { Page } from "@playwright/test";
-var pointIndex:number = 0
 export class BidPage {
-    private page: Page;
-    private responsibleSelectList = '#responsibleIdContainer';
-    private salesManagerSelectList = '#salesManagerIdContainer';
-    private legalPersonSelectList = '#legalPersonIdContainer';
-    private isEmptyFlag = 'div[name="isEmptyMileageBid"]';
-    private isInternationalFlag = 'div[name="isInternational"]';
-    private cargoOwnerSelectList ='#cargoOwnerDictionaryItemIdContainer';
-    private contactNumberInput = 'input[name="contractNumber"]';
-    private documentSelectList = 'div[id="documentContainer"]';
-    private temperatureMinimumInput = 'div[name="temperatureMinimum"]';
-    private temperatureMaximumInput = 'div[name="temperatureMaximum"]';
-    private createDocumentAssignmentFlag = '[name="createDocumentAssignment"]';
-    private showDraftInPlanningFlag = '[name="showDraftInPlanning"]';
-    private isExpressBidFlag = 'div[name="isExpressBid"';
-    private paymentTypeSelectList = 'div[id="paymentTypeIdContainer"]';
-    private ndsTypeSelectList = "#ndsTypeIdContainer";
-    private paymentPeriodSelectList = '#paymentPeriodTypeContainer';
-    private paymentPeriodInDaysInput = 'input[name="paymentPeriodInDays"]';
-    private priceInput = 'input[name="price"]';
-    private isVatTopFlag = 'div[name="isVatTop"]';
-    private driverSelectList = '#driverContainer';
-    private carSelectList = '#carOptionContainer';
-    private trailerSelectList = '#trailerOptionContainer';
-    private cargoName = 'input[name="name"]';
-    private cargoType = '#typeIdContainer';
-    private packTypeInput = '[name="packType"]';
-    private commentTextArea = 'textarea[class="field-wrap__input field-wrap__input--textarea"]';
-    private cargoWeight = 'input[name="weight"]';
-    private cargoValume = 'input[name="volume"]';
-    private cargoLength = 'input[name="length"]';
-    private cargoWidth = 'input[name="width"]';
-    private cargoHeight = 'input[name="height"]';
-    private pointCargoOwner = `#cargoOwnerDictionaryItemIdContainer_${pointIndex}`; //после _ index точки начиная с 0
-    private pointGeozone = `input[name="pointElemGeozone_${pointIndex}"]`;
-    private pointGeozoneRadius = `input[name="radius_${pointIndex}"]`;
-    private pointPlanEnterDate = `input[name="planEnterDate_${pointIndex}"]`;
-    private pointDateDiapazoneFlag = `(//DIV[@class='d-inline-block checkbox__text'][text()='Диапазон дат'])${pointIndex + 1}` //добавляем +1 так как ссылаемся по тексту
-    private pointSecondDate = `input[name="secondaryPlanEnterDate_${pointIndex}"]`;
-    private pointLeaveDateFlag = `(//DIV[@class='d-inline-block checkbox__text'][text()='Изменить плановую дату выезда'])[${pointIndex + 1}]`;
-    private pointLeaveDateInput = `input[name="planLeaveDate_${pointIndex}"]`;
-    private loadOptionsSelectList = `#loadOptionsContainer_${pointIndex}`;
-    private pointPhoneNumber = `input[name="phoneNumber_${pointIndex}"]`;
-    private pointContactNameInput = `input[name="name_${pointIndex}"]`;
-    private saveBidButton = 'input[value="Сохранить как черновик"]';
-    
+  readonly page: Page;
   constructor(page: Page) {
-      this.page = page;
+    this.page = page;
   }
 
   async goto() {
-    await this.page.goto("/login"); // Перейти на страницу логина
+    await this.page.goto("/bids"); // Перейти на страницу логина
+    await this.page.locator("//DIV[@class='btn btn-brand btn-sm'][text()='Создать заявку']").first().click();
   }
 
-  async Create() {
-      await page.locator(".css-klbavo-control").first().click();
-      await page
-        .getByRole("option", { name: "Кузьмина Антонида Веселов" })
-        .click();
-      await page.locator(".css-klbavo-control").first().click();
-      await page
-        .getByRole("option", { name: "Прохоров Anita Дементьева" })
-        .click();
-      await page
-        .locator("#cargoOwnerDictionaryItemIdContainer > .css-klbavo-control")
-        .click();
-      await page
-        .getByRole("option", { name: "groupwareКлатч ((916)606-47-" })
-        .click();
-      await page.locator('input[name="contractNumber"]').click();
-      await page.locator('input[name="contractNumber"]').fill("номер договора");
-      await page
-        .locator("#documentContainer div")
-        .filter({ hasText: "Добавить документ" })
-        .first()
-        .click();
-      await page.getByRole("option", { name: "Frozen" }).click();
-      await page.locator('input[name="temperatureMinimum"]').first().click();
-      await page.locator('input[name="temperatureMinimum"]').first().fill("1");
-      await page
-        .locator("div")
-        .filter({
-          hasText: /^Максимальный температурный режим, ℃ Обязательное поле$/,
-        })
-        .getByRole("spinbutton")
-        .click();
-      await page
-        .locator("div")
-        .filter({
-          hasText: /^Максимальный температурный режим, ℃ Обязательное поле$/,
-        })
-        .getByRole("spinbutton")
-        .fill("11");
-      await page
-        .locator("div")
-        .filter({ hasText: /^Создать водителю задачу по сдаче документов$/ })
-        .locator("span")
-        .click();
-      await page
-        .locator("div")
-        .filter({ hasText: /^Отображать черновик в планировании$/ })
-        .locator("span")
-        .click();
-      await page
-        .locator("div")
-        .filter({ hasText: /^Экспресс-заявка$/ })
-        .locator("span")
-        .click();
-      await page.locator('input[name="averageSpeed"]').click();
-      await page.locator('input[name="averageSpeed"]').fill("90");
-      await page.locator('input[name="dayStart"]').click();
-      await page.locator('input[name="dayStart"]').fill("08:00");
-      await page.locator('input[name="workHours"]').click();
-      await page.locator('input[name="workHours"]').fill("10");
-      await page
-        .locator("#paymentTypeIdContainer > .css-klbavo-control")
-        .click();
-      await page.getByRole("option", { name: "Безналичный" }).click();
-      await page.locator("#ndsTypeIdContainer > .css-klbavo-control").click();
-      await page.getByRole("option", { name: "Без НДС" }).click();
-      await page
-        .locator("#paymentPeriodTypeContainer > .css-klbavo-control")
-        .click();
-      await page.getByRole("option", { name: "В календарных днях" }).click();
-      await page.locator('input[name="paymentPeriodInDays"]').click();
-      await page.locator('input[name="paymentPeriodInDays"]').fill("90");
-      await page.locator('input[name="price"]').click();
-      await page.locator('input[name="price"]').fill("100000");
-      await page.locator("#driverContainer > .css-klbavo-control").click();
-      await page
-        .getByRole("option", { name: "Воронцов Альберт Силина" })
-        .click();
-      await page.locator("#carOptionContainer > .css-klbavo-control").click();
-      await page.getByRole("option", { name: "С369КО/" }).click();
-      await page
-        .locator("#trailerOptionContainer > .css-klbavo-control")
-        .click();
-      await page.getByRole("option", { name: "МТ2533/" }).click();
-      await page.locator('input[name="name"]').click();
-      await page.locator('input[name="name"]').fill("test gruz");
-      await page.locator("#typeIdContainer > .css-klbavo-control").click();
-      await page.getByRole("option", { name: "Другое" }).click();
-      await page.locator('input[name="packType"]').click();
-      await page.locator('input[name="packType"]').fill("упаковка");
-      await page.locator('textarea[name="comment"]').click();
-      await page
-        .locator('textarea[name="comment"]')
-        .fill("комментарий к грузу");
-      await page.locator('input[name="weight"]').click();
-      await page.locator('input[name="weight"]').fill("10");
-      await page.locator('input[name="weight"]').press("Tab");
-      await page.locator('input[name="volume"]').fill("15");
-      await page.locator('input[name="volume"]').press("Tab");
-      await page.locator('input[name="length"]').fill("20");
-      await page.locator('input[name="length"]').press("Tab");
-      await page.locator('input[name="width"]').fill("30");
-      await page.locator('input[name="width"]').press("Tab");
-      await page.locator('input[name="height"]').fill("40");
-      await page
-        .getByText(
-          "Общие параметрыОтветственныйКузьмина Антонида ВеселовМенеджер по продажамПрохоро"
-        )
-        .click();
-      await page.getByPlaceholder("От").click();
-      await page.getByPlaceholder("От").fill("1");
-      await page.getByPlaceholder("До").click();
-      await page.getByPlaceholder("До").fill("2");
-      await page
-        .locator(
-          "div:nth-child(2) > .col-sm-8 > #typeOptionsContainer_1 > .css-klbavo-control > .css-afaz1b > .css-tl8mrc"
-        )
-        .click();
-      await page
-        .locator("#cargoOwnerDictionaryItemIdContainer_0 > .css-klbavo-control")
-        .click();
-      await page.getByRole("option", { name: "(123123123312)" }).click();
-      await page.locator('input[name="pointElemGeozone_0"]').click();
-      await page
-        .getByRole("textbox", {
-          name: "Начните вводить адрес или нажмите на карту",
-        })
-        .fill("Набережные Челны");
-      await page
-        .getByText("Россия, Республика Татарстан, Набережные Челны", {
-          exact: true,
-        })
-        .click();
-      await page.getByText("Подтвердить точку").click();
-      await page.locator('input[name="planEnterDate_0"]').click();
-      await page
-        .locator('input[name="planEnterDate_0"]')
-        .fill("10.03.2025 00:007");
-      await page
-        .getByText(
-          "Общие параметрыОтветственныйКузьмина Антонида ВеселовМенеджер по продажамПрохоро"
-        )
-        .click();
-      await page
-        .locator("#loadOptionsContainer_0 > .css-klbavo-control")
-        .click();
-      await page
-        .locator("#react-select-loadOptionsInstance_0-option-0")
-        .click();
-      await page
-        .locator("div")
-        .filter({ hasText: /^Верхняя1$/ })
-        .first()
-        .click();
-      await page.getByRole("option", { name: "Боковая" }).click();
-      await page
-        .locator("#scenarioIdContainer_0 > .css-klbavo-control")
-        .click();
-      await page.getByRole("option", { name: "Новый сценарий" }).click();
-      await page.locator('textarea[name="comment_0"]').click();
-      await page.locator('textarea[name="comment_0"]').fill("comment");
-      await page.locator('input[name="phoneNumber_0"]').click();
-      await page.locator('input[name="phoneNumber_0"]').fill("+79963557879");
-      await page.locator('input[name="name_0"]').click();
-      await page.locator('input[name="name_0"]').fill("KontaktName");
-    });
+  async SetPaymentInfo(price: string, isVatTop: boolean, paymentType?: string, ndsType?: string, paymentPeriodType?: string, paymentPeriodInDays?: string) {
+    await this.page.locator('#paymentTypeIdContainer').click();
+    await this.page.locator(`text=${paymentType}`).first().click();
+    await this.page.locator('#ndsTypeIdContainer').click()
+    await this.page.locator(`text=${ndsType}`).click();
+    await this.page.locator('#paymentPeriodTypeContainer').click();
+    await this.page.locator(`text=${paymentPeriodType}`).click();
+    await this.page.locator('input[name="paymentPeriodInDays"]').fill(paymentPeriodInDays || "1");
+    await this.page.locator('input[name="price"]').fill(price)
+    if (isVatTop == true) {
+      await this.page.locator('span[name="isVatTop"]').click();
+    }
+  }
+
+  async SetDeliveryInfo(driver: string, car: string, secondDriver?: string, trailer?: string) {
+    await this.page.locator('#driverContainer').click();
+    await this.page.locator(`text=${driver}`).click();
+    if (secondDriver != undefined) {
+      await this.page.locator(`//SMALL[@class='link'][text()='Добавить второго водителя']`).click();
+      await this.page.locator(`text=${secondDriver}`).click();
+    }
+    await this.page.locator('#carOptionContainer').click();
+    await this.page.locator('#carOptionContainer').type(car, { delay: 100 });
+    await this.page.locator(`text=${car}`).nth(1).click();
+    if (trailer != undefined) {
+      await this.page.locator('#trailerOptionContainer').type(trailer, { delay: 100 });
+      await this.page.locator(`text=${trailer}`).nth(1).click();
+    }
+  }
+
+  async SetGeneralParameters(responible?: string, salesManager?: string, legalPerson?: string, internationalBid?: boolean, cargoOwnerBid?: string, cargoOwnerDoc?: string, cargoOwnerDocNumber?: string, documents?: string[], minTemp?: string, maxTemp?: string, createQRcode?: boolean, watchDraftBidInPlanning?: boolean) {
+    if (responible != undefined) {
+      await this.page.locator('#responsibleIdContainer').click();
+      await this.page.locator('#responsibleIdContainer').type(responible, { delay: 100 });
+      await this.page.locator(`text=${responible}`).nth(1).click();
+    }
+
+    if (salesManager != undefined) {
+      await this.page.locator('#salesManagerIdContainer').click();
+      await this.page.locator('#salesManagerIdContainer').type(salesManager, { delay: 100 });
+      await this.page.locator(`text=${salesManager}`).nth(1).click();
+    }
+    if (legalPerson != undefined) {
+      await this.page.locator('#legalPersonIdContainer').click();
+      await this.page.locator('#legalPersonIdContainer').type(legalPerson, { delay: 100 });
+      await this.page.locator(`text=${legalPerson}`).nth(1).click();
+    }
+    if (internationalBid != undefined && true) {
+      this.page.locator('span[name="isInternational"]').click();
+    }
+    if (cargoOwnerBid != undefined) {
+      await this.page.locator('#cargoOwnerDictionaryItemIdContainer').click();
+      await this.page.locator('#cargoOwnerDictionaryItemIdContainer').type(cargoOwnerBid, { delay: 100 });
+      await this.page.locator(`text=${cargoOwnerBid}`).nth(1).click();
+    }
+    if (cargoOwnerDoc != undefined) {
+      await this.page.locator('#contractIdContainer').click();
+      await this.page.locator('#contractIdContainer').type(cargoOwnerDoc, { delay: 100 });
+      await this.page.locator(`text=${cargoOwnerDoc}`).nth(1).click();
+    }
+    if (cargoOwnerDocNumber != undefined) {
+      await this.page.locator('input[name="contractNumber"]').fill(cargoOwnerDocNumber);
+    }
+    if (documents != undefined) {
+      documents.forEach(element => async () => {
+        await this.page.locator('#documentContainer').click();
+        await this.page.locator('#documentContainer').type(element, { delay: 100 });
+        await this.page.locator(`text=${element}`).nth(1).click();
+      });
+      if (minTemp != undefined && maxTemp != undefined) {
+        await this.page.locator('input[name="temperatureMinimum"]').fill(minTemp);
+        await this.page.locator('input[name="temperatureMaximum"]').fill(maxTemp);
+      }
+
+      if (createQRcode != undefined && true) {
+        await this.page.locator('span[name="createDocumentAssignment"]').click();
+      }
+
+      if (watchDraftBidInPlanning != undefined && true) {
+        await this.page.locator('span[name="showDraftInPlanning"]').click();
+      }
+
+    }
+  };
+
+  async ExpressBidSettings(averageSpeed: string, dayStart: string, workHours: string) {
+    await this.page.locator('span[name="isExpressBid"]').click();
+    await this.page.locator('input[name="averageSpeed"]').fill(averageSpeed);
+    await this.page.locator('input[name="dayStart"]').fill(dayStart);
+    await this.page.locator('input[name="workHours"]').fill(workHours);
+  }
+
+  async SetBidPoint(index: number, cargoOwnerBidPoint: string, address: string, radius: string, planEnterDate: string, secondDate?: string, planLeaveDate?: string, loadOptions?: string[], scenarioName?: string, pointComment?: string, pointPhoneNumber?: string, pointPhoneUser?: string) {
+    await this.page.locator(`#cargoOwnerDictionaryItemIdContainer_${index}`).click();
+    await this.page.locator(`#cargoOwnerDictionaryItemIdContainer_${index}`).type(cargoOwnerBidPoint, { delay: 100 });
+    await this.page.locator(`text=${cargoOwnerBidPoint}`).nth(1).click();
+
+    await this.page.locator(`[name="pointElemGeozone_${index}"]`).click();
+    await this.page.locator('input[class="map__picker-field map__picker-field--desktop"]').fill(address);
+    await this.page.locator('div[class="map__result-item"]').first().click();
+    await this.page.locator("//DIV[@class='leaflet-marker-icon map__icon map-icon map-icon--green-marker leaflet-zoom-animated leaflet-interactive']")
+    await this.page.locator("//DIV[@class='btn btn-brand map__submit-btn'][text()='Подтвердить точку']").click();
+    await this.page.locator(`input[name="radius_${index}"]`).fill(radius);
+    await this.page.locator(`input[name="planEnterDate_${index}"]`).fill(planEnterDate);
+    if (secondDate != undefined) {
+      await this.page.locator(`(//DIV[@class='d-inline-block checkbox__text'][text()='Диапазон дат'])[${index + 1}]`).click();
+      await this.page.locator(`//INPUT[@name='secondaryPlanEnterDate_${index}']`).fill(secondDate)
+    }
+    if (planLeaveDate != undefined) {
+      await this.page.locator(`(//DIV[@class='d-inline-block checkbox__text'][text()='Изменить плановую дату выезда'])[${index + 1}]`).click();
+      await this.page.locator(`//INPUT[@name='planLeaveDate_${index}']`).fill(planLeaveDate);
+    }
+
+    if (loadOptions != undefined) {
+      loadOptions.forEach(element => async () => {
+        await this.page.locator(`#loadOptionsContainer_${index}`).click();
+        await this.page.locator(`#loadOptionsContainer_${index}`).type(element, { delay: 100 });
+        await this.page.locator(`text=${element}`).nth(1).click();
+      });
+
+      if (scenarioName != undefined) {
+        await this.page.locator(`#scenarioIdContainer_${index}`).click();
+        await this.page.locator(`#scenarioIdContainer_${index}`).type(scenarioName, { delay: 100 });
+        await this.page.locator(`text=${scenarioName}`).nth(1).click();
+      }
+      if (pointComment != undefined) {
+        await this.page.locator(`textarea[name="comment_${index}"]`).fill(pointComment);
+      }
+
+      if (pointPhoneNumber != undefined) {
+        await this.page.locator(`input[name="phoneNumber_${index}"]`).fill(pointPhoneNumber);
+        await this.page.locator(`input[name="name_${index}"]`).fill(pointPhoneUser);
+      }
+    }
+  }
+
+
+  async CreateCommonBid(carNumber) {
+    await this.SetPaymentInfo("100000", false, "Безналичный", "10%", "В календарных днях", "90");
+    await this.SetDeliveryInfo("Иванович", carNumber)
+    await this.SetGeneralParameters("Беспалов", "Шаров")
+    await this.ExpressBidSettings("100", "00:00", "24");
+    await this.SetBidPoint(0, "withdrawalКалиниградская", "Набережные Челны", "200", "15.03.2025 21:10", "19.03.2025 22:10", "20.03.2025 22:10");
+    await this.SetBidPoint(1, "withdrawalКалиниградская", "Елабуга", "500", "23.03.2025 21:10", "24.03.2025 22:10", "25.03.2025 22:10");
+    await this.page.locator("//INPUT[@type='submit']").click();
+    await this.page.locator("//DIV[@class='message'][text()='Ваш запрос выполнен успешно.']");
+  }
 }

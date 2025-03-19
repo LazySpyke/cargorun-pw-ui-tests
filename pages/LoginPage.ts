@@ -5,8 +5,7 @@ export class LoginPage {
   private usernameInputSelector = 'input[type="email"]';
   private passwordInputSelector = 'input[type="password"]';
   private submitButtonSelector = 'button[type="submit"]';
-  private errorMessageSelector =
-    'div["class="identity-field__error field-validation-error"]';
+  private errorMessageSelector = 'div["class="identity-field__error field-validation-error"]';
 
   constructor(page: Page) {
     this.page = page;

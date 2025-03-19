@@ -1,14 +1,13 @@
-import { test, expect } from "@playwright/test";
 import APIRequests from "../api/apiRequests";
 import { addCar, getUsedCar, addAuthData } from "../database";
 class APIRequestsClient {
   async getCar(endpoint: string, authHeaders: string) {
-    var foundCar: any;
+    let foundCar: any;
     const api = new APIRequests();
     await api.init();
     await api.getData(endpoint, authHeaders).then(async (cars: any) => {
       for (const car of cars) {
-        console.log(car);
+        // console.log(car);
         if (!(await getUsedCar(car.id))) {
           foundCar = car; // Сохраним найденный объект
           await addCar(
@@ -22,8 +21,9 @@ class APIRequestsClient {
     });
     return foundCar;
   }
-  async getToken(username, password) {
-    var date: Date = new Date(); // Explicit type declaration
+  async getToken(username: string, password: string) {
+    console.log(username, password)
+    let date: Date = new Date(); // Explicit type declaration
     const api = new APIRequests();
     await api.init();
     const authEndpoint = `${process.env.url}/api/Account/GenerateToken`; // Замените на ваш URL
@@ -32,7 +32,7 @@ class APIRequestsClient {
       password: password,
     }; // Замените на ваши учетные данные
     const userinfo = await api.authorize(authEndpoint, credentials);
-    var auth = {
+    let auth = {
       info: userinfo,
       expires_at: date,
       userid: userinfo.currentUser.id,

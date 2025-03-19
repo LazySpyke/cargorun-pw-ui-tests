@@ -31,5 +31,5 @@ test("Проверка API-запроса с авторизацией", async ()
 
 test.beforeAll(async () => {
   const clienApi = new APIRequestsClient();
-  await clienApi.getToken(process.env.adminEmail, process.env.adminPassword);
+  await clienApi.getToken(process.env.rootMail as string, process.env.rootPassword as string);
 });
