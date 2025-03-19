@@ -40,60 +40,53 @@ export class BidPage {
     }
   }
 
-  async SetGeneralParameters(responible?: string, salesManager?: string, legalPerson?: string, internationalBid?: boolean, cargoOwnerBid?: string, cargoOwnerDoc?: string, cargoOwnerDocNumber?: string, documents?: string[], minTemp?: string, maxTemp?: string, createQRcode?: boolean, watchDraftBidInPlanning?: boolean) {
-    if (responible != undefined) {
-      await this.page.locator('#responsibleIdContainer').click();
-      await this.page.locator('#responsibleIdContainer').type(responible, { delay: 100 });
-      await this.page.locator(`text=${responible}`).nth(1).click();
-    }
+  async SetGeneralParameters(
+    responible?: string,
+    salesManager?: string,
+    legalPerson?: string,
+    internationalBid?: boolean,
+    cargoOwnerBid?: string,
+    cargoOwnerDoc?: string,
+    cargoOwnerDocNumber?: string,
+    documents?: string[],
+    minTemp?: string,
+    maxTemp?: string,
+    createQRcode?: boolean,
+    watchDraftBidInPlanning?: boolean
+  ) {
+    const fillInput = async (selector: string, value: string) => {
+      await this.page.locator(selector).click();
+      await this.page.locator(selector).type(value, { delay: 100 });
+      await this.page.locator(`text=${value}`).nth(1).click();
+    };
 
-    if (salesManager != undefined) {
-      await this.page.locator('#salesManagerIdContainer').click();
-      await this.page.locator('#salesManagerIdContainer').type(salesManager, { delay: 100 });
-      await this.page.locator(`text=${salesManager}`).nth(1).click();
-    }
-    if (legalPerson != undefined) {
-      await this.page.locator('#legalPersonIdContainer').click();
-      await this.page.locator('#legalPersonIdContainer').type(legalPerson, { delay: 100 });
-      await this.page.locator(`text=${legalPerson}`).nth(1).click();
-    }
-    if (internationalBid != undefined && true) {
-      this.page.locator('span[name="isInternational"]').click();
-    }
-    if (cargoOwnerBid != undefined) {
-      await this.page.locator('#cargoOwnerDictionaryItemIdContainer').click();
-      await this.page.locator('#cargoOwnerDictionaryItemIdContainer').type(cargoOwnerBid, { delay: 100 });
-      await this.page.locator(`text=${cargoOwnerBid}`).nth(1).click();
-    }
-    if (cargoOwnerDoc != undefined) {
-      await this.page.locator('#contractIdContainer').click();
-      await this.page.locator('#contractIdContainer').type(cargoOwnerDoc, { delay: 100 });
-      await this.page.locator(`text=${cargoOwnerDoc}`).nth(1).click();
-    }
-    if (cargoOwnerDocNumber != undefined) {
-      await this.page.locator('input[name="contractNumber"]').fill(cargoOwnerDocNumber);
-    }
-    if (documents != undefined) {
-      documents.forEach(element => async () => {
-        await this.page.locator('#documentContainer').click();
-        await this.page.locator('#documentContainer').type(element, { delay: 100 });
-        await this.page.locator(`text=${element}`).nth(1).click();
-      });
-      if (minTemp != undefined && maxTemp != undefined) {
-        await this.page.locator('input[name="temperatureMinimum"]').fill(minTemp);
-        await this.page.locator('input[name="temperatureMaximum"]').fill(maxTemp);
+    const actions: Promise<void>[] = [];
+
+    if (responible) actions.push(fillInput('#responsibleIdContainer', responible));
+    if (salesManager) actions.push(fillInput('#salesManagerIdContainer', salesManager));
+    if (legalPerson) actions.push(fillInput('#legalPersonIdContainer', legalPerson));
+    if (internationalBid) actions.push(this.page.locator('span[name="isInternational"]').click());
+    if (cargoOwnerBid) actions.push(fillInput('#cargoOwnerDictionaryItemIdContainer', cargoOwnerBid));
+    if (cargoOwnerDoc) actions.push(fillInput('#contractIdContainer', cargoOwnerDoc));
+    if (cargoOwnerDocNumber) actions.push(this.page.locator('input[name="contractNumber"]').fill(cargoOwnerDocNumber));
+
+    if (documents) {
+      for (const element of documents) {
+        actions.push(fillInput('#documentContainer', element));
       }
-
-      if (createQRcode != undefined && true) {
-        await this.page.locator('span[name="createDocumentAssignment"]').click();
-      }
-
-      if (watchDraftBidInPlanning != undefined && true) {
-        await this.page.locator('span[name="showDraftInPlanning"]').click();
-      }
-
     }
-  };
+
+    if (minTemp && maxTemp) {
+      actions.push(this.page.locator('input[name="temperatureMinimum"]').fill(minTemp));
+      actions.push(this.page.locator('input[name="temperatureMaximum"]').fill(maxTemp));
+    }
+
+    if (createQRcode) actions.push(this.page.locator('span[name="createDocumentAssignment"]').click());
+    if (watchDraftBidInPlanning) actions.push(this.page.locator('span[name="showDraftInPlanning"]').click());
+
+    // Выполняем все действия параллельно
+    await Promise.all(actions);
+  }
 
   async ExpressBidSettings(averageSpeed: string, dayStart: string, workHours: string) {
     await this.page.locator('span[name="isExpressBid"]').click();
