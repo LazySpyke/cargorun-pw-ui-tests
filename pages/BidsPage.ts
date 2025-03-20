@@ -13,14 +13,21 @@ export class BidPage {
       .click();
   }
 
-  async SetPaymentInfo(
-    price: string,
-    isVatTop: boolean,
-    paymentType?: string,
-    ndsType?: string,
-    paymentPeriodType?: string,
-    paymentPeriodInDays?: string
-  ) {
+  async SetPaymentInfo({
+    price,
+    isVatTop,
+    paymentType,
+    ndsType,
+    paymentPeriodType,
+    paymentPeriodInDays,
+  }: {
+    price: string;
+    isVatTop: boolean;
+    paymentType?: string;
+    ndsType?: string;
+    paymentPeriodType?: string;
+    paymentPeriodInDays?: string;
+  }) {
     await this.page.locator("#paymentTypeIdContainer").click();
     await this.page.locator(`text=${paymentType}`).first().click();
     await this.page.locator("#ndsTypeIdContainer").click();
@@ -36,12 +43,17 @@ export class BidPage {
     }
   }
 
-  async SetDeliveryInfo(
-    driver: string,
-    car: string,
-    secondDriver?: string,
-    trailer?: string
-  ) {
+  async SetDeliveryInfo({
+    driver,
+    car,
+    secondDriver,
+    trailer,
+  }: {
+    driver: string;
+    car: string;
+    secondDriver?: string;
+    trailer?: string;
+  }) {
     await this.page.locator("#driverContainer").click();
     await this.page.locator(`text=${driver}`).click();
     if (secondDriver) {
@@ -61,20 +73,33 @@ export class BidPage {
     }
   }
 
-  async SetGeneralParameters(
-    responible?: string,
-    salesManager?: string,
-    legalPerson?: string,
-    internationalBid?: boolean,
-    cargoOwnerBid?: string,
-    cargoOwnerDoc?: string,
-    cargoOwnerDocNumber?: string,
-    documents?: string[],
-    minTemp?: string,
-    maxTemp?: string,
-    createQRcode?: boolean,
-    watchDraftBidInPlanning?: boolean
-  ) {
+  async SetGeneralParameters({
+    responible,
+    salesManager,
+    legalPerson,
+    internationalBid,
+    cargoOwnerBid,
+    cargoOwnerDoc,
+    cargoOwnerDocNumber,
+    documents,
+    minTemp,
+    maxTemp,
+    createQRcode,
+    watchDraftBidInPlanning,
+  }: {
+    responible?: string;
+    salesManager?: string;
+    legalPerson?: string;
+    internationalBid?: boolean;
+    cargoOwnerBid?: string;
+    cargoOwnerDoc?: string;
+    cargoOwnerDocNumber?: string;
+    documents?: string[];
+    minTemp?: string;
+    maxTemp?: string;
+    createQRcode?: boolean;
+    watchDraftBidInPlanning?: boolean;
+  }) {
     if (responible) {
       await this.page.locator("#responsibleIdContainer").click();
       await this.page
@@ -148,31 +173,48 @@ export class BidPage {
     }
   }
 
-  async ExpressBidSettings(
-    averageSpeed: string,
-    dayStart: string,
-    workHours: string
-  ) {
+  async ExpressBidSettings({
+    averageSpeed,
+    dayStart,
+    workHours,
+  }: {
+    averageSpeed: string;
+    dayStart: string;
+    workHours: string;
+  }) {
     await this.page.locator('span[name="isExpressBid"]').click();
     await this.page.locator('input[name="averageSpeed"]').fill(averageSpeed);
     await this.page.locator('input[name="dayStart"]').fill(dayStart);
     await this.page.locator('input[name="workHours"]').fill(workHours);
   }
 
-  async SetBidPoint(
-    index: number,
-    cargoOwnerBidPoint: string,
-    address: string,
-    radius: string,
-    planEnterDate: string,
-    secondDate?: string,
-    planLeaveDate?: string,
-    loadOptions?: string[],
-    scenarioName?: string,
-    pointComment?: string,
-    pointPhoneNumber?: string,
-    pointPhoneUser?: string
-  ) {
+  async SetBidPoint({
+    index,
+    cargoOwnerBidPoint,
+    address,
+    radius,
+    planEnterDate,
+    secondDate,
+    planLeaveDate,
+    loadOptions,
+    scenarioName,
+    pointComment,
+    pointPhoneNumber,
+    pointPhoneUser,
+  }: {
+    index: number;
+    cargoOwnerBidPoint: string;
+    address: string;
+    radius: string;
+    planEnterDate: string;
+    secondDate?: string;
+    planLeaveDate?: string;
+    loadOptions?: string[];
+    scenarioName?: string;
+    pointComment?: string;
+    pointPhoneNumber?: string;
+    pointPhoneUser?: string;
+  }) {
     await this.page
       .locator(`#cargoOwnerDictionaryItemIdContainer_${index}`)
       .click();
@@ -257,35 +299,42 @@ export class BidPage {
   }
 
   async CreateCommonBid(carNumber) {
-    await this.SetPaymentInfo(
-      "100000",
-      false,
-      "Безналичный",
-      "10%",
-      "В календарных днях",
-      "90"
-    );
-    await this.SetDeliveryInfo("Иванович", carNumber);
-    await this.SetGeneralParameters("Беспалов", "Шаров");
-    await this.ExpressBidSettings("100", "00:00", "24");
-    await this.SetBidPoint(
-      0,
-      "withdrawalКалиниградская",
-      "Набережные Челны",
-      "200",
-      "15.03.2025 21:10",
-      "19.03.2025 22:10",
-      "20.03.2025 22:10"
-    );
-    await this.SetBidPoint(
-      1,
-      "withdrawalКалиниградская",
-      "Елабуга",
-      "500",
-      "23.03.2025 21:10",
-      "24.03.2025 22:10",
-      "25.03.2025 22:10"
-    );
+    await this.SetPaymentInfo({
+      price: "100000",
+      isVatTop: false,
+      paymentType: "Безналичный",
+      ndsType: "10%",
+      paymentPeriodType: "В календарных днях",
+      paymentPeriodInDays: "90",
+    });
+    await this.SetDeliveryInfo({ driver: "Иванович", car: carNumber });
+    await this.SetGeneralParameters({
+      responible: "Беспалов",
+      salesManager: "Шаров",
+    });
+    await this.ExpressBidSettings({
+      averageSpeed: "100",
+      dayStart: "00:00",
+      workHours: "24",
+    });
+    await this.SetBidPoint({
+      index: 0,
+      cargoOwnerBidPoint: "withdrawalКалиниградская",
+      address: "Набережные Челны",
+      radius: "200",
+      planEnterDate: "15.03.2025 21:10",
+      secondDate: "19.03.2025 22:10",
+      planLeaveDate: "20.03.2025 22:10",
+    });
+    await this.SetBidPoint({
+      index: 1,
+      cargoOwnerBidPoint: "withdrawalКалиниградская",
+      address: "Елабуга",
+      radius: "500",
+      planEnterDate: "23.03.2025 21:10",
+      secondDate: "24.03.2025 22:10",
+      planLeaveDate: "25.03.2025 22:10",
+    });
     await this.page.locator("//INPUT[@type='submit']").click();
     await this.page
       .locator("//DIV[@class='message'][text()='Ваш запрос выполнен успешно.']")

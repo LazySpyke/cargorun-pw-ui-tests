@@ -1,11 +1,14 @@
 import APIRequests from "../api/apiRequests";
 import { addCar, getUsedCar, addAuthData } from "../database";
 class APIRequestsClient {
+  readonly api;
+  constructor() {
+    this.api = new APIRequests();
+  }
   async getCar(endpoint: string, authHeaders: string) {
     let foundCar: any;
-    const api = new APIRequests();
-    await api.init();
-    await api.getData(endpoint, authHeaders).then(async (cars: any) => {
+    await this.api.init();
+    await this.api.getData(endpoint, authHeaders).then(async (cars: any) => {
       for (const car of cars) {
         // console.log(car);
         if (!(await getUsedCar(car.id))) {
@@ -22,16 +25,15 @@ class APIRequestsClient {
     return foundCar;
   }
   async getToken(username: string, password: string) {
-    console.log(username, password)
+    console.log(username, password);
     const date: Date = new Date(); // Explicit type declaration
-    const api = new APIRequests();
-    await api.init();
+    await this.api.init();
     const authEndpoint = `${process.env.url}/api/Account/GenerateToken`; // Замените на ваш URL
     const credentials = {
       username: username,
       password: password,
     }; // Замените на ваши учетные данные
-    const userinfo = await api.authorize(authEndpoint, credentials);
+    const userinfo = await this.api.authorize(authEndpoint, credentials);
     const auth = {
       info: userinfo,
       expires_at: date,

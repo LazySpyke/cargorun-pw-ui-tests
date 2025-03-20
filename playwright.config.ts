@@ -4,6 +4,7 @@ import { defineConfig, devices } from "@playwright/test";
  * https://github.com/motdotla/dotenv
  */
 import dotenv from "dotenv";
+import { maxHeaderSize } from "http";
 import path from "path";
 dotenv.config({ path: path.resolve(__dirname, ".env") });
 
@@ -30,7 +31,7 @@ export default defineConfig({
   use: {
     baseURL: "https://test.cargorun.ru",
     headless: false, // Установите true для безголового режима
-    // viewport: { width: 1080, height: 1000 }, // Установите размеры для окна браузера
+    viewport: { width: 1920, height: 1080 }, // Установите размеры для окна браузера
     /* Base URL to use in actions like `await page.goto('/')`. */
 
     /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
