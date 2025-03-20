@@ -1,11 +1,12 @@
 import { Page } from "@playwright/test";
 
 export class LoginPage {
-  private page: Page;
-  private usernameInputSelector = 'input[type="email"]';
-  private passwordInputSelector = 'input[type="password"]';
-  private submitButtonSelector = 'button[type="submit"]';
-  private errorMessageSelector = 'div["class="identity-field__error field-validation-error"]';
+  readonly page: Page;
+  readonly usernameInputSelector = 'input[type="email"]';
+  readonly passwordInputSelector = 'input[type="password"]';
+  readonly submitButtonSelector = 'button[type="submit"]';
+  readonly errorMessageSelector =
+    'div["class="identity-field__error field-validation-error"]';
 
   constructor(page: Page) {
     this.page = page;
