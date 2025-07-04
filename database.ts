@@ -81,7 +81,7 @@ export const addCar = async (
 
 // Функция для получения машины по id
 export const getUsedCar = async (carId: number, tryIndex?: number) => {
-  console.log(`полверяем ${carId}`);
+  console.log(`проверяем ${carId}`);
   const res = await client.query("SELECT * FROM cars WHERE carId = $1", [
     carId,
   ]);

@@ -12,16 +12,21 @@ test.describe("Login Tests", () => {
     page,
   }) => {
     await test.step("Log in", async () => {
-      await loginPage.login(process.env.rootMail as string, process.env.rootPassword as string);
+      await loginPage.login(
+        process.env.rootMail as string,
+        process.env.rootPassword as string
+      );
     });
 
     await test.step("url check", async () => {
       await expect(page).toHaveURL("/monitoring"); // Проверяем, что URL изменился на /dashboard
     });
-
   });
   test("should show error message for invalid credentials", async () => {
-    await loginPage.login(process.env.rootMail as string, process.env.rootPassword as string);
+    await loginPage.login(
+      process.env.rootMail as string,
+      process.env.rootPassword as string
+    );
     const errorMessage = await loginPage.getErrorMessage();
     expect(errorMessage).toContain("Invalid credentials"); // Проверяем сообщение об ошибке
   });

@@ -10,7 +10,6 @@ class APIRequestsClient {
     await this.api.init();
     await this.api.getData(endpoint, authHeaders).then(async (cars: any) => {
       for (const car of cars) {
-        // console.log(car);
         if (!(await getUsedCar(car.id))) {
           foundCar = car; // Сохраним найденный объект
           await addCar(
@@ -23,6 +22,15 @@ class APIRequestsClient {
       }
     });
     return foundCar;
+  }
+  async GetObjectResponse(endpoint: string, authHeaders: string) {
+    let responseBody: any;
+    await this.api.init();
+    await this.api.getData(endpoint, authHeaders).then((response: any) => {
+      responseBody = response;
+    });
+    console.log(responseBody);
+    return responseBody;
   }
   async getToken(username: string, password: string) {
     console.log(username, password);
