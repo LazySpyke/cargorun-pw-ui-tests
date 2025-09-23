@@ -1,5 +1,5 @@
 // api/apiRequests.ts
-import { request, APIRequestContext } from "@playwright/test";
+import { request, APIRequestContext } from '@playwright/test';
 
 class APIRequests {
   private context: APIRequestContext | null = null;
@@ -9,9 +9,7 @@ class APIRequests {
   }
   async authorize(endpoint: string, credentials: any): Promise<any> {
     if (!this.context) {
-      throw new Error(
-        "APIRequestContext is not initialized. Call init() first."
-      );
+      throw new Error('APIRequestContext is not initialized. Call init() first.');
     }
 
     const response = await this.context.post(endpoint, {
@@ -24,9 +22,7 @@ class APIRequests {
 
   async getData(endpoint: string, authHeaders: string) {
     if (!this.context) {
-      throw new Error(
-        "APIRequestContext is not initialized. Call init() first."
-      );
+      throw new Error('APIRequestContext is not initialized. Call init() first.');
     }
 
     const response = await this.context.get(endpoint, {
@@ -36,7 +32,6 @@ class APIRequests {
     });
     return await response.json();
   }
-
   async close(): Promise<void> {
     if (this.context) {
       await this.context.dispose();

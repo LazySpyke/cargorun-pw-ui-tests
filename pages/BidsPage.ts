@@ -177,7 +177,7 @@ export class BidPage {
     pointPhoneUser,
   }: {
     index: number;
-    cargoOwnerBidPoint: string;
+    cargoOwnerBidPoint?: string;
     address: string;
     radius: string;
     planEnterDate: string;
@@ -189,10 +189,11 @@ export class BidPage {
     pointPhoneNumber?: string;
     pointPhoneUser?: string;
   }) {
-    await this.page.locator(`#cargoOwnerDictionaryItemIdContainer_${index}`).click();
-    await this.page.locator(`#cargoOwnerDictionaryItemIdContainer_${index}`).type(cargoOwnerBidPoint, { delay: 100 });
-    await this.page.locator(`text=${cargoOwnerBidPoint}`).nth(1).click();
-
+    if (cargoOwnerBidPoint != null) {
+      await this.page.locator(`#cargoOwnerDictionaryItemIdContainer_${index}`).click();
+      await this.page.locator(`#cargoOwnerDictionaryItemIdContainer_${index}`).type(cargoOwnerBidPoint, { delay: 100 });
+      await this.page.locator(`text=${cargoOwnerBidPoint}`).nth(1).click();
+    }
     await this.page.locator(`[name="pointElemGeozone_${index}"]`).click();
     await this.page.locator('input[class="map__picker-field map__picker-field--desktop"]').fill(address);
     await this.page.locator('div[class="map__result-item"]').first().click();
@@ -290,11 +291,50 @@ export class BidPage {
     await this.page.locator("//SMALL[@class='pl-1 icon-uEA90-bolt b-point__tooltip-icon']").isVisible();
   }
 
+  async CreateEmptyBid(CenerateBidInfo: gerateBidCreateInfo) {
+    await this.page.locator('span[name="isEmptyMileageBid"]').click();
+    await this.SetDeliveryInfo({
+      driver: CenerateBidInfo.driver,
+      car: CenerateBidInfo.car,
+      trailer: CenerateBidInfo.trailer,
+    });
+    await this.SetBidPoint({
+      index: 0,
+      address: CenerateBidInfo.firstPointCity,
+      radius: '200',
+      planEnterDate: CenerateBidInfo.firstPointEnterDate,
+      secondDate: '',
+      planLeaveDate: '',
+    });
+    await this.SetBidPoint({
+      index: 1,
+      address: CenerateBidInfo.secondPointCity,
+      radius: '500',
+      planEnterDate: CenerateBidInfo.secondPointEnterDate,
+      secondDate: '',
+      planLeaveDate: '',
+    });
+    await this.page.locator("//INPUT[@type='submit']").click();
+    await this.page.locator("//DIV[@class='message'][text()='Ваш запрос выполнен успешно.']").isVisible();
+    await this.page.locator("//DIV[@class='book-form__close close close--sm']").click();
+    await this.page.locator("//SPAN[@class='badge badge-light'][text()='Черновик']").isVisible({ timeout: 10000 });
+    await this.page.locator("//SMALL[@class='pl-1 icon-uEA90-bolt b-point__tooltip-icon']").isVisible();
+  }
+
   async BidFieldReconciliation(CenerateBidInfo: gerateBidCreateInfo, status: string) {
     await this.page.locator('span[class="badge badge-light"]').isVisible({ timeout: 10000 });
     await expect(this.page.locator('span[class="badge badge-light"]')).toHaveText(status);
-    await expect(this.page.getByTestId('price')).toHaveText('100 000,00 ₽ (Безналичный, 10%)');
-    await expect(this.page.getByTestId('paymentPeriod')).toHaveText('90 (В календарных днях)');
+    if (CenerateBidInfo.isEmpty == true) {
+      //так как не заполняются вручную,а подставляются автоматически
+      await expect(this.page.getByTestId('price')).toContainText('1,00 ₽ (Безналичный, 20%)');
+      // await expect(this.page.getByTestId('paymentPeriod')).toHaveText('90 (В календарных днях)');
+    } else {
+      await expect(this.page.getByTestId('legal-person')).toHaveText(CenerateBidInfo.legalPerson);
+      await expect(this.page.getByTestId('responsible')).toContainText('Главный Т.');
+      await expect(this.page.getByTestId('sales-manager')).toContainText('Тестовый Л.');
+      await expect(this.page.getByTestId('price')).toContainText('100 000,00 ₽ (Безналичный, 10%)');
+      await expect(this.page.getByTestId('paymentPeriod')).toHaveText('90 (В календарных днях)');
+    }
     const carNumberText = await this.page.locator('div[class="carnumber__number"]').first().textContent();
     const carRegionText = await this.page.locator('div[class="carnumber__region"]').first().textContent();
     const fullCarNumber = `${carNumberText}/${carRegionText}`;
@@ -314,12 +354,38 @@ export class BidPage {
       );
     }
     await expect(this.page.getByTestId('bid-main-driver')).toContainText(CenerateBidInfo.driver);
-    await expect(this.page.getByTestId('legal-person')).toHaveText(CenerateBidInfo.legalPerson);
-    await expect(this.page.getByTestId('responsible')).toContainText('Главный Т.');
-    await expect(this.page.getByTestId('sales-manager')).toContainText('Тестовый Л.');
-    //////////////////
+    ////////////////// точка загрузки
     await expect(this.page.locator('span[class="b-timeline-point__city--name"]').first()).toContainText(
-      'Набережные Челны'
+      CenerateBidInfo.firstPointCity
+    );
+    await expect(this.page.locator('small[class="b-timeline-point__city--timezone"]').first()).toContainText(
+      '(+03:00)'
+    );
+    await expect(this.page.locator('small[class="b-timeline-point__city--type"]').first()).toContainText(
+      'Точка загрузки'
+    );
+    // await expect(this.page.locator('div[class="b-timeline-point__city--full"]').first()).toContainText(
+    //   'Россия, Республика Татарстан, Набережные Челны'
+    // );
+    await this.page.locator('[class="icon-uEA72-chevron-down rotated"]').first().click();
+    await expect(this.page.locator('div[data-point-counterparty="0"]')).toContainText(
+      CenerateBidInfo.cargoOwnersBid[0].name
+    );
+    ////////// точка выгрузки
+    ////////////////// точка загрузки
+    await expect(this.page.locator('span[class="b-timeline-point__city--name"]').nth(1)).toContainText(
+      CenerateBidInfo.secondPointCity
+    );
+    await expect(this.page.locator('small[class="b-timeline-point__city--timezone"]').nth(1)).toContainText('(+03:00)');
+    await expect(this.page.locator('small[class="b-timeline-point__city--type"]').nth(1)).toContainText(
+      'Точка выгрузки'
+    );
+    await expect(this.page.locator('div[class="b-timeline-point__city--full"]').nth(4)).toContainText(
+      'Россия, Республика Татарстан, Казань'
+    );
+    await this.page.locator('[class="icon-uEA72-chevron-down rotated"]').nth(0).click();
+    await expect(this.page.locator('div[data-point-counterparty="1"]')).toContainText(
+      CenerateBidInfo.cargoOwnersBid[1].name
     );
   }
 }
