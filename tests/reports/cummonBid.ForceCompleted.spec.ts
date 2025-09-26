@@ -24,7 +24,7 @@ test.describe('Create Bid', () => {
     await test.step('Создание заявки и запуск в работу', async () => {
       const bidFixture = new BidCreateInfo(page);
       bidInfo = await bidFixture.ApiCommonBid({
-        price: '100000',
+        price: 100000,
         paymentTypeId: 176,
         ndsTypeId: 175,
         planEnterLoadDate: moment().subtract(12, 'h').format('YYYY-MM-DDTHH:mm'),
@@ -56,16 +56,39 @@ test.describe('Create Bid', () => {
       await page.locator('input[name="car"]').fill(bidInfo.carOption.number);
       await page.waitForTimeout(5000);
       await page.locator('[class="r-item__expander icon-uEAAE-angle-right-solid"]').click();
-      console.log(`bidResponse.planMileage=${bidResponse.planMileage}`);
+      const bidInfoResponse = await bidApi.GetBidInfo(bidResponse.id, await getAuthData(36));
+      console.log(bidInfoResponse);
       await expect(page.locator(`[data-activemileage="${bidInfo.carOption.number}"]`)).toHaveText(
-        Math.ceil(bidResponse.planMileage / 1000)
+        Math.ceil(bidInfoResponse.planMileage / 1000).toLocaleString('ru-RU', {
+          minimumFractionDigits: 2,
+          maximumFractionDigits: 2,
+          style: 'decimal', // обычное число, без валюты
+          useGrouping: true, // группировка тысяч
+        })
       );
       await expect(page.locator(`[data-overallmileage="${bidInfo.carOption.number}"]`)).toHaveText(
-        Math.ceil(bidResponse.planMileage / 1000)
+        Math.ceil(bidInfoResponse.planMileage / 1000).toLocaleString('ru-RU', {
+          minimumFractionDigits: 2,
+          maximumFractionDigits: 2,
+          style: 'decimal', // обычное число, без валюты
+          useGrouping: true, // группировка тысяч
+        })
       );
-      await expect(page.locator(`[data-overallbidsprice="${bidInfo.carOption.number}"]`)).toHaveText(bidInfo.price);
+      await expect(page.locator(`[data-overallbidsprice="${bidInfo.carOption.number}"]`)).toHaveText(
+        bidInfo.price.toLocaleString('ru-RU', {
+          minimumFractionDigits: 2,
+          maximumFractionDigits: 2,
+          style: 'decimal', // обычное число, без валюты
+          useGrouping: true, // группировка тысяч
+        })
+      );
       await expect(page.locator(`[data-output="${bidInfo.carOption.number}"]`)).toHaveText('93,02');
       await page.waitForTimeout(100000);
+      await page.locator(`[data-car="${bidInfo.carOption.number}"]`).click();
+      await page.locator(`[href="/bids/bid/${bidResponse.id}"]`);
+      await expect(page.locator(`[data-counterpartyname="${bidResponse.id}"]`)).toHaveText(
+        bidInfoResponse.cargoOwnerDictionaryItem.name
+      );
     });
   });
 });

@@ -67,6 +67,7 @@ class APIRequestsClient {
       return jsonResponse;
     }
   }
+
   async cancelBid(bidId: any, bearerToken: string): Promise<any> {
     if (!this.context) {
       throw new Error('APIRequestContext is not initialized. Call init() first.');
@@ -83,6 +84,7 @@ class APIRequestsClient {
     const jsonResponse = await response.json();
     return jsonResponse;
   }
+
   async ForceCompletedBid(bidId: number, bearerToken: string): Promise<any> {
     if (!this.context) {
       throw new Error('APIRequestContext is not initialized. Call init() first.');
@@ -122,6 +124,22 @@ class APIRequestsClient {
     });
     const jsonResponse = await response.json();
     return jsonResponse;
+  }
+
+  async GetBidInfo(bidId: number, bearerToken: string): Promise<any> {
+    if (!this.context) {
+      throw new Error('APIRequestContext is not initialized. Call init() first.');
+    }
+    const bidInfo = await this.context.get(`${process.env.url}/api/bids/get/${bidId}`, {
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: bearerToken,
+        // другие заголовки, если нужны
+      },
+    });
+    const bidJsonResponse = await bidInfo.json();
+
+    return bidJsonResponse;
   }
 }
 

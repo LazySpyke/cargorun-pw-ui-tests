@@ -108,7 +108,7 @@ export class BidCreateInfo {
     salesManagerId?: number;
     paymentTypeId: number;
     ndsTypeId: number;
-    price: string;
+    price: number;
     cargosName?: string;
     typeId?: number;
     planEnterLoadDate: string;
