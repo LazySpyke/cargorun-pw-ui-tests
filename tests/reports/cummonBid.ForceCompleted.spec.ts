@@ -48,7 +48,7 @@ test.describe('Create Bid', () => {
     await test.step('Проверка 1.Общего отчёта', async () => {
       await page.locator('[title="Отчеты"]').click();
       await page.locator('[name="Общий отчет"]').click();
-      await page.locator('input[name="startDate"]').fill(moment().subtract(13, 'h').format('DD.MM.YYYY HH:mm'));
+      await page.locator('input[name="startDate"]').fill(moment().subtract(12, 'h').format('DD.MM.YYYY HH:mm'));
       await page.locator('input[name="endDate"]').fill(moment().subtract(1, 'h').format('DD.MM.YYYY HH:mm'));
       await page
         .locator("//div[@class='report__filters--left']//a[@class='btn btn-sm btn-brand'][contains(text(),'Обновить')]")
@@ -83,11 +83,68 @@ test.describe('Create Bid', () => {
         })
       );
       await expect(page.locator(`[data-output="${bidInfo.carOption.number}"]`)).toHaveText('93,02');
-      await page.waitForTimeout(100000);
-      await page.locator(`[data-car="${bidInfo.carOption.number}"]`).click();
+      await page.locator(`[data-car="${bidInfo.carOption.number}"]`).nth(1).click();
       await page.locator(`[href="/bids/bid/${bidResponse.id}"]`);
       await expect(page.locator(`[data-counterpartyname="${bidResponse.id}"]`)).toHaveText(
         bidInfoResponse.cargoOwnerDictionaryItem.name
+      );
+      await expect(page.locator(`[data-externalid="${bidResponse.id}"]`)).toBeEmpty();
+      await expect(page.locator(`[data-route="${bidResponse.id}"]`)).toHaveText('Набережные Челны - ');
+      await expect(page.locator(`[data-executiondaterange="${bidResponse.id}"]`)).toHaveText(
+        `${moment(bidInfoResponse.bidPoints[0].planEnterDate, 'YYYY-MM-DDTHH:mm').format('DD.MM.YYYY HH:mm')} (+03:00) - ${moment(bidInfoResponse.bidPoints[1].planEnterDate, 'YYYY-MM-DDTHH:mm').add(1, 'm').format('DD.MM.YYYY HH:mm')} (+03:00)`
+      );
+      await expect(page.locator(`[data-activemileage="${bidResponse.id}"]`)).toHaveText(
+        Math.ceil(bidInfoResponse.planMileage / 1000).toLocaleString('ru-RU', {
+          minimumFractionDigits: 2,
+          maximumFractionDigits: 2,
+          style: 'decimal', // обычное число, без валюты
+          useGrouping: true, // группировка тысяч
+        })
+      );
+      await expect(page.locator(`[data-emptymileage="${bidResponse.id}"]`)).toHaveText('0,00');
+      await expect(page.locator(`[data-overallmileage="${bidResponse.id}"]`)).toHaveText(
+        Math.ceil(bidInfoResponse.planMileage / 1000).toLocaleString('ru-RU', {
+          minimumFractionDigits: 2,
+          maximumFractionDigits: 2,
+          style: 'decimal', // обычное число, без валюты
+          useGrouping: true, // группировка тысяч
+        })
+      );
+      await expect(page.locator(`[data-overallbidprice="${bidResponse.id}"]`)).toHaveText(
+        bidInfo.price.toLocaleString('ru-RU', {
+          minimumFractionDigits: 2,
+          maximumFractionDigits: 2,
+          style: 'decimal', // обычное число, без валюты
+          useGrouping: true, // группировка тысяч
+        })
+      );
+      await expect(page.locator(`[data-averageplanweight="${bidResponse.id}"]`)).toHaveText('0,00');
+      await expect(page.locator(`[data-output="${bidResponse.id}"]`)).toHaveText(
+        (bidInfo.price / Math.ceil(bidInfoResponse.planMileage / 1000)).toLocaleString('ru-RU', {
+          minimumFractionDigits: 2,
+          maximumFractionDigits: 2,
+          style: 'decimal', // обычное число, без валюты
+          useGrouping: true, // группировка тысяч
+        })
+      );
+      await expect(page.locator(`[data-numberofdays="${bidResponse.id}"]`)).toHaveText('0,88');
+      const profitabilityOfBidSettings: any = await clienApi.GetObjectResponse(
+        `${process.env.url}/api/organizationProfile/getProfitabilityOfBidSettings`,
+        await getAuthData(36)
+      );
+      console.log(
+        `${bidInfoResponse.planMileage / 100000}\n${profitabilityOfBidSettings.averageFuelConsumption}\n${profitabilityOfBidSettings.averageFuelCostPerLiter}`
+      );
+      const fuelcost =(Math.ceil(bidInfoResponse.planMileage / 100000) *
+        profitabilityOfBidSettings.averageFuelConsumption) *
+        profitabilityOfBidSettings.averageFuelCostPerLiter;
+      await expect(page.locator(`[data-fuelcost="${bidResponse.id}"]`)).toHaveText(
+        fuelcost.toLocaleString('ru-RU', {
+          minimumFractionDigits: 2,
+          maximumFractionDigits: 2,
+          style: 'decimal', // обычное число, без валюты
+          useGrouping: true, // группировка тысяч
+        })
       );
     });
   });
