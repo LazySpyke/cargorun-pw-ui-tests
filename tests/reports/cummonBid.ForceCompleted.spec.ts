@@ -12,6 +12,7 @@ test.describe('Create Bid', () => {
   let loginPage: LoginPage;
   let bidInfo: any;
   let bidResponse: any;
+  let bidInfoResponse: any;
   test.beforeEach(async ({ page }) => {
     loginPage = new LoginPage(page);
     await loginPage.goto(); // Переходим на страницу логина перед каждым тестом
@@ -27,7 +28,7 @@ test.describe('Create Bid', () => {
         price: 100000,
         paymentTypeId: 176,
         ndsTypeId: 175,
-        planEnterLoadDate: moment().subtract(12, 'h').format('YYYY-MM-DDTHH:mm'),
+        planEnterLoadDate: moment().subtract(6, 'h').format('YYYY-MM-DDTHH:mm'),
         planEnterUnloadDate: moment().subtract(1, 'h').format('YYYY-MM-DDTHH:mm'),
       });
       await bidApi.init();
@@ -48,7 +49,7 @@ test.describe('Create Bid', () => {
     await test.step('Проверка 1.Общего отчёта', async () => {
       await page.locator('[title="Отчеты"]').click();
       await page.locator('[name="Общий отчет"]').click();
-      await page.locator('input[name="startDate"]').fill(moment().subtract(12, 'h').format('DD.MM.YYYY HH:mm'));
+      await page.locator('input[name="startDate"]').fill(moment().subtract(6, 'h').format('DD.MM.YYYY HH:mm'));
       await page.locator('input[name="endDate"]').fill(moment().subtract(1, 'h').format('DD.MM.YYYY HH:mm'));
       await page
         .locator("//div[@class='report__filters--left']//a[@class='btn btn-sm btn-brand'][contains(text(),'Обновить')]")
@@ -127,16 +128,15 @@ test.describe('Create Bid', () => {
           useGrouping: true, // группировка тысяч
         })
       );
-      await expect(page.locator(`[data-numberofdays="${bidResponse.id}"]`)).toHaveText('0,88');
+      await expect(page.locator(`[data-numberofdays="${bidResponse.id}"]`)).toHaveText('0,40');
       const profitabilityOfBidSettings: any = await clienApi.GetObjectResponse(
         `${process.env.url}/api/organizationProfile/getProfitabilityOfBidSettings`,
         await getAuthData(36)
       );
-      console.log(
-        `${bidInfoResponse.planMileage / 100000}\n${profitabilityOfBidSettings.averageFuelConsumption}\n${profitabilityOfBidSettings.averageFuelCostPerLiter}`
-      );
-      const fuelcost =(Math.ceil(bidInfoResponse.planMileage / 100000) *
-        profitabilityOfBidSettings.averageFuelConsumption) *
+      const planKm = Number(bidInfoResponse.planMileage / 100000).toFixed(2);
+      const fuelcost =
+        Number(planKm) *
+        profitabilityOfBidSettings.averageFuelConsumption *
         profitabilityOfBidSettings.averageFuelCostPerLiter;
       await expect(page.locator(`[data-fuelcost="${bidResponse.id}"]`)).toHaveText(
         fuelcost.toLocaleString('ru-RU', {
@@ -145,6 +145,50 @@ test.describe('Create Bid', () => {
           style: 'decimal', // обычное число, без валюты
           useGrouping: true, // группировка тысяч
         })
+      );
+      const finalprofit = bidInfo.price - (fuelcost + profitabilityOfBidSettings.costOfOneDay * 0.4);
+      const finalprofitText: string = await page.innerText(`[data-finalprofit="${bidResponse.id}"]`);
+      // Удаляем неразрывные пробелы
+      const cleanedStr = finalprofitText.replace(/\u00A0/g, '');
+      // Меняем запятую на точку
+      const normalizedStr = cleanedStr.replace(',', '.');
+      // Преобразуем в число
+      const numberValue = parseFloat(normalizedStr);
+      const epsilon: number = 2;
+      if (numberValue - finalprofit < epsilon && numberValue - finalprofit > -epsilon) {
+        console.log(`данные корректные${numberValue - finalprofit},${numberValue - finalprofit}`);
+      } else {
+        throw new TypeError(`не совпадает ожидаемое значение ${numberValue} текст такой, ${finalprofit} расчёт такой
+          
+          `);
+      }
+    });
+    await test.step('Проверка 2.Отчет "Отклонения по точкам" ', async () => {
+      await page.locator('[title="Отчеты"]').click();
+      await page.locator(`[name='Отчет "Отклонения по точкам"']`).click();
+      await page.locator('input[name="startDate"]').fill(moment().subtract(6, 'h').format('DD.MM.YYYY HH:mm'));
+      await page.locator('input[name="endDate"]').fill(moment().subtract(1, 'h').format('DD.MM.YYYY HH:mm'));
+      await page
+        .locator("//div[@class='report__filters--left']//a[@class='btn btn-sm btn-brand'][contains(text(),'Обновить')]")
+        .click();
+      await page.waitForTimeout(5000);
+      await page.locator('input[name="bidId"]').fill(String(bidResponse.id));
+      await page.waitForTimeout(5000);
+      await page.locator('[class="r-item__expander icon-uEAAE-angle-right-solid"]').click();
+      await page.locator(`[data-car="${bidInfo.carOption.number}"]`).click();
+      await page.locator(`[data-bidid="${bidResponse.id}"]`).click();
+      //точки
+      await expect(page.locator(`[data-bidpointtype="${bidResponse.id}"]`).first()).toHaveText('Точка загрузки');
+      await expect(page.locator(`[data-bidpointtype="${bidResponse.id}"]`).nth(1)).toHaveText('Точка выгрузки');
+      //адрес точки
+      await expect(page.locator(`[data-address="${bidResponse.id}"]`).first()).toHaveText('Набережные Челны');
+      await expect(page.locator(`[data-address="${bidResponse.id}"]`).nth(1)).toBeEmpty();
+      // плановые даты въезда точки загрузки
+      await expect(page.locator(`[data-planenterdateoffset="${bidResponse.id}"]`).first()).toHaveText(
+        moment(bidInfoResponse.bidPoints[0].planEnterDate, 'YYYY-MM-DDTHH:mm').format('DD.MM.YYYY HH:mm')
+      );
+      await expect(page.locator(`[data-planenterdateoffset="${bidResponse.id}"]`).nth(1)).toHaveText(
+        moment(bidInfoResponse.bidPoints[1].planEnterDate, 'YYYY-MM-DDTHH:mm').format('DD.MM.YYYY HH:mm')
       );
     });
   });
