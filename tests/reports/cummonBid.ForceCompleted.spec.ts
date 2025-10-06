@@ -57,7 +57,7 @@ test.describe('Create Bid', () => {
       await page.locator('input[name="car"]').fill(bidInfo.carOption.number);
       await page.waitForTimeout(5000);
       await page.locator('[class="r-item__expander icon-uEAAE-angle-right-solid"]').click();
-      const bidInfoResponse = await bidApi.GetBidInfo(bidResponse.id, await getAuthData(36));
+      bidInfoResponse = await bidApi.GetBidInfo(bidResponse.id, await getAuthData(36));
       console.log(bidInfoResponse);
       await expect(page.locator(`[data-activemileage="${bidInfo.carOption.number}"]`)).toHaveText(
         Math.ceil(bidInfoResponse.planMileage / 1000).toLocaleString('ru-RU', {
@@ -158,9 +158,7 @@ test.describe('Create Bid', () => {
       if (numberValue - finalprofit < epsilon && numberValue - finalprofit > -epsilon) {
         console.log(`данные корректные${numberValue - finalprofit},${numberValue - finalprofit}`);
       } else {
-        throw new TypeError(`не совпадает ожидаемое значение ${numberValue} текст такой, ${finalprofit} расчёт такой
-          
-          `);
+        throw new TypeError(`не совпадает ожидаемое значение ${numberValue} текст такой, ${finalprofit} расчёт такой`);
       }
     });
     await test.step('Проверка 2.Отчет "Отклонения по точкам" ', async () => {
@@ -189,6 +187,61 @@ test.describe('Create Bid', () => {
       );
       await expect(page.locator(`[data-planenterdateoffset="${bidResponse.id}"]`).nth(1)).toHaveText(
         moment(bidInfoResponse.bidPoints[1].planEnterDate, 'YYYY-MM-DDTHH:mm').format('DD.MM.YYYY HH:mm')
+      );
+      //плановое время выезда "до" точки загрузки
+      await expect(page.locator(`[data-secondaryplanenterdateoffset="${bidResponse.id}"]`).first()).toBeEmpty();
+      await expect(page.locator(`[data-secondaryplanenterdateoffset="${bidResponse.id}"]`).nth(1)).toBeEmpty();
+      //плановое время факт даты
+      await expect(page.locator(`[data-factenterdateoffset="${bidResponse.id}"]`).first()).toHaveText(
+        moment(bidInfoResponse.bidPoints[0].planEnterDate, 'YYYY-MM-DDTHH:mm').format('DD.MM.YYYY HH:mm')
+      );
+      await expect(page.locator(`[data-factenterdateoffset="${bidResponse.id}"]`).nth(1)).toHaveText(
+        moment(bidInfoResponse.bidPoints[1].planEnterDate, 'YYYY-MM-DDTHH:mm').format('DD.MM.YYYY HH:mm')
+      );
+      //отклонение(въезд)
+      await expect(page.locator(`[data-enterdeviation="${bidResponse.id}"]`).first()).toHaveText('0м');
+      await expect(page.locator(`[data-enterdeviation="${bidResponse.id}"]`).nth(1)).toHaveText('0м');
+      //план выезд
+      await expect(page.locator(`[data-planleavedateoffset="${bidResponse.id}"]`).first()).toHaveText(
+        moment(bidInfoResponse.bidPoints[0].planLeaveDateOffset, 'YYYY-MM-DDTHH:mm').format('DD.MM.YYYY HH:mm')
+      );
+      await expect(page.locator(`[data-planleavedateoffset="${bidResponse.id}"]`).nth(1)).toHaveText(
+        moment(bidInfoResponse.bidPoints[1].planLeaveDateOffset, 'YYYY-MM-DDTHH:mm').format('DD.MM.YYYY HH:mm')
+      );
+      //факт выезд
+      await expect(page.locator(`[data-factleavedateoffset="${bidResponse.id}"]`).first()).toHaveText(
+        moment(bidInfoResponse.bidPoints[0].loadUnloadedAtByLogist, 'YYYY-MM-DDTHH:mm').format('DD.MM.YYYY HH:mm')
+      );
+      await expect(page.locator(`[data-factleavedateoffset="${bidResponse.id}"]`).nth(1)).toHaveText(
+        moment(bidInfoResponse.bidPoints[1].loadUnloadedAtByLogist, 'YYYY-MM-DDTHH:mm').format('DD.MM.YYYY HH:mm')
+      );
+      // отклонение(выезд)
+      await expect(page.locator(`[data-leavedeviation="${bidResponse.id}"]`).first()).toHaveText('-59м');
+      await expect(page.locator(`[data-leavedeviation="${bidResponse.id}"]`).nth(1)).toHaveText('-59м');
+    });
+    await test.step('Проверка 4.Отчет маржинальности', async () => {
+      await page.locator('[title="Отчеты"]').click();
+      await page.locator(`[name="Отчет маржинальности"]`).click();
+      await page.locator('input[name="startDate"]').fill(moment().subtract(6, 'h').format('DD.MM.YYYY HH:mm'));
+      await page.locator('input[name="endDate"]').fill(moment().subtract(1, 'h').format('DD.MM.YYYY HH:mm'));
+      await page
+        .locator("//div[@class='report__filters--left']//a[@class='btn btn-sm btn-brand'][contains(text(),'Обновить')]")
+        .click();
+      await page.waitForTimeout(5000);
+      await page.locator('input[name="bidId"]').fill(String(bidResponse.id));
+      await page.waitForTimeout(5000);
+      await page.locator(`//a[contains(text(),'С заявками')]`).click();
+      await page.locator('[class="r-item__expander icon-uEAAE-angle-right-solid"]').click(); //раскрытие по логисту
+      await page.waitForTimeout(2500);
+      await page.locator('[class="r-item__expander icon-uEAAE-angle-right-solid"]').click(); //раскрытие по машине
+      await page.waitForTimeout(2500);
+      await page.locator('[class="r-item__expander icon-uEAAE-angle-right-solid"]').click(); //раскрытие по водителю
+      await expect(page.locator(`data-bidid="${bidResponse.id}"`)).toHaveText(`${bidResponse.id}`);
+      await expect(page.locator(`[data-planned-start-date="${bidResponse.id}"]`)).toHaveText(
+        `${moment(bidInfoResponse.bidPoints[0].planEnterDate, 'YYYY-MM-DDTHH:mm').format('DD.MM.YYYY HH:mm')}`
+      );
+      await expect(page.locator(`[data-planned-end-date="${bidResponse.id}"]`)).toHaveText(
+        `${moment(bidInfoResponse.bidPoints[1].planEnterDate, 'YYYY-MM-DDTHH:mm').format('DD.MM.YYYY HH:mm')}`
       );
     });
   });
