@@ -1,5 +1,4 @@
-import { test } from '@playwright/test';
-import APIRequestsClient from '../api/clienApiRequsets';
+import { expect, test } from '@playwright/test';
 import { faker } from '@faker-js/faker/locale/ru';
 const innList: string[] = [
   "7707083893", "7728168974", "7816066770", "7702012420", "7704449740",
@@ -31,8 +30,8 @@ function getRandomINNs(count: number): string[] {
 }
 function generateRandomNumber9Digits(): string {
   let result = '';
-  for (let i = 0; i < 9; i++) {
-    result += Math.floor(Math.random() * 10).toString();
+  for (let i = 0; i < 10; i++) {
+    result += Math.floor(Math.random() * 11).toString();
   }
   return result;
 }
@@ -45,10 +44,13 @@ type company = {
   kpp?: string;
   password: string;
 };
-test.describe('Create Bid', () => {
-  test('Создание обычной заявки', async ({ page }) => {
-    await test.step('Логин', async () => {
-      const newCompany: company = {
+let newCompany: company
+
+
+test.describe('Samoreg', () => {
+  test('Регистрация ИП', async ({ page }) => {
+    await test.step('открытие окна регистрации', async () => {
+      newCompany = {
         name: faker.company.name(),
         email: `${faker.word.sample()}@cargorun.ru`,
         phone: generateRandomNumber9Digits(),
@@ -58,7 +60,74 @@ test.describe('Create Bid', () => {
       console.log(newCompany)
       await page.goto('/registration');
       await page.locator('[name="name"]').fill(newCompany.name);
+      await page.locator('[name="email"]').fill(newCompany.email);
+      await page.locator('[name="phoneNumber"]').fill(newCompany.phone);
+      await page.locator('[name="inn"]').fill(newCompany.inn);
+      await page.locator('[name="password"]').fill(newCompany.password);
+      await page.locator('[name="confirmPassword"]').fill(newCompany.password);
+      await page.locator('[type="submit"]').click();
+      await expect(page.locator("//DIV[@class='message']")).toHaveText("Вы успешно зарегистрировались, можете войти в систему")
+      // await page.locator(`//DIV[@class='message'][text()="Вы успешно зарегистрировались, можете войти в систему"]`)
+      await page.waitForTimeout(5000);
+    });
+    await test.step('авторизация и ввод данных системы мониторинга', async () => {
+      await page.locator('[type="email"]').fill(newCompany.email)
+      await page.locator('[type="password"]').fill(newCompany.password)
+      await page.locator('[type="submit"]').click();
+      await page.locator('#typeContainer').click();
+      await page.locator('#typeContainer').type("Wialon", { delay: 100 });
+      await page.locator(`text=Wialon`).nth(1).click();
+      await page.waitForTimeout(5000);
+      await page.locator('[name="host"]').fill(process.env.relayCopyWialonHost as string)
+      await page.locator('[name="login"]').fill(process.env.relayCopyWialonLogin as string)
+      await page.locator('[name="password"]').fill(process.env.relayCopyWialonPassword as string)
+      await page.locator('[type="submit"]').click();
+      await page.waitForTimeout(2500);
+    })
+    await test.step('ввод данных по одной машине', async () => {
+      await page.locator('[class="switch__slider"]').first().click();
+      await page.locator('[name="number"]').first().fill("А111АА/111")
+      await page.locator('#react-select-brandTypeIdInstance-live-region').first().click();
+      await page.locator('#react-select-brandTypeIdInstance-live-region').type("КАМАЗ", { delay: 100 });
+      await page.locator(`text=КАМАЗ`).nth(1).click();
+      await page.locator('#react-select-typeIdInstance-live-region').first().click();
+      await page.locator('#react-select-typeIdInstance-live-region').type("Тент", { delay: 100 });
+      await page.locator(`text=Тент`).nth(1).click();
+      await page.locator('[class="mb-3 btn btn-sm btn-brand"]').click();
+      await page.locator('[title="Дашборд"]')
+    })
+    await test.step('проверка корректности созданной машины и трекера', async () => {
+      await page.locator("//span[contains(text(),'Справочники')]").click();
+      await page.locator("//a[@title='Грузовики']").click();
+      await page.locator('[name="number"]').fill("А111АА/111")
+      await page.locator("//a[contains(text(),'А111АА/111')]")
+      const trackerText = await page.textContent("div[role='rowgroup'] div:nth-child(12)"); //текст трекера
+      expect(trackerText).not.toBeNull();
+      const trackerAttachDate = await page.textContent("div[role='rowgroup'] div:nth-child(13)"); //текст трекера
+      expect(trackerAttachDate).not.toBeNull();
+    })
+    await test.step('удаление созданного Relay', async () => {
+      await page.goto(process.env.relayTestHost as string);
+      await page.locator('[type="email"]').fill(process.env.relayTestMail as string)
+      await page.locator('[type="password"]').fill(process.env.relayTestPassword as string)
+      await page.locator('[type="submit"]').click();
+      await page.waitForTimeout(5000);
+      await page.locator('[id="inputRet"]').fill(`CR_${newCompany.name}`) //добавляется CR_ чтоб разделять по типам
+      await page.locator('[id="inputRet"]').press('Enter');
+      await page.waitForTimeout(5000);
+      await page.locator('[data-confirm-buttontext="Переключить"]:visible').click();
+      await page.locator("//button[contains(text(),'Переключить')]").click();
+      await page.waitForTimeout(2500);
+      await page.locator('[data-confirm-buttontext="Удалить"]:visible').nth(1).click(); //кнопка удаления
+      await page.locator("//button[@class='swal2-confirm swal2-styled']").click(); //подтверждение
 
+      await page.goto(`${process.env.relayTestHost}/Configurations`)
+      await page.locator('[id="inputName"]').fill(`CR_${newCompany.name}`)
+      await page.locator('[id="inputName"]').press('Enter');
+      await page.waitForTimeout(2500);
+      await page.locator('[data-confirm-buttontext="Удалить"]:visible').click();
+      await page.locator("//button[@type='button'][contains(text(),'Удалить')]").click();
+      await page.waitForTimeout(50000);
     });
   });
 });
