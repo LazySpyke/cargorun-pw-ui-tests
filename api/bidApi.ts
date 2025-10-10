@@ -141,6 +141,21 @@ class APIRequestsClient {
 
     return bidJsonResponse;
   }
+  async GetCarsList(carId: number, bearerToken: string, orgId: number): Promise<any> {
+    if (!this.context) {
+      throw new Error('APIRequestContext is not initialized. Call init() first.');
+    }
+    const bidInfo = await this.context.get(`${process.env.url}/api/forwarding/getcarslist?organizationids=${orgId}&$orderby=id asc&$top=1000&$skip=0&$filter=id eq ${carId}`, {
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: bearerToken,
+        // другие заголовки, если нужны
+      },
+    });
+    const bidJsonResponse = await bidInfo.json();
+
+    return bidJsonResponse;
+  }
 }
 
 export default APIRequestsClient;
