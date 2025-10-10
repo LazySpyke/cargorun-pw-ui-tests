@@ -6,7 +6,7 @@ class SupportAPIRequestsClient {
     async init(): Promise<void> {
         this.context = await request.newContext();
     }
-
+    //TODO реализовать генератор json'ки и больше параметров для датчиков
     async coordinatSend(trakerImei: string, startTime?: string, startPoint?: [], lastPoint?: []): Promise<any> {
         if (!this.context) {
             throw new Error('SupportAPIRequestsClient is not initialized. Call init() first.');
@@ -113,8 +113,8 @@ class SupportAPIRequestsClient {
                     "Profile": "driving"
                 },
                 "SendServer": {
-                    "Host": process.env.sendIP,
-                    "Port": process.env.sendPort
+                    "Host": process.env.sendHost,
+                    "Port": process.env.sendIP
                 }
             },
             headers: {
@@ -127,10 +127,6 @@ class SupportAPIRequestsClient {
         if (response.status() != 200) {
             const errorText = await response.text();
             console.log(errorText)
-        } else {
-            const jsonResponse = await response.json();
-
-            return jsonResponse;
         }
     }
 }

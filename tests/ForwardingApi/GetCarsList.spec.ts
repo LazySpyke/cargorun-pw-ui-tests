@@ -46,7 +46,21 @@ test.describe('Create Bid', () => {
             await emulatorApi.init();
             await emulatorApi.coordinatSend(bidInfo.carOption.carTracker, null, null, null)
             const response = await bidApi.GetCarsList(bidInfo.carOption.carId, await getAuthData(36), 37)
-            console.log(response)
+            setTimeout(() => {
+                if (response[0].axisLoadValue.value != 21 ||
+                    response[0].axisLoadValue.secondaryValue != 22 ||
+                    response[0].axisLoadValue.averageValue != 23 ||
+                    response[0].axisLoadValue.trailerValue != 25 ||
+                    response[0].temperatureValue.values[0] != 1 ||
+                    response[0].temperatureValue.values[1] != 2
+                ) {
+                    throw new Error('значения по датчикам не соотвестуют ожидаемым');
+                }
+                else {
+                    console.log(`данные верны`)
+                }
+            }, 5000);
+            await page.waitForTimeout(5000);
         });
     })
 })
