@@ -32,7 +32,7 @@ export default defineConfig({
     baseURL: 'https://test.cargorun.ru',
     testIdAttribute: 'data-test-id',
     headless: false, // Установите true для безголового режима
-    viewport: { width: 1920, height: 1080 }, // Установите размеры для окна браузера
+    // viewport: { width: 1920, height: 1080 }, // Установите размеры для окна браузера
     /* Base URL to use in actions like `await page.goto('/')`. */
 
     /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */

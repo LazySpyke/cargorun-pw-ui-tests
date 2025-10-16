@@ -57,6 +57,7 @@ test.describe('Create Bid', () => {
                 { Number: 6, Address: 65530, Value: 275, ChangePer100Km: 33 },
                 { Number: 2, Address: 65531, Value: 100000, ChangePer100Km: 0 },
             ], "00:00:01")
+            await page.waitForTimeout(5000);
             const response = await bidApi.GetCarsList(bidInfo.carOption.carId, await getAuthData(36), 37)
             setTimeout(() => {
                 if (response[0].axisLoadValue.value != 21 ||
@@ -72,7 +73,6 @@ test.describe('Create Bid', () => {
                     console.log(`данные верны`)
                 }
             }, 5000);
-            await page.waitForTimeout(5000);
         });
     })
 })
