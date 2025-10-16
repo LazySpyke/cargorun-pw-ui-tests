@@ -43,7 +43,13 @@ export default defineConfig({
   projects: [
     {
       name: 'chromium',
-      use: { ...devices['Desktop Chrome'] },
+      use: {
+
+        extraHTTPHeaders: {
+          'X-ClientId': 'dev-tests'
+        },
+        ...devices['Desktop Chrome']
+      },
     },
 
     // {

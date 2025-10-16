@@ -44,7 +44,19 @@ test.describe('Create Bid', () => {
             bidResponse = await bidApi.apply(bidInfo, await getAuthData(36));
             await bidApi.setStatus(bidResponse.id, await getAuthData(36));
             await emulatorApi.init();
-            await emulatorApi.coordinatSend(bidInfo.carOption.carTracker, null, null, null)
+            await emulatorApi.coordinatSend(bidInfo.carOption.carTracker, null, null, [[
+                49.266643326,
+                55.673454156
+            ]], [
+                { Number: 7, Address: 65530, Value: 21, ChangePer100Km: 0 },
+                { Number: 7, Address: 65531, Value: 22, ChangePer100Km: 0 },
+                { Number: 7, Address: 65532, Value: 23, ChangePer100Km: 0 },
+                { Number: 7, Address: 65533, Value: 25, ChangePer100Km: 0 },
+                { Number: 5, Address: 65530, Value: 274, ChangePer100Km: 33 },
+                // температуру и одометр можно оставить
+                { Number: 6, Address: 65530, Value: 275, ChangePer100Km: 33 },
+                { Number: 2, Address: 65531, Value: 100000, ChangePer100Km: 0 },
+            ], "00:00:01")
             const response = await bidApi.GetCarsList(bidInfo.carOption.carId, await getAuthData(36), 37)
             setTimeout(() => {
                 if (response[0].axisLoadValue.value != 21 ||

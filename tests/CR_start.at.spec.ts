@@ -87,11 +87,11 @@ test.describe('Samoreg', () => {
     await test.step('ввод данных по одной машине', async () => {
       await page.locator('[class="switch__slider"]').first().click();
       await page.locator('[name="number"]').first().fill("А111АА/111")
-      await page.locator('#react-select-brandTypeIdInstance-live-region').first().click();
-      await page.locator('#react-select-brandTypeIdInstance-live-region').type("КАМАЗ", { delay: 100 });
+      await page.locator('#brandTypeIdContainer').first().click();
+      await page.locator('#brandTypeIdContainer').type("КАМАЗ", { delay: 100 });
       await page.locator(`text=КАМАЗ`).nth(1).click();
-      await page.locator('#react-select-typeIdInstance-live-region').first().click();
-      await page.locator('#react-select-typeIdInstance-live-region').type("Тент", { delay: 100 });
+      await page.locator('#typeIdContainer').first().click();
+      await page.locator('#typeIdContainer').type("Тент", { delay: 100 });
       await page.locator(`text=Тент`).nth(1).click();
       await page.locator('[class="mb-3 btn btn-sm btn-brand"]').click();
       await page.locator('[title="Дашборд"]')

@@ -1,13 +1,63 @@
 import { request, APIRequestContext } from '@playwright/test';
 import moment from 'moment';
+interface LiquidSensor {
+    Number: number;
+    Address: number;
+    Value: number;
+    ChangePer100Km: number;
+}
+
 class SupportAPIRequestsClient {
     private context: APIRequestContext | null = null;
 
     async init(): Promise<void> {
         this.context = await request.newContext();
     }
+
+    async createSegments(coords: any[], LiquidSensors?: LiquidSensor[], stopOnPoint?: string): any[] {
+        const result: any[] = [];
+        console.log(coords)
+        coords.forEach(([lon, lat]) => {
+            // 1. Едет до точки
+            result.push({
+                StartTime: null,
+                EndTime: null,
+                RandomPoint: false,
+                RandomPointBounds: null,
+                GotoPoint: { Latitude: lat, Longitude: lon },
+                SpeedKmh: null,
+                Duration: null,
+                Stop: false,
+                PointsCount: null,
+                RadiusM: null,
+                LuquidSensorValue: null,
+                LiquidSensorConsumptionL100Km: null,
+                LiquidSensors: LiquidSensors,
+            });
+            // 2. Остановка на точке (если нужно)
+            if (stopOnPoint !== null) {
+                result.push({
+                    StartTime: null,
+                    EndTime: null,
+                    RandomPoint: false,
+                    RandomPointBounds: null,
+                    GotoPoint: { Latitude: lat, Longitude: lon },
+                    SpeedKmh: null,
+                    Duration: stopOnPoint,
+                    Stop: true,
+                    PointsCount: 10,
+                    RadiusM: 0,
+                    LuquidSensorValue: 0,
+                    LiquidSensorConsumptionL100Km: 33,
+                    LiquidSensors: LiquidSensors
+                });
+            }
+        });
+        console.log(`result=${JSON.stringify(result)}`)
+        return result;
+    }
     //TODO реализовать генератор json'ки и больше параметров для датчиков
-    async coordinatSend(trakerImei: string, startTime?: string, startPoint?: [], lastPoint?: []): Promise<any> {
+    async coordinatSend(trakerImei: string, startTime?: string, startPoint?: [], routePoints?: any[], sensors?, stopDuration?: string,): Promise<any> {
         if (!this.context) {
             throw new Error('SupportAPIRequestsClient is not initialized. Call init() first.');
         }
@@ -15,12 +65,10 @@ class SupportAPIRequestsClient {
             startTime = moment().add(-3, 'h').add(-1, 'm').format("YYYY-MM-DDTHH:mm:ss+00:00")
         }
         if (startPoint == null) {
-            startPoint = [
-                49.266643326093124,
-                55.673454156069425
-            ]
+            startPoint = [49.266643326093124, 55.673454156069425]
         }
         console.log(startPoint)
+        const jsonForRoute = await this.createSegments(routePoints, sensors, stopDuration)
         const response = await this.context.post(`${process.env.trackerEmulatorHost}`, {
             data: {
                 "Emulator": null,
@@ -32,69 +80,9 @@ class SupportAPIRequestsClient {
                     },
                     "RandomPointBounds": null,
                     "SpeedKmh": 80,
-                    "Scripts": [
-                        {
-                            "StartTime": null,
-                            "EndTime": null,
-                            "RandomPoint": false,
-                            "RandomPointBounds": null,
-                            "GotoPoint": {
-                                "Latitude": startPoint[1],
-                                "Longitude": startPoint[0]
-                            },
-                            "SpeedKmh": null,
-                            "Duration": "00:00:01",
-                            "Stop": true,
-                            "PointsCount": 1,
-                            "RadiusM": 0,
-                            "LuquidSensorValue": 0,
-                            "LiquidSensorConsumptionL100Km": 33,
-                            "LiquidSensors": [
-                                {
-                                    "Number": 7,
-                                    "Address": 65530,
-                                    "Value": 21,
-                                    "ChangePer100Km": 0
-                                },
-                                {
-                                    "Number": 7,
-                                    "Address": 65531,
-                                    "Value": 22,
-                                    "ChangePer100Km": 0
-                                },
-                                {
-                                    "Number": 7,
-                                    "Address": 65532,
-                                    "Value": 23,
-                                    "ChangePer100Km": 0
-                                },
-                                {
-                                    "Number": 7,
-                                    "Address": 65533,
-                                    "Value": 25,
-                                    "ChangePer100Km": 0
-                                },
-                                {
-                                    "Number": 5,
-                                    "Address": 65530,
-                                    "Value": 274,
-                                    "ChangePer100Km": 33
-                                },//температурный режим 1
-                                {
-                                    "Number": 6,
-                                    "Address": 65530,
-                                    "Value": 275,
-                                    "ChangePer100Km": 33
-                                }, //температурный режим 2
-                                {
-                                    "Number": 2,
-                                    "Address": 65531,
-                                    "Value": 100000,
-                                    "ChangePer100Km": 0
-                                } //одометр
-                            ]
-                        },
-                    ],
+                    "Scripts":
+                        jsonForRoute
+                    ,
                     "BetweenScriptInterval": null,
                     "LoopScripts": false,
                     "TrackerImei": trakerImei,
