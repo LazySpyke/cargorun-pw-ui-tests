@@ -1,7 +1,9 @@
 import { Page } from '@playwright/test';
 import { getAuthData } from '../database';
+import APIBid from "../api/bidApi";
 import APIRequestsClient from '../api/clienApiRequsets';
 import moment from 'moment';
+const bidApi = new APIBid();
 type gerateBidCreateInfo = {
   car: string;
   driver: string;
@@ -103,6 +105,13 @@ export class BidCreateInfo {
     typeId,
     planEnterLoadDate,
     planEnterUnloadDate,
+    carFilter,
+    isEmpty,
+    loadAddress,
+    unloadAddress,
+    userIdForFilter,
+    paymentStatus,
+    reuseCar
   }: {
     responsibleId?: number;
     salesManagerId?: number;
@@ -113,29 +122,58 @@ export class BidCreateInfo {
     typeId?: number;
     planEnterLoadDate: string;
     planEnterUnloadDate: string;
+    carFilter?: string,
+    isEmpty?: boolean,
+    loadAddress: string,
+    unloadAddress: string,
+    userIdForFilter: number,
+    paymentStatus?: string,
+    reuseCar?: boolean
   }) {
     const clienApi = new APIRequestsClient();
-    const carForBid = await clienApi.getCar(
-      `${process.env.url}/api/car/getlist?$filter=(isDeleted%20eq%20false)&$orderby=id%20desc&$top=20&$skip=0`,
-      await getAuthData(36)
-    );
+    let carForBid: any
+    await bidApi.init();
+    if (carFilter == null) {
+      carForBid = await clienApi.getCar(
+        `${process.env.url}/api/car/getlist?$filter=(isDeleted%20eq%20false)&$orderby=id%20desc&$top=20&$skip=0`,
+        await getAuthData(userIdForFilter), reuseCar
+      );
+    }
+    else {
+      carForBid = await clienApi.getCar(
+        `${process.env.url}/api/car/getlist?$filter=${carFilter}&$orderby=id%20desc&$top=20&$skip=0`,
+        await getAuthData(userIdForFilter), reuseCar
+      );
+    }
     const driverForBid = await clienApi.GetObjectResponse(
       `${process.env.url}/api/driver/getlist?checkOnline=true&withDeleted=true&$filter=(isDeleted%20eq%20false)&$orderby=id%20desc&$top=10&$skip=0`,
-      await getAuthData(36)
+      await getAuthData(userIdForFilter)
     );
     const trailerForBid = await clienApi.GetObjectResponse(
       `${process.env.url}/api/trailer/getlist?$filter=(isDeleted%20eq%20false)&$orderby=id%20desc&$top=10&$skip=0&withDeleted=true`,
-      await getAuthData(36)
+      await getAuthData(userIdForFilter)
     );
     const cargoOwnerForBid = await clienApi.GetObjectResponse(
       `${process.env.url}/api/cargoOwnerDictionary/get?$filter=(isDeleted%20eq%20false)&$orderby=id%20desc&$top=5&$skip=0&withDeleted=true`,
-      await getAuthData(36)
+      await getAuthData(userIdForFilter)
     );
     const legalPersonForBid = await clienApi.GetObjectResponse(
       `${process.env.url}/api/legalPersons/getlist?$filter=(isDeleted%20eq%20false)&$orderby=id%20desc&$top=5&$skip=0&withDeleted=true`,
-      await getAuthData(36)
+      await getAuthData(userIdForFilter)
     );
+    const emptyBidFlag = isEmpty ?? false;
+
+    const loadPoint = await bidApi.getMixedAddress(
+      loadAddress,
+      await getAuthData(userIdForFilter)
+    );
+    const unloadPoint = await bidApi.getMixedAddress(
+      unloadAddress,
+      await getAuthData(userIdForFilter)
+    );
+    const paymentPaidStatus = paymentStatus ?? null; //статус оплаты, так как без моудля дебиторской задолженности работать не будет
     const apiBidBody = {
+      isEmpty: emptyBidFlag,
       isExpressBid: false,
       legalPersonId: legalPersonForBid[0].id,
       responsibleId: responsibleId,
@@ -144,9 +182,7 @@ export class BidCreateInfo {
       paymentTypeId: paymentTypeId,
       ndsTypeId: ndsTypeId,
       price: price,
-      payment: {
-        paymentStatus: 'NotPaid',
-      },
+      payment: paymentPaidStatus,
       cargos: [
         {
           name: cargosName,
@@ -162,17 +198,17 @@ export class BidCreateInfo {
           geozone: {
             location: {
               type: 'Point',
-              coordinates: [52.403662, 55.741271999999995],
+              coordinates: loadPoint.suggestions[0].location.coordinates,
             },
-            address: 'Россия, Республика Татарстан, Набережные Челны',
+            address: loadPoint.suggestions[0].displayName,
             geocoderSourceType: 'Yandex',
             locationId: null,
-            city: 'Набережные Челны',
-            state: 'Республика Татарстан',
-            county: 'городской округ Набережные Челны',
+            city: loadPoint.suggestions[0].address.city,
+            state: loadPoint.suggestions[0].address.state,
+            county: loadPoint.suggestions[0].address.county,
             street: null,
             houseNumber: null,
-            federalDistrict: 'Приволжский федеральный округ',
+            federalDistrict: loadPoint.suggestions[0].address.federalDistrict,
             kladrId: null,
             fiasId: null,
             geonameId: null,
@@ -194,16 +230,17 @@ export class BidCreateInfo {
           geozone: {
             location: {
               type: 'Point',
-              coordinates: [37.617698, 55.755863999999995],
+              coordinates: unloadPoint.suggestions[0].location.coordinates,
             },
-            address: 'Россия, Москва',
+            address: unloadPoint.suggestions[0].displayName,
             geocoderSourceType: 'Yandex',
             locationId: null,
-            state: 'Москва',
-            county: null,
+            city: unloadPoint.suggestions[0].address.city,
+            state: unloadPoint.suggestions[0].address.state,
+            county: unloadPoint.suggestions[0].address.county,
             street: null,
             houseNumber: null,
-            federalDistrict: 'Центральный федеральный округ',
+            federalDistrict: unloadPoint.suggestions[0].address.federalDistrict,
             kladrId: null,
             fiasId: null,
             geonameId: null,

@@ -156,6 +156,23 @@ class APIRequestsClient {
 
     return bidJsonResponse;
   }
+  //TODO перекинуть в другое место/создать
+  async getMixedAddress(address: any, bearerToken: string): Promise<any> {
+    if (!this.context) {
+      throw new Error('APIRequestContext is not initialized. Call init() first.');
+    }
+    const response = await this.context.post(`${process.env.url}/api/map/getmixedaddresses`, {
+      data: { address: address },
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: bearerToken,
+        // другие заголовки, если нужны
+      },
+    });
+    console.log(response);
+    const jsonResponse = await response.json();
+    return jsonResponse;
+  }
 }
 
 export default APIRequestsClient;

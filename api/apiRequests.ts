@@ -37,6 +37,21 @@ class APIRequests {
       await this.context.dispose();
     }
   }
+
+  async postData(endpoint: string, body: any, authHeaders: string) {
+    if (!this.context) {
+      throw new Error('APIRequestContext is not initialized. Call init() first.');
+    }
+
+    const response = await this.context.post(endpoint, {
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: await authHeaders,
+      },
+      data: body
+    });
+    return await response.json();
+  }
 }
 
 export default APIRequests;

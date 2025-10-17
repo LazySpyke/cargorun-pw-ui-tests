@@ -30,6 +30,9 @@ test.describe('Create Bid', () => {
         ndsTypeId: 175,
         planEnterLoadDate: moment().subtract(6, 'h').format('YYYY-MM-DDTHH:mm'),
         planEnterUnloadDate: moment().subtract(1, 'h').format('YYYY-MM-DDTHH:mm'),
+        loadAddress: 'Челны',
+        unloadAddress: 'Уфа',
+        userIdForFilter: 36
       });
       await bidApi.init();
       const bidList = await clienApi.GetObjectResponse(

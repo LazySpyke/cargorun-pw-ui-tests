@@ -14,7 +14,6 @@ test.describe('Create Bid', () => {
     let loginPage: LoginPage;
     let bidInfo: any;
     let bidResponse: any;
-    let bidInfoResponse: any;
     test.beforeEach(async ({ page }) => {
         loginPage = new LoginPage(page);
         await loginPage.goto(); // Переходим на страницу логина перед каждым тестом
@@ -32,13 +31,16 @@ test.describe('Create Bid', () => {
                 ndsTypeId: 175,
                 planEnterLoadDate: moment().subtract(6, 'h').format('YYYY-MM-DDTHH:mm'),
                 planEnterUnloadDate: moment().subtract(1, 'h').format('YYYY-MM-DDTHH:mm'),
+                loadAddress: 'Челны',
+                unloadAddress: 'Уфа',
+                userIdForFilter: 36
             });
             await bidApi.init();
             const bidList = await clienApi.GetObjectResponse(
                 `${process.env.url}/api/bids/getlist?$filter=carIds/any(carids:carids in (${bidInfo.carOption.carId}))and ((((status in ('Started')) or (status in ('Planned')))))&$orderby=id desc&$top=30&$skip=0`,
                 await getAuthData(36)
             );
-            bidList.forEach(async (element) => {
+            bidList.forEach(async (element: any) => {
                 bidApi.cancelBid(element.id, await getAuthData(36));
             });
             bidResponse = await bidApi.apply(bidInfo, await getAuthData(36));
