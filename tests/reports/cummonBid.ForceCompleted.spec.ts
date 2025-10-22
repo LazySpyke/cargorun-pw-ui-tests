@@ -8,7 +8,7 @@ import APIBid from '../../api/bidApi';
 const clienApi = new APIRequestsClient();
 const bidApi = new APIBid();
 
-test.describe('Create Bid', () => {
+test.describe('Отчёты с обычной завершенной вручную заявкой', () => {
   let loginPage: LoginPage;
   let bidInfo: any;
   let bidResponse: any;

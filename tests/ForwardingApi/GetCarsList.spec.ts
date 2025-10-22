@@ -10,7 +10,7 @@ const clienApi = new APIRequestsClient();
 const bidApi = new APIBid();
 const emulatorApi = new SupportAPIRequestsClient();
 
-test.describe('Create Bid', () => {
+test.describe('Запрос GetCarsList', () => {
     let loginPage: LoginPage;
     let bidInfo: any;
     let bidResponse: any;

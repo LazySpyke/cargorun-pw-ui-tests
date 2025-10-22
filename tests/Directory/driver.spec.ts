@@ -16,7 +16,7 @@ const editBio = {
   phoneNumber: faker.phone.number({ style: 'international' }),
   comment: `${moment().format()}Cсылки на документы`,
 };
-test.describe('Driver test', () => {
+test.describe('Справочник Водители', () => {
   let loginPage: LoginPage;
   test.beforeEach(async ({ page }) => {
     loginPage = new LoginPage(page);
