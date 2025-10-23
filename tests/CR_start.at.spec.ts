@@ -47,12 +47,12 @@ type company = {
 let newCompany: company
 
 
-test.describe('Samoreg', () => {
+test.describe('Самостоятельная регистрация', () => {
   test('Регистрация ИП', async ({ page }) => {
     await test.step('открытие окна регистрации', async () => {
       newCompany = {
         name: faker.company.name(),
-        email: `${faker.word.sample()}@cargorun.ru`,
+        email: `${faker.word.sample()}-${faker.word.sample()}@cargorun.ru`,
         phone: generateRandomNumber9Digits(),
         inn: getRandomINNs(1)[0],
         password: faker.internet.password()
@@ -88,10 +88,10 @@ test.describe('Samoreg', () => {
       await page.locator('[class="switch__slider"]').first().click();
       await page.locator('[name="number"]').first().fill("А111АА/111")
       await page.locator('#brandTypeIdContainer').first().click();
-      await page.locator('#brandTypeIdContainer').type("КАМАЗ", { delay: 100 });
+      await page.locator('#brandTypeIdContainer').first().type("КАМАЗ", { delay: 100 });
       await page.locator(`text=КАМАЗ`).nth(1).click();
       await page.locator('#typeIdContainer').first().click();
-      await page.locator('#typeIdContainer').type("Тент", { delay: 100 });
+      await page.locator('#typeIdContainer').first().type("Тент", { delay: 100 });
       await page.locator(`text=Тент`).nth(1).click();
       await page.locator('[class="mb-3 btn btn-sm btn-brand"]').click();
       await page.locator('[title="Дашборд"]')
@@ -127,7 +127,6 @@ test.describe('Samoreg', () => {
       await page.waitForTimeout(2500);
       await page.locator('[data-confirm-buttontext="Удалить"]:visible').click();
       await page.locator("//button[@type='button'][contains(text(),'Удалить')]").click();
-      await page.waitForTimeout(50000);
     });
   });
 });
