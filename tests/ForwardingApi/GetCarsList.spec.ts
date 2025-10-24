@@ -9,10 +9,9 @@ import SupportAPIRequestsClient from '../../api/testSupportRequsets'
 const clienApi = new APIRequestsClient();
 const bidApi = new APIBid();
 const emulatorApi = new SupportAPIRequestsClient();
-
+let bidInfo: any;
 test.describe('Запрос GetCarsList', () => {
     let loginPage: LoginPage;
-    let bidInfo: any;
     let bidResponse: any;
     test.beforeEach(async ({ page }) => {
         loginPage = new LoginPage(page);
@@ -81,4 +80,8 @@ test.describe('Запрос GetCarsList', () => {
 
 test.beforeAll(async () => {
     await clienApi.getToken(process.env.rootMail as string, process.env.rootPassword as string);
+});
+
+test.afterAll(async () => {
+    await clienApi.deleteUsedCar(bidInfo.carOption.carId)
 });

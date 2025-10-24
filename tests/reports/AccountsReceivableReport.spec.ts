@@ -7,10 +7,9 @@ import APIRequestsClient from '../../api/clienApiRequsets';
 import APIBid from '../../api/bidApi';
 const clienApi = new APIRequestsClient();
 const bidApi = new APIBid();
-
+let bidInfo: any;
 test.describe('Отчёты по Дебиторской задолженности', () => {
     let loginPage: LoginPage;
-    let bidInfo: any;
     let bidResponse: any;
     test.beforeEach(async ({ page }) => {
         loginPage = new LoginPage(page);
@@ -70,4 +69,7 @@ test.describe('Отчёты по Дебиторской задолженност
 
 test.beforeAll(async () => {
     await clienApi.getToken(process.env.rootMail as string, process.env.rootPassword as string);
+});
+test.afterAll(async () => {
+    await clienApi.deleteUsedCar(bidInfo.carOption.carId)
 });

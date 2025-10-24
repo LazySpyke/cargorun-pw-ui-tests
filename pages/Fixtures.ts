@@ -111,7 +111,9 @@ export class BidCreateInfo {
     unloadAddress,
     userIdForFilter,
     paymentStatus,
-    reuseCar
+    reuseCar,
+    cargoOwnerFilter,
+    legalPersonFilter
   }: {
     responsibleId?: number;
     salesManagerId?: number;
@@ -128,10 +130,14 @@ export class BidCreateInfo {
     unloadAddress: string,
     userIdForFilter: number,
     paymentStatus?: string,
-    reuseCar?: boolean
+    reuseCar?: boolean,
+    cargoOwnerFilter?: string,
+    legalPersonFilter?: string
   }) {
     const clienApi = new APIRequestsClient();
     let carForBid: any
+    let cargoOwner: any
+    let legalPerson: any
     await bidApi.init();
     if (carFilter == null) {
       carForBid = await clienApi.getCar(
@@ -153,14 +159,31 @@ export class BidCreateInfo {
       `${process.env.url}/api/trailer/getlist?$filter=(isDeleted%20eq%20false)&$orderby=id%20desc&$top=10&$skip=0&withDeleted=true`,
       await getAuthData(userIdForFilter)
     );
-    const cargoOwnerForBid = await clienApi.GetObjectResponse(
-      `${process.env.url}/api/cargoOwnerDictionary/get?$filter=(isDeleted%20eq%20false)&$orderby=id%20desc&$top=5&$skip=0&withDeleted=true`,
-      await getAuthData(userIdForFilter)
-    );
-    const legalPersonForBid = await clienApi.GetObjectResponse(
-      `${process.env.url}/api/legalPersons/getlist?$filter=(isDeleted%20eq%20false)&$orderby=id%20desc&$top=5&$skip=0&withDeleted=true`,
-      await getAuthData(userIdForFilter)
-    );
+
+    if (cargoOwnerFilter == null) {
+      cargoOwner = await clienApi.GetObjectResponse(
+        `${process.env.url}/api/cargoOwnerDictionary/get?$filter=(isDeleted%20eq%20false)&$orderby=id%20desc&$top=5&$skip=0&withDeleted=true`,
+        await getAuthData(userIdForFilter)
+      );
+    }
+    else {
+      cargoOwner = await clienApi.GetObjectResponse(
+        `${process.env.url}/api/cargoOwnerDictionary/get?$filter=${cargoOwnerFilter}&$orderby=id%20desc&$top=5&$skip=0&withDeleted=true`,
+        await getAuthData(userIdForFilter)
+      );
+    }
+
+
+    if (legalPersonFilter == null) {
+      legalPerson = null
+    }
+    else {
+      legalPerson = await clienApi.GetObjectResponse(
+        `${process.env.url}/api/legalPersons/get?$filter=${legalPersonFilter}&$orderby=id%20desc&$top=5&$skip=0&withDeleted=true`,
+        await getAuthData(userIdForFilter)
+      );
+      legalPerson = legalPerson[0].id
+    }
     const emptyBidFlag = isEmpty ?? false;
 
     const loadPoint = await bidApi.getMixedAddress(
@@ -175,10 +198,10 @@ export class BidCreateInfo {
     const apiBidBody = {
       isEmpty: emptyBidFlag,
       isExpressBid: false,
-      legalPersonId: legalPersonForBid[0].id,
+      legalPersonId: legalPerson,
       responsibleId: responsibleId,
       salesManagerId: salesManagerId,
-      cargoOwnerDictionaryItemId: cargoOwnerForBid[0].id,
+      cargoOwnerDictionaryItemId: cargoOwner[0].id,
       paymentTypeId: paymentTypeId,
       ndsTypeId: ndsTypeId,
       price: price,

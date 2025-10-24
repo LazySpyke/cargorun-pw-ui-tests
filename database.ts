@@ -60,9 +60,8 @@ export const getAuthData = async (userId: number) => {
   const res = await client.query("SELECT * FROM auth WHERE userid = $1", [
     userId,
   ]);
-  var onlyToken: string = JSON.parse(
-    res.rows[res.rows.length - 1].info
-  ).accessToken.token.toString();
+  const onlyToken: string = JSON.parse(
+    res.rows[res.rows.length - 1].info).accessToken.token.toString();
   console.log(`Bearer ${onlyToken}`);
   return `Bearer ${onlyToken}`;
 };
@@ -78,6 +77,13 @@ export const addCar = async (
     [carId, carNumber, tracker]
   );
 };
+
+export const deleteCarById = async (carId: number) => {
+  await client.query(
+    "DELETE FROM cars WHERE carId = $1",
+    [carId]
+  );
+}
 
 // Функция для получения машины по id
 export const getUsedCar = async (carId: number, tryIndex?: number) => {

@@ -1,5 +1,5 @@
 import APIRequests from "../api/apiRequests";
-import { addCar, getUsedCar, addAuthData } from "../database";
+import { addCar, getUsedCar, addAuthData, deleteCarById } from "../database";
 class APIRequestsClient {
   readonly api;
   constructor() {
@@ -28,6 +28,9 @@ class APIRequestsClient {
       }
     });
     return foundCar;
+  }
+  async deleteUsedCar(carId: number) {
+    await deleteCarById(carId)
   }
   async GetObjectResponse(endpoint: string, authHeaders: string) {
     let responseBody: any;

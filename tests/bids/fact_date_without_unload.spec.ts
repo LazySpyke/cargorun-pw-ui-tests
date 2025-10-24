@@ -9,10 +9,9 @@ import SupportAPIRequestsClient from '../../api/testSupportRequsets'
 const clienApi = new APIRequestsClient();
 const bidApi = new APIBid();
 const emulatorApi = new SupportAPIRequestsClient();
-
+let bidInfo: any;
 test.describe('Create Bid', () => {
     let loginPage: LoginPage;
-    let bidInfo: any;
     let bidResponse: any;
     let bidInfoResponse: any;
     let secondBidInfo: any
@@ -83,11 +82,14 @@ test.describe('Create Bid', () => {
                 await getAuthData(1305211)
             );
             await emulatorApi.coordinatSend(bidInfo.carOption.carTracker, `${moment(lastTrackerCarInfo[0].fixedAt, "YYYY-MM-DDTHH:mm:ss").add(5, 'd')}+00:00`, lastTrackerCarInfo[0].location.coordinates, [secondBidInfoResponse.bidPoints[0].geozone.location.coordinates, secondBidInfoResponse.bidPoints[1].geozone.location.coordinates], null, "00:10:00")
-            await page.waitForTimeout(50000);
+            //TODO допилить проверку на данные что активный км считается даже без выезда из нулевой
         })
     })
 })
 
 test.beforeAll(async () => {
     await clienApi.getToken(process.env.emptyCompanyEmail as string, process.env.emptyCompanyPassword as string);
+});
+test.afterAll(async () => {
+    await clienApi.deleteUsedCar(bidInfo.carOption.carId)
 });
