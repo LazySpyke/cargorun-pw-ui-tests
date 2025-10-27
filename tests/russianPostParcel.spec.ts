@@ -1,4 +1,4 @@
-import { test } from '@playwright/test';
+import { expect, test } from '@playwright/test';
 import { LoginPage } from '../pages/LoginPage';
 import { getAuthData } from '../database';
 import { BidCreateInfo } from '../pages/Fixtures';
@@ -37,7 +37,7 @@ test.describe('Отслеживание треке почты России', () 
             bidResponse = await bidApi.apply(bidInfo, await getAuthData(36));
             await bidApi.setStatus(bidResponse.id, await getAuthData(36));
             await page.waitForTimeout(5000);
-            await test.step('', async () => {
+            await test.step('привязка трек-номера', async () => {
                 await page.goto(`${process.env.url}/bids/bid/${bidResponse.id}`)
                 await page.locator('[placeholder="Введите трек-код, например: LA0942127883SE"]').fill(process.env.parcelTrack as string)
                 await page.locator("//button[@type='button']").click();
@@ -48,6 +48,18 @@ test.describe('Отслеживание треке почты России', () 
                     state: 'visible'
                 })
                 await page.waitForSelector("//a[@class='btn btn-xs btn-outline-primary']", { state: 'visible' }) //кнопка подробнаяи инфа
+            })
+            await test.step('проверка данных в отчёте Отслеживание документов', async () => {
+                await page.locator('[title="Финансы и учет"]').click();
+                await page.locator('[name="Отслеживание документов"]').click();
+                await page.locator('[name="id"]').fill(bidResponse.id)
+                await page.waitForTimeout(1500);
+                await page.locator('[class="btn btn-sm btn-brand"]').click();
+                await page.waitForTimeout(5000)
+                await page.waitForSelector(`[href="/bids/bid/${bidResponse.id}"]`, {
+                    state: 'visible'
+                })
+                await expect(page.locator("//div[@class='book-list__head']//small[1]")).toHaveText('Отображены 1-1 из 1') //проверяем что всего 1 элемент в списке
             })
         });
     })
