@@ -30,7 +30,7 @@ test.describe('Отчёты с обычной завершенной вручн�
         planEnterLoadDate: moment().subtract(6, 'h').format('YYYY-MM-DDTHH:mm'),
         planEnterUnloadDate: moment().subtract(1, 'h').format('YYYY-MM-DDTHH:mm'),
         loadAddress: 'Челны',
-        unloadAddress: 'Уфа',
+        unloadAddress: 'Москва',
         userIdForFilter: 36
       });
       await bidApi.init();
@@ -177,6 +177,9 @@ test.describe('Отчёты с обычной завершенной вручн�
       await page.locator('[class="r-item__expander icon-uEAAE-angle-right-solid"]').click();
       await page.locator(`[data-car="${bidInfo.carOption.number}"]`).click();
       await page.locator(`[data-bidid="${bidResponse.id}"]`).click();
+
+      await page.locator("//div[@id='entry']//div[5]//div[1][1]//span[1]//i[2]").click();
+      await page.locator("//i[@class='r-table__sort-icon--up r-table__sort-icon--active']").click(); //переключение сортировки по убыванию типов точек
       //точки
       await expect(page.locator(`[data-bidpointtype="${bidResponse.id}"]`).first()).toHaveText('Точка загрузки');
       await expect(page.locator(`[data-bidpointtype="${bidResponse.id}"]`).nth(1)).toHaveText('Точка выгрузки');
@@ -232,19 +235,28 @@ test.describe('Отчёты с обычной завершенной вручн�
       await page.waitForTimeout(5000);
       await page.locator('input[name="bidId"]').fill(String(bidResponse.id));
       await page.waitForTimeout(5000);
-      await page.locator(`//a[contains(text(),'С заявками')]`).click();
+      await page.locator(`//SPAN[contains(text(),'С заявками')]`).click();
       await page.locator('[class="r-item__expander icon-uEAAE-angle-right-solid"]').click(); //раскрытие по логисту
       await page.waitForTimeout(2500);
       await page.locator('[class="r-item__expander icon-uEAAE-angle-right-solid"]').click(); //раскрытие по машине
       await page.waitForTimeout(2500);
       await page.locator('[class="r-item__expander icon-uEAAE-angle-right-solid"]').click(); //раскрытие по водителю
-      await expect(page.locator(`data-bidid="${bidResponse.id}"`)).toHaveText(`${bidResponse.id}`);
+      await expect(page.locator(`[data-bidid="${bidResponse.id}"]`)).toHaveText(`${bidResponse.id}`);
       await expect(page.locator(`[data-planned-start-date="${bidResponse.id}"]`)).toHaveText(
         `${moment(bidInfoResponse.bidPoints[0].planEnterDate, 'YYYY-MM-DDTHH:mm').format('DD.MM.YYYY HH:mm')}`
       );
       await expect(page.locator(`[data-planned-end-date="${bidResponse.id}"]`)).toHaveText(
         `${moment(bidInfoResponse.bidPoints[1].planEnterDate, 'YYYY-MM-DDTHH:mm').format('DD.MM.YYYY HH:mm')}`
       );
+      await expect(page.locator(`[data-fact-or-estimated-start-date="${bidResponse.id}"]`)).toHaveText(
+        `${moment(bidInfoResponse.bidPoints[0].planEnterDate, 'YYYY-MM-DDTHH:mm').format('DD.MM.YYYY HH:mm')}`
+      );
+      await expect(page.locator(`[data-fact-or-estimatedend-date="${bidResponse.id}"]`)).toHaveText(
+        `${moment(bidInfoResponse.bidPoints[1].planEnterDate, 'YYYY-MM-DDTHH:mm').format('DD.MM.YYYY HH:mm')}`
+      );
+      await page.waitForSelector("//div[contains(text(),'100 000,00')]", {
+        state: 'visible'
+      })
     });
   });
 });
