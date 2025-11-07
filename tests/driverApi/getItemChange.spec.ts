@@ -8,6 +8,7 @@ import APIBid from '../../api/bidApi';
 const clienApi = new APIRequestsClient();
 const bidApi = new APIBid();
 let bidInfo: any;
+const adminId = 36
 test.describe('Перецепки у водителя', () => {
     let loginPage: LoginPage;
     let bidResponse: any;
@@ -31,29 +32,29 @@ test.describe('Перецепки у водителя', () => {
                 planEnterUnloadDate: moment().add(1, 'd').format('YYYY-MM-DDTHH:mm'),
                 loadAddress: 'Челны',
                 unloadAddress: 'Москва',
-                userIdForFilter: 36
+                userIdForFilter: adminId
             });
             await bidApi.init();
             const bidListDriver = await clienApi.GetObjectResponse(
                 `${process.env.url}/api/bids/getlist?$filter=driverIds/any(driverids:driverids in (${bidInfo.driver.id}))and ((((status in ('Started')) or (status in ('Planned')))))&$orderby=id desc&$top=30&$skip=0`,
-                await getAuthData(36)
+                await getAuthData(adminId)
             );
             bidListDriver.forEach(async (element: any) => {
-                bidApi.cancelBid(element.id, await getAuthData(36));
+                bidApi.cancelBid(element.id, await getAuthData(adminId));
             }); //отменяем заявки по водителю
             const bidListCar = await clienApi.GetObjectResponse(
                 `${process.env.url}/api/bids/getlist?$filter=carIds/any(carids:carids in (${bidInfo.carOption.carId}))and ((((status in ('Started')) or (status in ('Planned')))))&$orderby=id desc&$top=30&$skip=0`,
-                await getAuthData(36)
+                await getAuthData(adminId)
             );
             bidListCar.forEach(async (element: any) => {
-                bidApi.cancelBid(element.id, await getAuthData(36));
+                bidApi.cancelBid(element.id, await getAuthData(adminId));
             }); //отменяем заявки по машине
-            bidResponse = await bidApi.apply(bidInfo, await getAuthData(36));
-            await bidApi.setStatus(bidResponse.id, await getAuthData(36));
+            bidResponse = await bidApi.apply(bidInfo, await getAuthData(adminId));
+            await bidApi.setStatus(bidResponse.id, await getAuthData(adminId));
             await page.waitForTimeout(5000);
 
             await test.step('добавление точки перецепки', async () => {
-                shiftCar = await clienApi.getCar(`${process.env.url}/api/car/getlist?$filter=(isDeleted%20eq%20false)&$orderby=id%20desc&$top=20&$skip=0`, await getAuthData(36), false)
+                shiftCar = await clienApi.getCar(`${process.env.url}/api/car/getlist?$filter=(isDeleted%20eq%20false)&$orderby=id%20desc&$top=20&$skip=0`, await getAuthData(adminId), false)
                 await page.goto(`${process.env.url}/bids/bid/${bidResponse.id}`)
                 await page.locator('[class="dropdown__btn"]').click();
                 await page.locator("//div[contains(text(),'Смена составляющих заявки')]").click();
@@ -78,12 +79,12 @@ test.describe('Перецепки у водителя', () => {
             })
             const driverAuth = await clienApi.GetObjectResponse(
                 `${process.env.url}/api/driver/getlist?checkOnline=true&withDeleted=true&$filter=(isDeleted eq false and contains(cast(id, Model.String),'${bidInfo.driver.id}'))&$orderby=id desc&$top=30&$skip=0`,
-                await getAuthData(36)
+                await getAuthData(adminId)
             );
             await clienApi.getToken(driverAuth[0].user.phoneNumber as string, driverAuth[0].password as string);
             const getDriverUserId = await clienApi.GetObjectResponse(
                 `${process.env.url}/api/adminpanel/getAllDrivers?$filter=(isDeleted eq false and contains(cast(id, Model.String),'${bidInfo.driver.id}'))&$top=30&$skip=0`,
-                await getAuthData(36)
+                await getAuthData(adminId)
             )
             await page.waitForTimeout(6000); //вынужденная пауза
             const driverCurrentBidResponse = await clienApi.GetObjectResponse(

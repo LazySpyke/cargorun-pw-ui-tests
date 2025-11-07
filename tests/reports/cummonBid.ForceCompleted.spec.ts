@@ -8,6 +8,7 @@ import APIBid from '../../api/bidApi';
 const clienApi = new APIRequestsClient();
 const bidApi = new APIBid();
 let bidInfo: any;
+const adminId = 36
 test.describe('Отчёты с обычной завершенной вручную заявкой', () => {
   let loginPage: LoginPage;
   let bidResponse: any;
@@ -31,35 +32,35 @@ test.describe('Отчёты с обычной завершенной вручн�
         planEnterUnloadDate: moment().subtract(1, 'h').format('YYYY-MM-DDTHH:mm'),
         loadAddress: 'Челны',
         unloadAddress: 'Москва',
-        userIdForFilter: 36
+        userIdForFilter: adminId
       });
       await bidApi.init();
       const bidList = await clienApi.GetObjectResponse(
         `${process.env.url}/api/bids/getlist?$filter=carIds/any(carids:carids in (${bidInfo.carOption.carId}))and ((((status in ('Started')) or (status in ('Planned')))))&$orderby=id desc&$top=30&$skip=0`,
-        await getAuthData(36)
+        await getAuthData(adminId)
       );
       bidList.forEach(async (element) => {
-        bidApi.cancelBid(element.id, await getAuthData(36));
+        bidApi.cancelBid(element.id, await getAuthData(adminId));
       });
-      bidResponse = await bidApi.apply(bidInfo, await getAuthData(36));
-      await bidApi.setStatus(bidResponse.id, await getAuthData(36));
+      bidResponse = await bidApi.apply(bidInfo, await getAuthData(adminId));
+      await bidApi.setStatus(bidResponse.id, await getAuthData(adminId));
     });
     await test.step('завершение заявки', async () => {
       await page.waitForTimeout(60000);
-      await bidApi.ForceCompletedBid(bidResponse.id, await getAuthData(36));
+      await bidApi.ForceCompletedBid(bidResponse.id, await getAuthData(adminId));
     });
     await test.step('Проверка 1.Общего отчёта', async () => {
       await page.locator('[title="Отчеты"]').click();
       await page.locator('[name="Общий отчет"]').click();
-      await page.locator('input[name="startDate"]').fill(moment().subtract(6, 'h').format('DD.MM.YYYY HH:mm'));
-      await page.locator('input[name="endDate"]').fill(moment().subtract(1, 'h').format('DD.MM.YYYY HH:mm'));
+      await page.locator('input[name="startDate"]').fill(moment().subtract(7, 'h').format('DD.MM.YYYY HH:mm'));
+      await page.locator('input[name="endDate"]').fill(moment().add(1, 'h').format('DD.MM.YYYY HH:mm'));
       await page
         .locator("//div[@class='report__filters--left']//a[@class='btn btn-sm btn-brand'][contains(text(),'Обновить')]")
         .click();
       await page.locator('input[name="car"]').fill(bidInfo.carOption.number);
       await page.waitForTimeout(5000);
       await page.locator('[class="r-item__expander icon-uEAAE-angle-right-solid"]').click();
-      bidInfoResponse = await bidApi.GetBidInfo(bidResponse.id, await getAuthData(36));
+      bidInfoResponse = await bidApi.GetBidInfo(bidResponse.id, await getAuthData(adminId));
       console.log(bidInfoResponse);
       await expect(page.locator(`[data-activemileage="${bidInfo.carOption.number}"]`)).toHaveText(
         Math.ceil(bidInfoResponse.planMileage / 1000).toLocaleString('ru-RU', {
@@ -133,7 +134,7 @@ test.describe('Отчёты с обычной завершенной вручн�
       await expect(page.locator(`[data-numberofdays="${bidResponse.id}"]`)).toHaveText('0,40');
       const profitabilityOfBidSettings: any = await clienApi.GetObjectResponse(
         `${process.env.url}/api/organizationProfile/getProfitabilityOfBidSettings`,
-        await getAuthData(36)
+        await getAuthData(adminId)
       );
       const planKm = Number(bidInfoResponse.planMileage / 100000).toFixed(2);
       const fuelcost =
@@ -258,6 +259,61 @@ test.describe('Отчёты с обычной завершенной вручн�
         state: 'visible'
       })
     });
+    await test.step('Проверка данных в Планировании по машинам', async () => {
+      await page.locator("//span[contains(text(),'Планирование')]").click();
+      await page.locator("//a[@title='По машинам']").click();
+      await page.waitForTimeout(5000)
+      await page.locator("//div[@class='b-filter__collapse-btn b-filter__collapse-btn--bottom']").first().click();
+      await page.locator('#carIdContainer').click();
+      await page.locator('#carIdContainer').first().type(bidInfo.carOption.number, { delay: 100 });
+      await page.waitForTimeout(1500);
+      await page.locator(`text=${bidInfo.carOption.number}`).nth(1).click();
+      await page.waitForTimeout(1500);
+      await page.waitForSelector('[class="carnumber__number"]', {
+        state: 'visible',
+        timeout: 30000
+      })
+      const carNumberText = await page.locator('div[class="carnumber__number"]').first().textContent();
+      const carRegionText = await page.locator('div[class="carnumber__region"]').first().textContent();
+      const fullCarNumber = `${carNumberText}/${carRegionText}`;
+      console.log(fullCarNumber);
+      if (fullCarNumber.replace(/\s+/g, '') != bidInfo.carOption.number.replace(/\s+/g, '')) {
+        throw new Error(
+          `ожидаемый номер машины по тексту не совпадает${fullCarNumber.replace(/\s+/g, '')} и ${bidInfo.carOption.number.replace(/\s+/g, '')}`
+        );
+      }
+      const trailerNumberText = await page.locator('div[class="carnumber__number"]').nth(1).textContent();
+      const trailerRegionText = await page.locator('div[class="carnumber__region"]').nth(1).textContent();
+      const fullTrailerNumber = `${trailerNumberText}/${trailerRegionText}`;
+      console.log(fullTrailerNumber);
+      if (fullTrailerNumber.replace(/\s+/g, '') != bidInfo.trailerOption.number.replace(/\s+/g, '')) {
+        throw new Error(
+          `ожидаемый номер машины по тексту не совпадает${fullTrailerNumber.replace(/\s+/g, '')} и ${bidInfo.trailerOption.number.replace(/\s+/g, '')}`
+        );
+      }
+      const planKminPlanning: any = Number(bidInfoResponse.planMileage / 1000).toFixed(0);
+      console.log(planKminPlanning)
+      console.log(planKminPlanning.toLocaleString('ru-RU', {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+        style: 'decimal', // обычное число, без валюты
+        useGrouping: true, // группировка тысяч
+      }))
+      await expect(page.locator('[class="badge badge-pill badge-secondary mr-2"]')).toHaveText(planKminPlanning.toLocaleString('ru-RU', {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+        style: 'decimal', // обычное число, без валюты
+        useGrouping: true, // группировка тысяч
+      }))
+      const rubKm: any = (100000 / planKminPlanning)
+      await expect(page.locator('[class="badge badge-pill badge-secondary"]')).toHaveText(rubKm.toLocaleString('ru-RU', {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+        style: 'decimal', // обычное число, без валюты
+        useGrouping: true, // группировка тысяч
+      }))
+      await page.waitForTimeout(60000);
+    })
   });
 });
 

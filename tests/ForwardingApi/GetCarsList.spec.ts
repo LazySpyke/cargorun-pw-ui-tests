@@ -10,6 +10,7 @@ const clienApi = new APIRequestsClient();
 const bidApi = new APIBid();
 const emulatorApi = new SupportAPIRequestsClient();
 let bidInfo: any;
+const adminId = 36
 test.describe('Запрос GetCarsList', () => {
     let loginPage: LoginPage;
     let bidResponse: any;
@@ -32,18 +33,18 @@ test.describe('Запрос GetCarsList', () => {
                 planEnterUnloadDate: moment().subtract(1, 'h').format('YYYY-MM-DDTHH:mm'),
                 loadAddress: 'Челны',
                 unloadAddress: 'Уфа',
-                userIdForFilter: 36
+                userIdForFilter: adminId
             });
             await bidApi.init();
             const bidList = await clienApi.GetObjectResponse(
                 `${process.env.url}/api/bids/getlist?$filter=carIds/any(carids:carids in (${bidInfo.carOption.carId}))and ((((status in ('Started')) or (status in ('Planned')))))&$orderby=id desc&$top=30&$skip=0`,
-                await getAuthData(36)
+                await getAuthData(adminId)
             );
             bidList.forEach(async (element: any) => {
-                bidApi.cancelBid(element.id, await getAuthData(36));
+                bidApi.cancelBid(element.id, await getAuthData(adminId));
             });
-            bidResponse = await bidApi.apply(bidInfo, await getAuthData(36));
-            await bidApi.setStatus(bidResponse.id, await getAuthData(36));
+            bidResponse = await bidApi.apply(bidInfo, await getAuthData(adminId));
+            await bidApi.setStatus(bidResponse.id, await getAuthData(adminId));
             await emulatorApi.init();
             await emulatorApi.coordinatSend(bidInfo.carOption.carTracker, null, null, [[
                 49.266643326,
@@ -59,7 +60,7 @@ test.describe('Запрос GetCarsList', () => {
                 { Number: 2, Address: 65531, Value: 100000, ChangePer100Km: 0 },
             ], "00:00:01")
             await page.waitForTimeout(5000);
-            const response = await bidApi.GetCarsList(bidInfo.carOption.carId, await getAuthData(36), 37)
+            const response = await bidApi.GetCarsList(bidInfo.carOption.carId, await getAuthData(adminId), 37)
             setTimeout(() => {
                 if (response[0].axisLoadValue.value != 21 ||
                     response[0].axisLoadValue.secondaryValue != 22 ||

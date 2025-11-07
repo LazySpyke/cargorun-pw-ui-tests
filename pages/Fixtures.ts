@@ -291,6 +291,7 @@ export class BidCreateInfo {
       },
       trailerOption: {
         trailerId: trailerForBid[0].id,
+        number: trailerForBid[0].number
       },
       bookFieldsLoading: false,
       carStatus: {

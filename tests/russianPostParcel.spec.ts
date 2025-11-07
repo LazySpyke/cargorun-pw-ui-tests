@@ -8,6 +8,7 @@ import APIBid from '../api/bidApi';
 const clienApi = new APIRequestsClient();
 const bidApi = new APIBid();
 let bidInfo: any;
+const adminId = 36
 test.describe('Отслеживание треке почты России', () => {
     let loginPage: LoginPage;
     let bidResponse: any;
@@ -30,12 +31,12 @@ test.describe('Отслеживание треке почты России', () 
                 planEnterUnloadDate: moment().add(1, 'd').format('YYYY-MM-DDTHH:mm'),
                 loadAddress: 'Челны',
                 unloadAddress: 'Москва',
-                userIdForFilter: 36,
+                userIdForFilter: adminId,
                 cargoOwnerFilter: "(isDeleted eq false and contains(tolower(name),'проверка') and contains(tolower(inn),'7743343709'))"
             });
             await bidApi.init();
-            bidResponse = await bidApi.apply(bidInfo, await getAuthData(36));
-            await bidApi.setStatus(bidResponse.id, await getAuthData(36));
+            bidResponse = await bidApi.apply(bidInfo, await getAuthData(adminId));
+            await bidApi.setStatus(bidResponse.id, await getAuthData(adminId));
             await page.waitForTimeout(5000);
             await test.step('привязка трек-номера', async () => {
                 await page.goto(`${process.env.url}/bids/bid/${bidResponse.id}`)

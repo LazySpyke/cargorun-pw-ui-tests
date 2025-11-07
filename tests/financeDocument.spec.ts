@@ -8,6 +8,7 @@ import APIBid from '../api/bidApi';
 const clienApi = new APIRequestsClient();
 const bidApi = new APIBid();
 let bidInfo: any;
+const adminId = 36
 test.describe('Документы заявки', () => {
     let loginPage: LoginPage
     let bidResponse: any;
@@ -30,26 +31,26 @@ test.describe('Документы заявки', () => {
                 planEnterUnloadDate: moment().add(1, 'd').format('YYYY-MM-DDTHH:mm'),
                 loadAddress: 'Челны',
                 unloadAddress: 'Москва',
-                userIdForFilter: 36,
+                userIdForFilter: adminId,
                 cargoOwnerFilter: "(isDeleted eq false and contains(tolower(name),'проверка') and contains(tolower(inn),'7743343709'))"
             });
             await bidApi.init();
             const bidListDriver = await clienApi.GetObjectResponse(
                 `${process.env.url}/api/bids/getlist?$filter=driverIds/any(driverids:driverids in (${bidInfo.driver.id}))and ((((status in ('Started')) or (status in ('Planned')))))&$orderby=id desc&$top=30&$skip=0`,
-                await getAuthData(36)
+                await getAuthData(adminId)
             );
             bidListDriver.forEach(async (element: any) => {
-                bidApi.cancelBid(element.id, await getAuthData(36));
+                bidApi.cancelBid(element.id, await getAuthData(adminId));
             }); //отменяем заявки по водителю
             const bidListCar = await clienApi.GetObjectResponse(
                 `${process.env.url}/api/bids/getlist?$filter=carIds/any(carids:carids in (${bidInfo.carOption.carId}))and ((((status in ('Started')) or (status in ('Planned')))))&$orderby=id desc&$top=30&$skip=0`,
-                await getAuthData(36)
+                await getAuthData(adminId)
             );
             bidListCar.forEach(async (element: any) => {
-                bidApi.cancelBid(element.id, await getAuthData(36));
+                bidApi.cancelBid(element.id, await getAuthData(adminId));
             }); //отменяем заявки по машине
-            bidResponse = await bidApi.apply(bidInfo, await getAuthData(36));
-            await bidApi.setStatus(bidResponse.id, await getAuthData(36));
+            bidResponse = await bidApi.apply(bidInfo, await getAuthData(adminId));
+            await bidApi.setStatus(bidResponse.id, await getAuthData(adminId));
             await page.waitForTimeout(5000);
             await test.step('Создание документ-заявки', async () => {
                 await page.goto(`${process.env.url}/bids/bid/${bidResponse.id}`)

@@ -1,4 +1,5 @@
 import { request, APIRequestContext } from '@playwright/test';
+import { console } from 'inspector';
 import moment from 'moment';
 interface LiquidSensor {
     Number: number;
@@ -15,6 +16,8 @@ class SupportAPIRequestsClient {
     }
 
     async createSegments(coords: any[], LiquidSensors?: LiquidSensor[], stopOnPoint?: string): any[] {
+        console.log(`coords= ${coords}
+            stopOnPoint=${stopOnPoint}`)
         const result: any[] = [];
         console.log(coords)
         coords.forEach(([lon, lat]) => {
@@ -67,7 +70,7 @@ class SupportAPIRequestsClient {
         if (startPoint == null) {
             startPoint = [49.266643326093124, 55.673454156069425]
         }
-        console.log(startPoint)
+        console.log(startTime)
         const jsonForRoute = await this.createSegments(routePoints, sensors, stopDuration)
         const response = await this.context.post(`${process.env.trackerEmulatorHost}`, {
             data: {
@@ -115,6 +118,7 @@ class SupportAPIRequestsClient {
         if (response.status() != 200) {
             const errorText = await response.text();
             console.log(errorText)
+            throw new Error(`ошибка при отправке ${errorText}`);
         }
     }
 }

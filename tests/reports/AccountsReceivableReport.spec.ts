@@ -8,6 +8,7 @@ import APIBid from '../../api/bidApi';
 const clienApi = new APIRequestsClient();
 const bidApi = new APIBid();
 let bidInfo: any;
+const adminId = 36
 test.describe('Отчёты по Дебиторской задолженности', () => {
     let loginPage: LoginPage;
     let bidResponse: any;
@@ -30,7 +31,7 @@ test.describe('Отчёты по Дебиторской задолженност
                 planEnterUnloadDate: moment().add(1, 'h').format('YYYY-MM-DDTHH:mm'),
                 loadAddress: 'Челны',
                 unloadAddress: 'Уфа',
-                userIdForFilter: 36,
+                userIdForFilter: adminId,
                 paymentStatus: {
                     "invoiceDate": moment().format("YYYY-MM-DD"),
                     "planPaymentDate": moment().add(1, 'd').format("YYYY-MM-DD"),
@@ -43,13 +44,13 @@ test.describe('Отчёты по Дебиторской задолженност
             await bidApi.init();
             const bidList = await clienApi.GetObjectResponse(
                 `${process.env.url}/api/bids/getlist?$filter=carIds/any(carids:carids in (${bidInfo.carOption.carId}))and ((((status in ('Started')) or (status in ('Planned')))))&$orderby=id desc&$top=30&$skip=0`,
-                await getAuthData(36)
+                await getAuthData(adminId)
             );
             bidList.forEach(async (element) => {
-                bidApi.cancelBid(element.id, await getAuthData(36));
+                bidApi.cancelBid(element.id, await getAuthData(adminId));
             });
-            bidResponse = await bidApi.apply(bidInfo, await getAuthData(36));
-            await bidApi.setStatus(bidResponse.id, await getAuthData(36));
+            bidResponse = await bidApi.apply(bidInfo, await getAuthData(adminId));
+            await bidApi.setStatus(bidResponse.id, await getAuthData(adminId));
         });
         await test.step('Проверка отображения информации очастичной оплате', async () => {
             await page.locator('[title="Финансы и учет"]').click();
