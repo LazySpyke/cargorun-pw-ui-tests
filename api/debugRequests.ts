@@ -68,6 +68,107 @@ class DebugAPIRequestsClient {
         });
         console.log(response.status);
     }
+
+
+    async newCarTracker(userToken: string, roottoken: string, carNumber?: string, carTracker?: string, beginDate?: string): Promise<any> {
+        if (!this.context) {
+            throw new Error('APIRequestContext is not initialized. Call init() first.');
+        }
+        const trackerCreateResponse = await this.context.post(`${process.env.url}/api/Trackers/Apply`, {
+            data: {
+                type: "Autograf",
+                deviceNumber: carTracker,
+                organizationId: null,
+                id: 0
+            },
+            headers: {
+                'Content-Type': 'application/json',
+                Authorization: roottoken,
+                // другие заголовки, если нужны
+            },
+        });
+        if (trackerCreateResponse.status() != 200) {
+            throw new Error(`ошибка при запросе api/Trackers/Apply, статус ${trackerCreateResponse.status()},${trackerCreateResponse.text()}`)
+        }
+        const carCreateResponse = await this.context.post(`${process.env.url}/api/car/apply`, {
+            data: {
+                "isValid": true,
+                "number": carNumber,
+                "brandTypeId": 155,
+                "typeId": 166,
+                "logistId": null,
+                "fuelTanks":
+                    [{
+                        "minimumVolume": 100,
+                        "currentVolume": 200,
+                        "totalVolume": 800,
+                        "fuelConsumption": 33,
+                        "minimumFuelTankVolume": 120,
+                        "finishFuelVolume": 700,
+                        "type": "Diesel"
+                    }], "selectedOptions": {}
+            },
+            headers: {
+                'Content-Type': 'application/json',
+                Authorization: userToken,
+                // другие заголовки, если нужны
+            },
+        });
+        if (carCreateResponse.status() != 200) {
+            throw new Error(`ошибка при запросе api/car/apply, статус ${carCreateResponse.status()},${carCreateResponse.json()}`)
+        }
+        const carCreateResponseJSON = await carCreateResponse.json()
+        const trackerCreateResponseJSON = await trackerCreateResponse.json()
+
+        console.log(carCreateResponseJSON, trackerCreateResponseJSON)
+        const attachedTracker = await this.context.post(`${process.env.url}/api/trackers/attach`, {
+            data: { CarId: carCreateResponseJSON.id, Id: trackerCreateResponseJSON.entityId },
+            headers: {
+                'Content-Type': 'application/json',
+                Authorization: userToken,
+                // другие заголовки, если нужны
+            },
+        });
+        if (attachedTracker.status() != 200) {
+            throw new Error(`ошибка при запросе api/trackers/attach, статус ${attachedTracker.status()},${await attachedTracker.json()}`)
+        }
+        const getHistoryItems = await this.context.get(`${process.env.url}/api/trackers/getHistoryItems/${trackerCreateResponseJSON.entityId}?$orderby=id%20desc&$top=10&$skip=0`, {
+            data: {
+                type: "Autograf",
+                deviceNumber: carTracker,
+                organizationId: null,
+                id: 0
+            },
+            headers: {
+                'Content-Type': 'application/json',
+                Authorization: roottoken,
+                // другие заголовки, если нужны
+            },
+        });
+        const getHistoryItemsJSON = await getHistoryItems.json()
+        const applyHistoryResponse = await this.context.post(`${process.env.url}/api/trackers/applyHistoryItem`, {
+            data: {
+                trackerId: trackerCreateResponseJSON.entityId,
+                id: getHistoryItemsJSON[0].id,
+                entityId: getHistoryItemsJSON[0].entityId,
+                startedAt: beginDate,
+                endedAt: null,
+                type: "Car",
+            },
+            headers: {
+                'Content-Type': 'application/json',
+                Authorization: roottoken,
+                // другие заголовки, если нужны
+            },
+        });
+        if (applyHistoryResponse.status() != 204 && applyHistoryResponse.status() != 200) {
+            throw new Error(`ошибка при запросе api/trackers/applyHistoryItem, статус ${applyHistoryResponse.status()}`)
+        }
+        return {
+            newTrackerId: trackerCreateResponseJSON.entityId,
+            newCarId: carCreateResponseJSON.id
+        }
+    }
 }
 
 export default DebugAPIRequestsClient;

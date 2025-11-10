@@ -147,7 +147,7 @@ export class BidCreateInfo {
     }
     else {
       carForBid = await clienApi.getCar(
-        `${process.env.url}/api/car/getlist?$filter=${carFilter}&$orderby=id%20desc&$top=20&$skip=0`,
+        `${process.env.url}/api/car/getlist?$filter=${carFilter}&$orderby=lastFixedAt%20desc&$top=20&$skip=0`,
         await getAuthData(userIdForFilter), reuseCar
       );
     }

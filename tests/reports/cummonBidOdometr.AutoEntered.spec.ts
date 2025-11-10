@@ -23,7 +23,7 @@ test.describe('Проверка данных по скачкам одометр�
     let secondBidInfo: any
     let secondBidResponse: any
     let secondBidInfoResponse: any
-    let trackerId: any
+    let newEntity: any;
     test.beforeEach(async ({ page }) => {
         loginPage = new LoginPage(page);
         await loginPage.goto(); // Переходим на страницу логина перед каждым тестом
@@ -33,8 +33,14 @@ test.describe('Проверка данных по скачкам одометр�
         await test.step('Логин', async () => {
             await loginPage.login(process.env.emptyCompanyEmail as string, process.env.emptyCompanyPassword as string);
         });
-        await test.step('Создание заявки и запуск в работу', async () => {
+        await test.step('создание и приаязка новой машины и т д', async () => {
             await debugApi.init();
+            newEntity = await debugApi.newCarTracker(await getAuthData(adminId), await getAuthData(36), "О444ОО/798", "trackjal6", moment().subtract(14, 'd').format("YYYY-MM-DDT00:00:00+03:00"))
+            console.log(newEntity)
+            await page.waitForTimeout(25000)
+        })
+        await test.step('Создание заявки и запуск в работу', async () => {
+            // await debugApi.init();
             const bidFixture = new BidCreateInfo(page);
             bidInfo = await bidFixture.ApiCommonBid({
                 price: 100000,
@@ -42,7 +48,7 @@ test.describe('Проверка данных по скачкам одометр�
                 ndsTypeId: 175,
                 planEnterLoadDate: moment().subtract(7, 'd').format('YYYY-MM-DDTHH:mm'),
                 planEnterUnloadDate: moment().subtract(6, 'd').format('YYYY-MM-DDTHH:mm'),
-                carFilter: `(isDeleted eq false and lastFixedAt le ${moment().subtract(7, 'd').format("YYYY-MM-DDTHH:mm:ss")}.000Z)`,
+                carFilter: `id eq ${await newEntity.newCarId}`,
                 loadAddress: 'Челны',
                 unloadAddress: 'Уфа',
                 userIdForFilter: adminId
@@ -59,17 +65,10 @@ test.describe('Проверка данных по скачкам одометр�
             await bidApi.setStatus(bidResponse.id, await getAuthData(adminId));
             await emulatorApi.init();
             bidInfoResponse = await bidApi.GetBidInfo(bidResponse.id, await getAuthData(adminId));
-            const lastTrackerCarInfo = await clienApi.GetObjectResponse(
-                `${process.env.url}/api/Map/GetLastCarsLocations?$filter=car/id%20eq%20${bidInfo.carOption.carId}`,
-                await getAuthData(adminId)
-            );
-            trackerId = await clienApi.GetObjectResponse(
-                `${process.env.url}/api/trackers/get?$filter=(contains(tolower(deviceNumber),'${bidInfo.carOption.carTracker}')) and type ne 'Mobile'&$top=30&$skip=0`,
-                await getAuthData(adminId)
-            );
-            await emulatorApi.coordinatSend(bidInfo.carOption.carTracker, lastTrackerCarInfo[0].fixedAt, lastTrackerCarInfo[0].location.coordinates, [bidInfoResponse.bidPoints[0].geozone.location.coordinates, bidInfoResponse.bidPoints[1].geozone.location.coordinates], null, "00:10:00")
+
+            await emulatorApi.coordinatSend(bidInfo.carOption.carTracker, moment().subtract(7, 'd').format("YYYY-MM-DDTHH:mm:ss+00:00"), bidInfoResponse.bidPoints[0].geozone.location.coordinates, [bidInfoResponse.bidPoints[0].geozone.location.coordinates, bidInfoResponse.bidPoints[1].geozone.location.coordinates], null, "08:10:00")
             await page.waitForTimeout(50000);
-            await debugApi.applyOdometerValues(await getAuthData(36), trackerId[0].id, startValue, startDate, 200)
+            await debugApi.applyOdometerValues(await getAuthData(36), newEntity.newTrackerId, startValue, startDate, 200)
         });
         await test.step('создание второй заявки где дата позже', async () => {
             const bidFixture = new BidCreateInfo(page);
@@ -88,22 +87,31 @@ test.describe('Проверка данных по скачкам одометр�
             await bidApi.init();
             secondBidResponse = await bidApi.apply(secondBidInfo, await getAuthData(adminId));
             await bidApi.setStatus(secondBidResponse.id, await getAuthData(adminId));
-            await emulatorApi.init();
             secondBidInfoResponse = await bidApi.GetBidInfo(secondBidResponse.id, await getAuthData(adminId));
-            const lastTrackerCarInfo = await clienApi.GetObjectResponse(
-                `${process.env.url}/api/Map/GetLastCarsLocations?$filter=car/id%20eq%20${bidInfo.carOption.carId}`,
-                await getAuthData(adminId)
-            );
-            await emulatorApi.coordinatSend(bidInfo.carOption.carTracker, `${moment(lastTrackerCarInfo[0].fixedAt, "YYYY-MM-DDTHH:mm:ss").subtract(4, 'd').format("YYYY-MM-DDTHH:mm:ss")}+00:00`, lastTrackerCarInfo[0].location.coordinates, [secondBidInfoResponse.bidPoints[0].geozone.location.coordinates, secondBidInfoResponse.bidPoints[1].geozone.location.coordinates], null, "00:10:00")
+            // const lastTrackerCarInfo = await clienApi.GetObjectResponse(
+            //     `${process.env.url}/api/Map/GetLastCarsLocations?$filter=car/id%20eq%20${bidInfo.carOption.carId}`,
+            //     await getAuthData(adminId)
+            // );
+            await emulatorApi.coordinatSend(bidInfo.carOption.carTracker, `${moment().subtract(3, 'd').format("YYYY-MM-DDTHH:mm:ss")}+00:00`, null, [secondBidInfoResponse.bidPoints[0].geozone.location.coordinates, secondBidInfoResponse.bidPoints[1].geozone.location.coordinates], null, "00:10:00")
             //TODO допилить проверку на данные что активный км считается даже без выезда из нулевой
-            await debugApi.applyOdometerValues(await getAuthData(36), trackerId[0].id, startValue + 2000, moment().subtract(4, 'd').format("YYYY-MM-DDTHH:mm:ssZ"), 10)
+            await debugApi.applyOdometerValues(await getAuthData(36), newEntity.newTrackerId, startValue + 2000, moment().subtract(3, 'd').format("YYYY-MM-DDTHH:mm:ssZ"), 500)
             await page.waitForTimeout(54000)
+        })
+        await test.step('проверка данных заявок', async () => {
+            await page.waitForTimeout(180000)//ждём перерасчётов
+            await page.goto(`${process.env.url}/bids/bid/${bidResponse.id}`)
+            await expect(page.getByTestId('fact-distance')).toHaveText('501') //активный по одометру
+            await page.goto(`${process.env.url}/bids/bid/${secondBidResponse.id}`)
+            await expect(page.locator('fact-distance')).toHaveText('1 127') //активный по одометру
+            await expect(page.getByTestId('fact-empty-mileage-distance')).toHaveText('1 409') //порожний по одометру
+
         })
     })
 })
 
 test.beforeAll(async () => {
     await clienApi.getToken(process.env.emptyCompanyEmail as string, process.env.emptyCompanyPassword as string);
+    await clienApi.getToken(process.env.rootMail as string, process.env.rootPassword as string);
 });
 test.afterAll(async () => {
     await clienApi.deleteUsedCar(bidInfo.carOption.carId)
