@@ -70,7 +70,7 @@ test.describe('Самостоятельная регистрация', () => {
       await page.locator('[type="submit"]').click();
       // await expect(page.locator("//DIV[@class='message']")).toHaveText("Вы успешно зарегистрировались, можете войти в систему")
       // await page.locator(`//DIV[@class='message'][text()="Вы успешно зарегистрировались, можете войти в систему"]`)
-      await page.waitForTimeout(5000);
+      await page.waitForTimeout(600000);
     });
     await test.step('авторизация и ввод данных системы мониторинга', async () => {
       // await page.locator('[type="email"]').fill(newCompany.email)

@@ -283,6 +283,7 @@ export class BidCreateInfo {
       extendedProperties: [],
       driver: {
         id: driverForBid[0].id,
+        fullName: driverForBid[0].user.fullName
       },
       carOption: {
         number: carForBid.number,

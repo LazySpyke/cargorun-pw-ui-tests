@@ -24,12 +24,14 @@ class APIRequests {
     if (!this.context) {
       throw new Error('APIRequestContext is not initialized. Call init() first.');
     }
-
     const response = await this.context.get(endpoint, {
       headers: {
         Authorization: await authHeaders,
       },
     });
+    if (response.status() != 200) {
+      throw new Error(`ошибка при запросе ${endpoint},статус ${response.status()}`)
+    }
     return await response.json();
   }
   async close(): Promise<void> {

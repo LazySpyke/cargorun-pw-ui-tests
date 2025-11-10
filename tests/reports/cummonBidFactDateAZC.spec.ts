@@ -34,9 +34,9 @@ test.describe('Учёт факт дат, при не фиксации выезд
                 ndsTypeId: 175,
                 planEnterLoadDate: moment().subtract(2, 'd').format('YYYY-MM-DDTHH:mm'),
                 planEnterUnloadDate: moment().add(1, 'd').format('YYYY-MM-DDTHH:mm'),
-                carFilter: `(isDeleted eq false and lastFixedAt le ${moment().subtract(3, 'd').format("YYYY-MM-DDTHH:mm:ss")}.000Z and lastFixedAt le ${moment().subtract(2, 'd').format("YYYY-MM-DDTHH:mm:ss")}.000Z)`,
+                carFilter: `(isDeleted eq false and lastFixedAt le ${moment().subtract(3, 'd').format("YYYY-MM-DDTHH:mm:ss")}.000Z and lastFixedAt le ${moment().subtract(1, 'd').format("YYYY-MM-DDTHH:mm:ss")}.000Z)`,
                 loadAddress: 'Челны',
-                unloadAddress: 'Можга',
+                unloadAddress: 'Россия, Удмуртская Республика, Можга, микрорайон Стеклозаводской', //другой адресс, чтоб от прошлых тестов сразу заявка не учлась
                 userIdForFilter: adminId,
                 cargoOwnerFilter: '(isDeleted eq false)'
             });
@@ -69,6 +69,7 @@ test.describe('Учёт факт дат, при не фиксации выезд
             await page.locator(`//div[@class="dropdown__item"][contains(text(),'Перерасчет')]`).click();
             await page.locator("//div[@class='btn btn-brand btn-sm modal-window__footer-action']").click();
             await page.locator("//DIV[@class='message'][text()='Ваш запрос выполнен успешно.']").isVisible();
+            await page.waitForTimeout(15000);
             const lastTrackerCarInfo = await clienApi.GetObjectResponse(
                 `${process.env.url}/api/Map/GetLastCarsLocations?$filter=car/id%20eq%20${bidInfo.carOption.carId}`,
                 await getAuthData(adminId)
@@ -117,46 +118,40 @@ test.describe('Учёт факт дат, при не фиксации выезд
                 ],
                 "00:02:00")
         })
-        await test.step('Проверяю что определился факт заправки на АЗС', async () => {
-            const beforeRefuelingFact = '180';
+        await test.step('Проверка данных по Отчёту 7. Отчёт по АЗС', async () => {
+            //TODO доделать проверки на оставшиеся поля
+            await page.locator('[title="Отчеты"]').click();
+            await page.locator('[name="Отчет по АЗС"]').click();
+            await page.locator('input[name="startDate"]').fill(moment().subtract(3, 'h').format('DD.MM.YYYY HH:mm'));
+            await page.locator('input[name="endDate"]').fill(moment().add(1, 'h').format('DD.MM.YYYY HH:mm'));
+            await page.locator("//div[@class='report__filters--left']//a[@class='btn btn-sm btn-brand'][contains(text(),'Обновить')]").click();
+            await page.locator('[name="bidId"]').fill(`${bidResponse.id}`)
+            await page.locator('[name="counterpartyName"]').fill(`${bidInfoResponse.cargoOwnerDictionaryItem.name}`)
+            await page.waitForTimeout(5000)
+            await page.locator(`[data-bidid="${bidResponse.id}"]`).isVisible();
+            await page.locator('[name="carNumber"]').fill(`${bidInfo.carOption.number}`)
+            await page.waitForTimeout(1000);
+            await page.locator(`[data-bidid="${bidResponse.id}"]`).isVisible();
+            await page.locator('[name="transportColumnName"]').isVisible(); //TODO сделать проверку по фильтрации колонны
+            await page.locator('[name="driverName"]').fill(bidInfo.driver.fullName)
+            await page.waitForTimeout(1000);
+            await page.locator(`[data-bidid="${bidResponse.id}"]`).isVisible();
+            await page.locator('[name="logistDisplayName"]').isVisible();//TODO сделать проверку по фильтрации логиста
+            await page.locator('[name="responsibleDisplayName"]').fill(`test Load Men1`)
+            await page.waitForTimeout(1000);
+            await page.locator(`[data-bidid="${bidResponse.id}"]`).isVisible();
+            await page.locator('[name="address"]').fill('улица Ленина, 101')
+            await page.waitForTimeout(1000);
+            await page.locator(`[data-bidid="${bidResponse.id}"]`).isVisible();
+            await page.locator('[name="gasStationBrandName"]').fill('Тестовая')
+            await page.waitForTimeout(1000);
+            await page.locator(`[data-bidid="${bidResponse.id}"]`).isVisible();
 
-            const locatorBeforeRefueling = page.locator('.b-timeline-point__date--value', { hasText: beforeRefuelingFact });
-
-            // Проверка, существует ли такой элемент
-            const countBeforeRefueling = await locatorBeforeRefueling.count();
-
-            if (countBeforeRefueling > 0) {
-                console.log(`есть факт заправки до на ${beforeRefuelingFact}`);
-            } else {
-                throw new Error(`не зафиксирована факт заправка до`)
-            }
-
-            const afterRefuelingFact = '700';
-
-            const locatorAfterRefueling = page.locator('.b-timeline-point__date--value', { hasText: afterRefuelingFact });
-
-            // Проверка, существует ли такой элемент
-            const countAfterRefueling = await locatorAfterRefueling.count();
-
-            if (countAfterRefueling > 0) {
-                console.log(`есть факт заправки до на ${afterRefuelingFact}`);
-            } else {
-                throw new Error(`не зафиксирована факт заправка после`)
-            }
-
-
-            const refuelingFact = '520';
-
-            const locatorRefueling = page.locator('.b-timeline-point__date--value', { hasText: refuelingFact });
-
-            // Проверка, существует ли такой элемент
-            const countRefueling = await locatorRefueling.count();
-
-            if (countRefueling > 0) {
-                console.log(`есть факт заправки до на ${refuelingFact}`);
-            } else {
-                throw new Error(`не зафиксирована факт заправка после`)
-            }
+            await page.locator('#visitStatusContainer').click();
+            await page.locator('#visitStatusContainer').type('Посетил', { delay: 100 });
+            await page.locator(`text=Посетил`).nth(1).click();
+            await page.waitForTimeout(1000);
+            await page.locator(`[data-bidid="${bidResponse.id}"]`).isVisible();
         })
     })
 })
