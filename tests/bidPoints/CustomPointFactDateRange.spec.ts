@@ -32,7 +32,7 @@ test.describe('Учёт кастомных точек', () => {
                 ndsTypeId: 175,
                 planEnterLoadDate: moment().subtract(5, 'd').format('YYYY-MM-DDT00:00'),
                 planEnterUnloadDate: moment().subtract(1, 'd').format('YYYY-MM-DDT00:00'),
-                carFilter: `(isDeleted eq false and lastFixedAt le ${moment().subtract(6, 'd').format("YYYY-MM-DDTHH:mm:ss")}.000Z)`,
+                carFilter: `(isDeleted eq false and lastFixedAt le ${moment().subtract(7, 'd').format("YYYY-MM-DDTHH:mm:ss")}.000Z)`,
                 loadAddress: 'Минзелинск',
                 unloadAddress: 'Челны',
                 userIdForFilter: adminId
@@ -72,8 +72,10 @@ test.describe('Учёт кастомных точек', () => {
                 `${process.env.url}/api/Map/GetLastCarsLocations?$filter=car/id%20eq%20${bidInfo.carOption.carId}`,
                 await getAuthData(adminId)
             );
+            const orderSort = bidInfoResponse.bidPoints.sort((a, b) => a.order - b.order);
+
             //TODO сделать проверку что дата последняя меньше отправляемого 
-            await emulatorApi.coordinatSend(bidInfo.carOption.carTracker, moment().subtract(5, 'd').format("YYYY-MM-DDTHH:mm:ss+00:00"), lastTrackerCarInfo[0].location.coordinates, [bidInfoResponse.bidPoints[0].geozone.location.coordinates, bidInfoResponse.bidPoints[1].geozone.location.coordinates, bidInfoResponse.bidPoints[2].geozone.location.coordinates], null, "01:00:00") //делаем 3 посещения через точки
+            await emulatorApi.coordinatSend(bidInfo.carOption.carTracker, moment().subtract(5, 'd').format("YYYY-MM-DDTHH:mm:ss+00:00"), lastTrackerCarInfo[0].location.coordinates, [orderSort[0].geozone.location.coordinates, orderSort[1].geozone.location.coordinates, orderSort[2].geozone.location.coordinates], null, "01:00:00") //делаем 3 посещения через точки
             await bidApi.setStatus(bidResponse.id, await getAuthData(adminId));
             await page.waitForTimeout(75000);// жду пока пройдёт перерасчёт
             await page.goto(`${process.env.url}/bids/bid/${bidResponse.id}`)
@@ -94,7 +96,7 @@ test.describe('Учёт кастомных точек', () => {
                 ndsTypeId: 175,
                 planEnterLoadDate: moment().subtract(5, 'd').format('YYYY-MM-DDT00:00'),
                 planEnterUnloadDate: moment().subtract(1, 'd').format('YYYY-MM-DDT00:00'),
-                carFilter: `(isDeleted eq false and lastFixedAt le ${moment().subtract(4, 'd').format("YYYY-MM-DDTHH:mm:ss")}.000Z)`,
+                carFilter: `(isDeleted eq false and lastFixedAt le ${moment().subtract(7, 'd').format("YYYY-MM-DDTHH:mm:ss")}.000Z)`,
                 loadAddress: 'Минзелинск',
                 unloadAddress: 'Челны',
                 userIdForFilter: adminId
@@ -134,8 +136,9 @@ test.describe('Учёт кастомных точек', () => {
                 `${process.env.url}/api/Map/GetLastCarsLocations?$filter=car/id%20eq%20${bidInfo.carOption.carId}`,
                 await getAuthData(adminId)
             );
+            const orderSort = bidInfoResponse.bidPoints.sort((a, b) => a.order - b.order);
             //TODO сделать проверку что дата последняя меньше отправляемого 
-            await emulatorApi.coordinatSend(bidInfo.carOption.carTracker, moment().subtract(5, 'd').format("YYYY-MM-DDTHH:mm:ss+00:00"), lastTrackerCarInfo[0].location.coordinates, [bidInfoResponse.bidPoints[0].geozone.location.coordinates, bidInfoResponse.bidPoints[1].geozone.location.coordinates, bidInfoResponse.bidPoints[2].geozone.location.coordinates], null, "01:35:00") //делаем 3 посещения через точки
+            await emulatorApi.coordinatSend(bidInfo.carOption.carTracker, moment().subtract(5, 'd').format("YYYY-MM-DDTHH:mm:ss+00:00"), lastTrackerCarInfo[0].location.coordinates, [orderSort[0].geozone.location.coordinates, orderSort[1].geozone.location.coordinates, orderSort[2].geozone.location.coordinates], null, "01:35:00") //делаем 3 посещения через точки
             await bidApi.setStatus(bidResponse.id, await getAuthData(adminId));
             await page.waitForTimeout(75000);// жду пока пройдёт перерасчёт
             await page.goto(`${process.env.url}/bids/bid/${bidResponse.id}`)
