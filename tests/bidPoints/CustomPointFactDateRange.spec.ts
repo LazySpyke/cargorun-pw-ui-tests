@@ -1,3 +1,5 @@
+//тест зависит от показателя CustomPointVisitIgnoreDuration нужно ставить 90
+
 import { test, expect } from '@playwright/test';
 import { LoginPage } from '../../pages/LoginPage';
 import { getAuthData } from '../../database';
@@ -144,7 +146,7 @@ test.describe('Учёт кастомных точек', () => {
             await page.goto(`${process.env.url}/bids/bid/${bidResponse.id}`)
             await page.waitForTimeout(15000);// жду пока пройдёт перерасчёт
             await page.reload();
-            await expect(page.locator("//span[@class='badge badge-info']")).toHaveText('Выполнена')
+            await expect(page.locator("//span[@class='badge badge-success']")).toHaveText('Выполнена')
         })
     });
 })
