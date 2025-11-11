@@ -44,7 +44,6 @@ class APIRequests {
     if (!this.context) {
       throw new Error('APIRequestContext is not initialized. Call init() first.');
     }
-
     const response = await this.context.post(endpoint, {
       headers: {
         'Content-Type': 'application/json',
