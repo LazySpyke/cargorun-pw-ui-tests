@@ -194,7 +194,7 @@ export class BidCreateInfo {
       unloadAddress,
       await getAuthData(userIdForFilter)
     );
-    const paymentPaidStatus = paymentStatus ?? null; //статус оплаты, так как без моудля дебиторской задолженности работать не будет
+    const paymentPaidStatus = paymentStatus ?? null; //статус оплаты, так как без модуля дебиторской задолженности работать не будет
     const apiBidBody = {
       isEmpty: emptyBidFlag,
       isExpressBid: false,
