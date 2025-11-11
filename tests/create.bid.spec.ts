@@ -4,7 +4,7 @@ import { BidPage } from '../pages/BidsPage';
 import { BidCreateInfo, gerateBidCreateInfo } from '../pages/Fixtures';
 import APIRequestsClient from '../api/clienApiRequsets';
 const clienApi = new APIRequestsClient();
-test.describe('Создание разныз заявок с фронта', () => {
+test.describe('Создание разных заявок с фронта', () => {
   let loginPage: LoginPage;
   test.beforeEach(async ({ page }) => {
     loginPage = new LoginPage(page);

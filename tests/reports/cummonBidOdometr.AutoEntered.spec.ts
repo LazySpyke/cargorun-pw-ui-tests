@@ -16,7 +16,7 @@ const emulatorApi = new SupportAPIRequestsClient();
 const debugApi = new DebugAPIRequestsClient();
 let bidInfo: any;
 const adminId = 1305211
-test.describe('Проверка данных по скачкам одометра', () => {
+test.describe('Проверка отчётов с данными одометра', () => {
     let loginPage: LoginPage;
     let bidResponse: any;
     let bidInfoResponse: any;

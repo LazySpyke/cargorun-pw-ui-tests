@@ -9,7 +9,7 @@ const clienApi = new APIRequestsClient();
 const bidApi = new APIBid();
 let bidInfo: any;
 const adminId = 36
-test.describe('Перецепки у водителя', () => {
+test.describe('Отображение Перецепки у водителя', () => {
     let loginPage: LoginPage;
     let bidResponse: any;
     let shiftCar: any;

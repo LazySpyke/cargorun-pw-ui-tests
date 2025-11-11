@@ -13,7 +13,7 @@ let bidInfo: any;
 const inPlanningRefueling = [52.460818, 56.194695]
 const outOfPlanning = [52.453428, 56.198075]
 const adminId = 1319341 //переделать чтоб доставал из логина в фронте
-test.describe('Учёт факт дат, при не фиксации выезда из прошлой заявки(нулевой)', () => {
+test.describe('Проверка отчётов с азс', () => {
     let loginPage: LoginPage;
     let bidResponse: any;
     let bidInfoResponse: any;

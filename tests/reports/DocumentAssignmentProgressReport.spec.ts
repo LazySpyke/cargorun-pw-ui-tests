@@ -1,4 +1,4 @@
-import { test, request } from '@playwright/test';
+import { test } from '@playwright/test';
 import { LoginPage } from '../../pages/LoginPage';
 import { getAuthData } from '../../database';
 import { BidCreateInfo } from '../../pages/Fixtures';
@@ -7,7 +7,6 @@ import APIRequestsClient from '../../api/clienApiRequsets';
 import APIBid from '../../api/bidApi';
 import api from '../../api/apiRequests';
 const clienApi = new APIRequestsClient();
-import FormData from 'form-data';
 const bidApi = new APIBid();
 const apiUse = new api();
 let bidInfo: any;
@@ -15,10 +14,10 @@ const adminId = 36
 const envelopeCode = Math.floor(Math.random() * 99999999);
 const postamatCode = '1122334455131'
 import fs from 'fs'
-test.describe('Отчёты с обычной завершенной вручную заявкой', () => {
+test.describe('Отчёты по работе водителей с заданиями', () => {
     let loginPage: LoginPage;
     let bidResponse: any;
-    let bidInfoResponse: any;
+    let documentAssignmentResponse: any;
     test.beforeEach(async ({ page }) => {
         loginPage = new LoginPage(page);
         await loginPage.goto(); // Переходим на страницу логина перед каждым тестом
@@ -78,46 +77,52 @@ test.describe('Отчёты с обычной завершенной вручн�
                 await getAuthData(getDriverUserId[0].userId)
             )
             console.log(documentAssignmentResponse)
-
-            // // Открываете файл — предполагается, что файл находится в проекте, например, 'image.jpg'
-            // const filePath = 'C:/cargorun-pw-ui-tests/LenardMem.png';
-            // // Читаем файл
-            // const fileBuffer = fs.readFileSync(filePath);
-            // // Создаём form-data
-            // const formData = new FormData();
-            // formData.append('file', fileBuffer, 'image.jpg');
-            // formData.append('DocumentAssignmentId', documentAssignmentResponse[0].id);
-            // // Выполняем POST-запрос
-            // const response = await request.post(`${process.env.url}/api/driver/DocumentAssignment/UploadFile`, {
-            //     multipart: {
-            //         formData
-            //     },
-            //     headers: {
-            //         ...formData.getHeaders(),
-            //         Authorization: await getAuthData(getDriverUserId[0].userId),
-            //     }
-            // });
-            // // Проверка ответа
-            // console.log(await response.json());
-
-            const fileUpdate = await page.request.fetch(`${process.env.url}/api/driver/DocumentAssignment/UploadFile`, {
+            const fileUpdate = await request.fetch(`${process.env.url}/api/driver/DocumentAssignment/UploadFile`, {
                 method: 'POST',
                 headers: {
                     'Authorization': `${await getAuthData(getDriverUserId[0].userId)}`,
                 },
                 multipart: {
-                    // Используем FileField
                     DocumentAssignmentId: documentAssignmentResponse[0].id,
                     File: fs.createReadStream('C:/cargorun-pw-ui-tests/LenardMem.png')
                 },
             });
             console.log(fileUpdate.status())
             await apiUse.init();
+            await page.waitForTimeout(1000);
+            const documentAssignmentSetStatus = await apiUse.postData(`${process.env.url}/api/driver/documentassignment/setstatus`, {
+                "status": "DocumentsUploaded",
+                "id": documentAssignmentResponse[0].id
+            }, await getAuthData(getDriverUserId[0].userId))
+            console.log(documentAssignmentSetStatus)
             const documentAssignmentApply = await apiUse.postData(`${process.env.url}/api/driver/DocumentAssignment/Apply`, {
                 "envelopeCode": envelopeCode,
                 "id": documentAssignmentResponse[0].id
             }, await getAuthData(getDriverUserId[0].userId))
             console.log(documentAssignmentApply)
+        })
+        await test.step('Проверка данных в отчёте по задачам водителей', async () => {
+            await page.locator('[title="Отчеты"]').click();
+            await page.locator('[name="Отчет по работе водителей с заданиями"]').click();
+            await page.locator('input[name="startDate"]').fill(moment().subtract(7, 'h').format('DD.MM.YYYY HH:mm'));
+            await page.locator('input[name="endDate"]').fill(moment().add(1, 'h').format('DD.MM.YYYY HH:mm'));
+            await page
+                .locator("//div[@class='report__filters--left']//a[@class='btn btn-sm btn-brand'][contains(text(),'Обновить')]")
+                .click();
+            await page.locator('input[name="documentAssignmentId"]').fill(`${documentAssignmentResponse[0].id}`);
+            await page.waitForTimeout(1500);
+            await page.locator(`[data-bidid="${bidResponse.id}"]`).isVisible();
+
+
+            await page.locator('input[name="bidId"]').fill(`${bidResponse.id}`);
+            await page.waitForTimeout(1500);
+            await page.locator(`[data-bidid="${bidResponse.id}"]`).isVisible();
+
+            await page.locator('input[name="bidId"]').fill(`${bidResponse.id}`);
+            await page.waitForTimeout(1500);
+            await page.locator(`[data-bidid="${bidResponse.id}"]`).isVisible();
+
+            //TODO доделать проверки и дополнить на статусы и добавить проверку в компании с согласованием 1С работает или нет
         })
     })
 })
