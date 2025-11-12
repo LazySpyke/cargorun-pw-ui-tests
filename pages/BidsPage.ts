@@ -11,6 +11,11 @@ export class BidPage {
     await this.page.locator("//DIV[@class='btn btn-brand btn-sm'][text()='Создать заявку']").first().click();
   }
 
+  async gotoDistribution() {
+    await this.page.goto('/distribution-bids/list');
+    await this.page.locator("//DIV[@class='btn btn-brand btn-sm'][text()='Создать заказ']").first().click();
+  }
+
   async SetPaymentInfo({
     price,
     isVatTop,
@@ -175,6 +180,7 @@ export class BidPage {
     pointComment,
     pointPhoneNumber,
     pointPhoneUser,
+    isDistribution
   }: {
     index: number;
     cargoOwnerBidPoint?: string;
@@ -188,11 +194,19 @@ export class BidPage {
     pointComment?: string;
     pointPhoneNumber?: string;
     pointPhoneUser?: string;
+    isDistribution?: boolean;
   }) {
     if (cargoOwnerBidPoint != null) {
-      await this.page.locator(`#cargoOwnerDictionaryItemIdContainer_${index}`).click();
-      await this.page.locator(`#cargoOwnerDictionaryItemIdContainer_${index}`).type(cargoOwnerBidPoint, { delay: 100 });
-      await this.page.locator(`text=${cargoOwnerBidPoint}`).nth(1).click();
+      if (isDistribution == true) {
+        await this.page.locator(`#counterpartyIdContainer_${index}`).click();
+        await this.page.locator(`#counterpartyIdContainer_${index}`).type(cargoOwnerBidPoint, { delay: 100 });
+        await this.page.locator(`text=${cargoOwnerBidPoint}`).nth(1).click();
+      }
+      else {
+        await this.page.locator(`#cargoOwnerDictionaryItemIdContainer_${index}`).click();
+        await this.page.locator(`#cargoOwnerDictionaryItemIdContainer_${index}`).type(cargoOwnerBidPoint, { delay: 100 });
+        await this.page.locator(`text=${cargoOwnerBidPoint}`).nth(1).click();
+      }
     }
     await this.page.locator(`[name="pointElemGeozone_${index}"]`).click();
     await this.page.locator('input[class="map__picker-field map__picker-field--desktop"]').fill(address);
@@ -291,6 +305,45 @@ export class BidPage {
     await this.page.locator("//SMALL[@class='pl-1 icon-uEA90-bolt b-point__tooltip-icon']").isVisible();
   }
 
+  async CreateCommonDistributionBid(CenerateBidInfo: gerateBidCreateInfo) {
+    await this.SetPaymentInfo({
+      price: '100000',
+      isVatTop: false,
+      paymentType: 'Безналичный',
+      ndsType: '10%',
+      paymentPeriodType: 'В календарных днях',
+      paymentPeriodInDays: '90',
+    });
+    await this.SetGeneralParameters({
+      responible: 'Главный Тестовый',
+      documents: ['SMTP', 'Forest'],
+      legalPerson: CenerateBidInfo.legalPerson,
+    });
+    await this.SetBidPoint({
+      index: 0,
+      cargoOwnerBidPoint: CenerateBidInfo.cargoOwnersBid[0].name,
+      address: CenerateBidInfo.firstPointCity,
+      radius: '200',
+      planEnterDate: CenerateBidInfo.firstPointEnterDate,
+      secondDate: '',
+      planLeaveDate: '',
+      isDistribution: true
+    });
+    await this.SetBidPoint({
+      index: 1,
+      cargoOwnerBidPoint: CenerateBidInfo.cargoOwnersBid[1].name,
+      address: CenerateBidInfo.secondPointCity,
+      radius: '500',
+      planEnterDate: CenerateBidInfo.secondPointEnterDate,
+      secondDate: '',
+      planLeaveDate: '',
+      isDistribution: true
+    });
+    await this.page.locator("//INPUT[@type='submit']").click();
+    await this.page.locator("//DIV[@class='message'][text()='Ваш запрос выполнен успешно.']").isVisible();
+    await this.page.locator("//SPAN[@class='badge badge-secondary'][text()='Без заявки']").isVisible({ timeout: 10000 });
+    await this.page.locator("//SMALL[@class='pl-1 icon-uEA90-bolt b-point__tooltip-icon']").isVisible();
+  }
   async CreateEmptyBid(CenerateBidInfo: gerateBidCreateInfo) {
     await this.page.locator('span[name="isEmptyMileageBid"]').click();
     await this.SetDeliveryInfo({

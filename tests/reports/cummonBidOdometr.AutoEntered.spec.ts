@@ -104,8 +104,26 @@ test.describe('Проверка отчётов с данными одометр�
             await page.goto(`${process.env.url}/bids/bid/${secondBidResponse.id}`)
             await expect(page.locator('fact-distance')).toHaveText('1 127') //активный по одометру
             await expect(page.getByTestId('fact-empty-mileage-distance')).toHaveText('1 409') //порожний по одометру
-
         })
+        //TODO изменения дат использования одометра
+        //         Новый запрос на получение одометров: GET api / dev / Organization / GetOdometerHistoryItems / { organizationId }
+
+        // Новый запрос на изменение дат одометра: POST api / dev / Organization / UpdateOdometerHistoryItem
+        //         {
+        //     public long Id { get; set; }
+
+        //     public long OrganizationId { get; set; }
+
+        //     public DateTimeOffset StartedAt { get; set; }
+        //     public DateTimeOffset ? EndedAt { get; set; }
+        // }
+
+        // Новый запрос на удаление записи по одометру: POST api / dev / Organization / DeleteOdometerHistoryItem
+        // {
+        //         public long Id { get; set; }
+
+        //     public long OrganizationId { get; set; }
+        // }
     })
 })
 
