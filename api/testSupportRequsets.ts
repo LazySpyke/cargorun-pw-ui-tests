@@ -121,6 +121,33 @@ class SupportAPIRequestsClient {
             throw new Error(`ошибка при отправке ${errorText}`);
         }
     }
+
+    async generateCarNumber() {
+        let leters = '';
+        const customRandom = (min, max) => {
+            return Math.floor(Math.random() * (max - min)) + min;
+        }
+        const randomThreeDigs = (min, max) => {
+            let str = Math.floor(Math.random() * (max - min)) + min;
+            if (str.toString().length == 2) str = '0' + str;
+            if (str.toString().length == 1) str = '00' + str;
+            return str;
+        }
+        const setOfLeters = 'АВУКМНОРСТУХ';
+        const strNumDigs = randomThreeDigs(1, 999);
+        let regionDig = String(randomThreeDigs(1, 999));
+        regionDig = regionDig.substr(1, 2);
+        for (let i = 0; i < 3; i++) {
+            leters += setOfLeters[customRandom(0, setOfLeters.length - 1)];
+        };
+        const CarNumberString = leters[0] + String(randomThreeDigs(1, 999)) + leters[1] + leters[2] + '/' + regionDig;
+        return CarNumberString
+    }
+    async generateTrackerNumber(name: string) {
+        const randomTrackerName = Math.floor(Math.random() * 90000000) + 10000;
+        const trackerNumber = `${name}${randomTrackerName}`
+        return trackerNumber
+    }
 }
 
 export default SupportAPIRequestsClient;

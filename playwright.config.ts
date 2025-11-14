@@ -46,7 +46,7 @@ export default defineConfig({
       use: {
 
         extraHTTPHeaders: {
-          'X-ClientId': 'dev-tests'
+          'X-ClientId': 'dev-tests' //добавляем в header доп данные, чтоб бек не выдавал 429 на генерацию токена
         },
         ...devices['Desktop Chrome']
       },

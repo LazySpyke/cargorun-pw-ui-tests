@@ -35,7 +35,7 @@ test.describe('Проверка отчётов с данными одометр�
         });
         await test.step('создание и приаязка новой машины и т д', async () => {
             await debugApi.init();
-            newEntity = await debugApi.newCarTracker(await getAuthData(adminId), await getAuthData(36), "О444ОО/798", "trackjal6", moment().subtract(14, 'd').format("YYYY-MM-DDT00:00:00+03:00"))
+            newEntity = await debugApi.newCarTracker(await getAuthData(adminId), await getAuthData(36), await emulatorApi.generateCarNumber(), await emulatorApi.generateTrackerNumber('ote'), moment().subtract(14, 'd').format("YYYY-MM-DDT00:00:00+03:00"))
             console.log(newEntity)
             await page.waitForTimeout(25000)
         })
@@ -102,7 +102,7 @@ test.describe('Проверка отчётов с данными одометр�
             await page.goto(`${process.env.url}/bids/bid/${bidResponse.id}`)
             await expect(page.getByTestId('fact-distance')).toHaveText('501') //активный по одометру
             await page.goto(`${process.env.url}/bids/bid/${secondBidResponse.id}`)
-            await expect(page.locator('fact-distance')).toHaveText('1 127') //активный по одометру
+            await expect(page.getByTestId('fact-distance')).toHaveText('1 127') //активный по одометру
             await expect(page.getByTestId('fact-empty-mileage-distance')).toHaveText('1 409') //порожний по одометру
         })
         //TODO изменения дат использования одометра

@@ -15,5 +15,6 @@
     "source.fixAll.eslint": "explicit"
   },
   "cSpell.languageSettings": [],
-  "cSpell.language": "en,ru"
+  "cSpell.language": "en,ru",
+  "cSpell.words": ["автоперемещения", "саморегистарции", "саморегистрации"]
 }

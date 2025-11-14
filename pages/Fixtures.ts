@@ -25,11 +25,11 @@ export class BidCreateInfo {
   async CommonBid() {
     const clienApi = new APIRequestsClient();
     const carForBid = await clienApi.getCar(
-      `${process.env.url}/api/car/getlist?$filter=(isDeleted%20eq%20false)&$orderby=id%20desc&$top=20&$skip=0`,
+      `${process.env.url}/api/car/getlist?$filter=(isDeleted%20eq%20false)&$orderby=id%20desc&$top=100&$skip=0`,
       await getAuthData(36)
     );
     const driverForBid = await clienApi.GetObjectResponse(
-      `${process.env.url}/api/driver/getlist?checkOnline=true&withDeleted=true&$filter=(isDeleted%20eq%20false)&$orderby=id%20desc&$top=10&$skip=0`,
+      `${process.env.url}/api/driver/getlist?checkOnline=true&withDeleted=true&$filter=(isDeleted%20eq%20false)&$orderby=id%20desc&$top=100&$skip=0`,
       await getAuthData(36)
     );
     const trailerForBid = await clienApi.GetObjectResponse(
@@ -61,7 +61,7 @@ export class BidCreateInfo {
   async EmptyBid() {
     const clienApi = new APIRequestsClient();
     const carForBid = await clienApi.getCar(
-      `${process.env.url}/api/car/getlist?$filter=(isDeleted%20eq%20false)&$orderby=id%20desc&$top=20&$skip=0`,
+      `${process.env.url}/api/car/getlist?$filter=(isDeleted%20eq%20false)&$orderby=id%20desc&$top=100&$skip=0`,
       await getAuthData(36)
     );
     const driverForBid = await clienApi.GetObjectResponse(
@@ -141,13 +141,13 @@ export class BidCreateInfo {
     await bidApi.init();
     if (carFilter == null) {
       carForBid = await clienApi.getCar(
-        `${process.env.url}/api/car/getlist?$filter=(isDeleted%20eq%20false)&$orderby=id%20desc&$top=20&$skip=0`,
+        `${process.env.url}/api/car/getlist?$filter=(isDeleted%20eq%20false)&$orderby=id%20desc&$top=100&$skip=0`,
         await getAuthData(userIdForFilter), reuseCar
       );
     }
     else {
       carForBid = await clienApi.getCar(
-        `${process.env.url}/api/car/getlist?$filter=${carFilter}&$orderby=lastFixedAt%20desc&$top=20&$skip=0`,
+        `${process.env.url}/api/car/getlist?$filter=${carFilter}&$orderby=lastFixedAt%20desc&$top=100&$skip=0`,
         await getAuthData(userIdForFilter), reuseCar
       );
     }

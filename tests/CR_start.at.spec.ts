@@ -70,12 +70,9 @@ test.describe('Самостоятельная регистрация', () => {
       await page.locator('[type="submit"]').click();
       // await expect(page.locator("//DIV[@class='message']")).toHaveText("Вы успешно зарегистрировались, можете войти в систему")
       // await page.locator(`//DIV[@class='message'][text()="Вы успешно зарегистрировались, можете войти в систему"]`)
-      await page.waitForTimeout(600000);
+      await page.waitForTimeout(5000);
     });
     await test.step('авторизация и ввод данных системы мониторинга', async () => {
-      // await page.locator('[type="email"]').fill(newCompany.email)
-      // await page.locator('[type="password"]').fill(newCompany.password)
-      // await page.locator('[type="submit"]').click();
       await page.selectOption('#type', { label: 'Виалон (Wialon)' });
       await page.waitForTimeout(5000);
       await page.locator('[name="host"]').fill(process.env.relayCopyWialonHost as string)
@@ -128,7 +125,7 @@ test.describe('Самостоятельная регистрация', () => {
       await page.locator('[data-confirm-buttontext="Удалить"]:visible').click();
       await page.locator("//button[@type='button'][contains(text(),'Удалить')]").click();
     });
-    await test.step('Проверка появления в списке организаци и проверка фильтра по саморегистарции', async () => {
+    await test.step('Проверка появления в списке организации и проверка фильтра по саморегистрации', async () => {
       const loginPage = new LoginPage(page);
       await loginPage.goto()
       await page.getByTestId('header-logout').click();
