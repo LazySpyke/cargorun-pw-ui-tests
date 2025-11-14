@@ -299,7 +299,7 @@ export class BidPage {
       planLeaveDate: '',
     });
     await this.page.locator("//INPUT[@type='submit']").click();
-    await this.page.locator("//DIV[@class='message'][text()='Ваш запрос выполнен успешно.']").isVisible();
+    await expect(this.page.getByText('Ваш запрос выполнен успешно')).toBeVisible();
     await this.page.locator("//DIV[@class='book-form__close close close--sm']").click();
     await this.page.locator("//SPAN[@class='badge badge-light'][text()='Черновик']").isVisible({ timeout: 10000 });
     await this.page.locator("//SMALL[@class='pl-1 icon-uEA90-bolt b-point__tooltip-icon']").isVisible();
@@ -340,7 +340,7 @@ export class BidPage {
       isDistribution: true
     });
     await this.page.locator("//INPUT[@type='submit']").click();
-    await this.page.locator("//DIV[@class='message'][text()='Ваш запрос выполнен успешно.']").isVisible();
+    await expect(this.page.getByText('Ваш запрос выполнен успешно')).toBeVisible();
     await this.page.locator("//SPAN[@class='badge badge-secondary'][text()='Без заявки']").isVisible({ timeout: 10000 });
     await this.page.locator("//SMALL[@class='pl-1 icon-uEA90-bolt b-point__tooltip-icon']").isVisible();
   }
@@ -368,7 +368,7 @@ export class BidPage {
       planLeaveDate: '',
     });
     await this.page.locator("//INPUT[@type='submit']").click();
-    await this.page.locator("//DIV[@class='message'][text()='Ваш запрос выполнен успешно.']").isVisible();
+    await expect(await this.page.getByText('Ваш запрос выполнен успешно')).toBeVisible();
     await this.page.locator("//DIV[@class='book-form__close close close--sm']").click();
     await this.page.locator("//SPAN[@class='badge badge-light'][text()='Черновик']").isVisible({ timeout: 10000 });
     await this.page.locator("//SMALL[@class='pl-1 icon-uEA90-bolt b-point__tooltip-icon']").isVisible();

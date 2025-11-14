@@ -58,7 +58,7 @@ test.describe('Отчёты по Изменению стоимости заяв�
             await page.locator("//div[@class='inline-btn inline-btn--edit']").first().click();
             await page.locator('input[name="price"]').fill('50000')
             await page.locator('input[value="Обновить заявку"]').click();
-            await page.locator("//DIV[@class='message'][text()='Ваш запрос выполнен успешно.']").isVisible();
+            await expect(page.getByText('Ваш запрос выполнен успешно')).toBeVisible();
             await page.waitForTimeout(5000);
         });
         await test.step('запуск заявки в работу и смена данных по цене', async () => {
@@ -68,7 +68,7 @@ test.describe('Отчёты по Изменению стоимости заяв�
             await page.locator("//div[@class='inline-btn inline-btn--edit']").first().click();
             await page.locator('input[name="price"]').fill('25000')
             await page.locator('input[value="Обновить заявку"]').click();
-            await page.locator("//DIV[@class='message'][text()='Ваш запрос выполнен успешно.']").isVisible();
+            await expect(page.getByText('Ваш запрос выполнен успешно')).toBeVisible();
             await page.waitForTimeout(5000);
         });
         await test.step('Проверка Отчет по изменениям стоимости в заявках', async () => {

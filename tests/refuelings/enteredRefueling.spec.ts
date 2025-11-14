@@ -1,4 +1,4 @@
-import { test } from '@playwright/test';
+import { test, expect } from '@playwright/test';
 import { LoginPage } from '../../pages/LoginPage';
 import { getAuthData } from '../../database';
 import { BidCreateInfo } from '../../pages/Fixtures';
@@ -68,7 +68,7 @@ test.describe('АЗС тесты', () => {
             await page.locator("//div[@class='dropdown__btn']").click();
             await page.locator(`//div[@class="dropdown__item"][contains(text(),'Перерасчет')]`).click();
             await page.locator("//div[@class='btn btn-brand btn-sm modal-window__footer-action']").click();
-            await page.locator("//DIV[@class='message'][text()='Ваш запрос выполнен успешно.']").isVisible();
+            await expect(page.getByText('Ваш запрос выполнен успешно')).toBeVisible();
             const lastTrackerCarInfo = await clienApi.GetObjectResponse(
                 `${process.env.url}/api/Map/GetLastCarsLocations?$filter=car/id%20eq%20${bidInfo.carOption.carId}`,
                 await getAuthData(adminId)

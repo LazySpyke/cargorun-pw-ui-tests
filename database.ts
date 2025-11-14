@@ -60,10 +60,8 @@ export const getAuthData = async (userId: number) => {
   const res = await client.query("SELECT * FROM auth WHERE userid = $1 ORDER BY id DESC", [
     userId
   ]);
-  console.log(res)
   const onlyToken: string = JSON.parse(
     res.rows[0].info).accessToken.token.toString();
-  console.log(`${res.rows[0].info}`);
   return `Bearer ${onlyToken}`;
 };
 

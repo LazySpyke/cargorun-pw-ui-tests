@@ -64,7 +64,7 @@ test.describe('Учёт кастомных точек', () => {
             await page.locator('input[name="planEnterDate_1"]').fill(moment().subtract(3, 'd').format("DD.MM.YYYY HH:mm"))
             await page.locator('input[name="planLeaveDate_1"]').fill(moment().subtract(3, 'd').add(1, 'h').format("DD.MM.YYYY HH:mm"))
             await page.locator('input[value="Обновить заявку"]').click();
-            await page.locator("//DIV[@class='message'][text()='Ваш запрос выполнен успешно.']").isVisible();
+            await expect(page.getByText('Ваш запрос выполнен успешно')).toBeVisible();
             await page.waitForTimeout(5000);
         });
         await test.step('Отправка данных посещения точек', async () => {
@@ -128,7 +128,7 @@ test.describe('Учёт кастомных точек', () => {
             await page.locator('input[name="planEnterDate_1"]').fill(moment().subtract(3, 'd').format("DD.MM.YYYY HH:mm"))
             await page.locator('input[name="planLeaveDate_1"]').fill(moment().subtract(3, 'd').add(1, 'h').format("DD.MM.YYYY HH:mm"))
             await page.locator('input[value="Обновить заявку"]').click();
-            await page.locator("//DIV[@class='message'][text()='Ваш запрос выполнен успешно.']").isVisible();
+            await expect(page.getByText('Ваш запрос выполнен успешно')).toBeVisible();
             await page.waitForTimeout(5000);
         });
         await test.step('Отправка данных посещения точек 2', async () => {

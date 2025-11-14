@@ -130,7 +130,7 @@ test.describe('Учёт факт дат, при не фиксации выезд
             await page.locator('[class="leaflet-popup-content"]').isVisible();
             await expect(page.locator("//small[@class='text-muted']")).toHaveText('Россия, Республика Татарстан (Татарстан), Набережные Челны, Машиностроительная улица, 91А')
             await page.locator('[class="btn btn-xs btn-brand"]').click();
-            await page.locator("//DIV[@class='message'][text()='Ваш запрос выполнен успешно.']").isVisible();
+            await expect(page.getByText('Ваш запрос выполнен успешно')).toBeVisible();
             await page.waitForTimeout(120000);
             await page.locator("//span[contains(text(),'На загрузке')]").isVisible(); //ожидаю что точка будет в статусе Загурзился
         });

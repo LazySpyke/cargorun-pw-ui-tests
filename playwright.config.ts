@@ -16,7 +16,7 @@ export default defineConfig({
   fullyParallel: false,
   // timeout: 10000,
   expect: {
-    timeout: 120000,
+    timeout: 30000,
   },
   timeout: 35000000, //надо из-за тестов с датчиками
   /* Fail the build on CI if you accidentally left test.only in the source code. */

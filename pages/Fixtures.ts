@@ -184,7 +184,7 @@ export class BidCreateInfo {
       );
       legalPerson = legalPerson[0].id
     }
-    const emptyBidFlag = isEmpty ?? false;
+    // const emptyBidFlag = isEmpty ?? false;
 
     const loadPoint = await bidApi.getMixedAddress(
       loadAddress,
@@ -196,7 +196,7 @@ export class BidCreateInfo {
     );
     const paymentPaidStatus = paymentStatus ?? null; //статус оплаты, так как без модуля дебиторской задолженности работать не будет
     const apiBidBody = {
-      isEmpty: emptyBidFlag,
+      isEmpty: isEmpty ?? false,
       isExpressBid: false,
       legalPersonId: legalPerson,
       responsibleId: responsibleId,

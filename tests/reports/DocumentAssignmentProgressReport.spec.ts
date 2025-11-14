@@ -1,4 +1,4 @@
-import { test } from '@playwright/test';
+import { test, expect } from '@playwright/test';
 import { LoginPage } from '../../pages/LoginPage';
 import { getAuthData } from '../../database';
 import { BidCreateInfo } from '../../pages/Fixtures';
@@ -55,7 +55,7 @@ test.describe('Отчёты по работе водителей с задани
             await page.locator("//div[@class='inline-btn inline-btn--edit']").first().click();
             await page.locator('span[name="createDocumentAssignment"]').click();
             await page.locator('input[value="Обновить заявку"]').click();
-            await page.locator("//DIV[@class='message'][text()='Ваш запрос выполнен успешно.']").isVisible();
+            await expect(page.getByText('Ваш запрос выполнен успешно')).toBeVisible();
         })
         await test.step('завершение заявки', async () => {
             await page.waitForTimeout(120000);

@@ -26,15 +26,15 @@ test.describe('Работа с задачами на пересменку', () =
         await loginPage.goto(); // Переходим на страницу логина перед каждым тестом
     });
 
-    test('Создание обычной заявки', async ({ page }) => {
+    test('Создание обычной заявки', async ({ page, context }) => {
         await test.step('Логин', async () => {
-            await loginPage.login(process.env.emptyCompanyEmail as string, process.env.emptyCompanyPassword as string);
+            await loginPage.login(process.env.emptyTaskDriverChangeEmail as string, process.env.emptyTaskDriverChangePassword as string);
         });
         await test.step('создание и привязка новой машины и т д', async () => {
             await debugApi.init();
             newEntity = await debugApi.newCarTracker(await getAuthData(adminId), await getAuthData(36), await emulatorApi.generateCarNumber(), await emulatorApi.generateTrackerNumber('ict'), moment().subtract(7, 'd').format("YYYY-MM-DDT00:00:00+03:00"), 1380601)
             console.log(newEntity)
-            await page.waitForTimeout(25000)
+            await page.waitForTimeout(5000)
         })
         await test.step('Создание заявки и запуск в работу', async () => {
             // await debugApi.init();
@@ -83,19 +83,29 @@ test.describe('Работа с задачами на пересменку', () =
             await page.getByText('MAN').nth(locatorBrandCount).click();
 
             await page.locator('#vehicle_type_idContainer').click();
-            await page.waitForTimeout(5000)
+            await page.waitForTimeout(500)
             const locatorTypeName = page.getByText('Тягач');
             const locatorTypeCount = await locatorTypeName.count();
-            await page.waitForTimeout(2500)
+            await page.waitForTimeout(500)
             await page.getByText('Тягач').nth(locatorTypeCount - 1).click();
             await page.getByRole('button', { name: 'Создать' }).click();
             await expect(page.locator('[class="Toastify__toast Toastify__toast-theme--light Toastify__toast--success Toastify__toast--close-on-click"]')).toBeVisible();
 
             await page.getByRole('link', { name: ' Смены' }).click();
+            await page.waitForTimeout(10000);
+            const changeLocator = await page.locator('[class="font-weight-bold"]');
+            const countLocator = await changeLocator.count()
+            for (let deleteDriverChange = 0; deleteDriverChange < await countLocator; deleteDriverChange++) {
+                await changeLocator.first().click();
+                await page.locator('//div[@class="popup-dropdown__item popup-dropdown__item--right-arrow"][text()="Удалить"]').click();
+                await page.locator('//div[@class="popup-dropdown__item"][text()="Удалить смену"]').click();
+                await page.locator('[class="btn btn-brand btn-sm modal-window__footer-action"]').click();
+                await expect(page.locator('[class="Toastify__toast Toastify__toast-theme--light Toastify__toast--success Toastify__toast--close-on-click"]')).toBeVisible();
+            }
             await page.getByText('Добавить смену').click();
 
-            await page.locator('[name="start_time"]').fill(moment().subtract(7, 'd').format("DD.MM.YYYY HH:mm"))
-            await page.locator('[name="end_time"]').fill(moment().add(1, 'd').format("DD.MM.YYYY HH:mm"))
+            await page.locator('[name="start_time"]').fill(moment().subtract(7, 'd').format("DD.MM.YYYY 00:00"))
+            await page.locator('[name="end_time"]').fill(moment().add(1, 'd').format("DD.MM.YYYY 00:00"))
 
 
             await page.locator('#driver1_idContainer').click();
@@ -106,7 +116,9 @@ test.describe('Работа с задачами на пересменку', () =
             await page.getByText('Перецепляемый Тасковый').nth(locatorDriverCount - 1).click();
 
             await page.locator('#vehicle_idContainer').first().click();
-            await page.locator(`text=${bidInfo.carOption.number}`).first().click();
+            await page.locator('#vehicle_idContainer').type(`${bidInfo.carOption.number}`)
+            await page.waitForTimeout(5000)
+            await page.locator('#vehicle_idContainer').press('Tab')
             // await page.getByText('УН2943/96').click();
             await page.locator('input[name="address"]').click();
             await page.locator('[class="map__picker-field"]').fill('Иваново')
@@ -123,7 +135,9 @@ test.describe('Работа с задачами на пересменку', () =
         await test.step('создание пересменки на машину в Эксплуатации(НК)', async () => {
             await page.locator('[class="b-filter__collapse-btn b-filter__collapse-btn--bottom"]').click();
             await page.locator('#vehicle_idContainer').first().click();
-            await page.locator(`text=${bidInfo.carOption.number}`).first().click();
+            await page.locator('#vehicle_idContainer').type(`${bidInfo.carOption.number}`)
+            await page.waitForTimeout(5000)
+            await page.locator('#vehicle_idContainer').press('Tab')
             await page.waitForTimeout(1500);
             await page.locator('[class="b-filter__btn b-filter__btn--refresh"]').click();
             await page.waitForTimeout(5000);
@@ -142,7 +156,30 @@ test.describe('Работа с задачами на пересменку', () =
         })
         await test.step('вызов фонового таска на создание задач и проверка данных созданной задачи', async () => {
             await debugApi.runTask('ICreateLogistTasksReminderGrain', await getAuthData(36))
-            // await loginPage.login(process.env.emptyCompanyEmail as string, process.env.emptyCompanyPassword as string);
+            await page.waitForTimeout(30000);
+            await loginPage.goto(); // Переходим на страницу логина перед каждым тестом
+            await page.locator('[title="Задачи"]').click();
+            await page.locator('[class="b-filter__collapse-btn b-filter__collapse-btn--bottom"]').click();
+            await page.waitForTimeout(500)
+            await page.locator('#typeContainer').click();
+            await page.waitForTimeout(500)
+            await page.getByRole('option', { name: 'Отправить машину для пересменки' }).click();
+            await page.waitForTimeout(3000);
+
+            await expect(page.locator('[class="pb-1 font-weight-bold"]')).toHaveText(`Отправить ТС ${bidInfo.carOption.number} в для пересменки Перецепляемый Тасковый`)
+            await page.getByRole('link', { name: '#' }).click();
+            await expect(page.getByText('Change item Task')).toBeVisible();
+            await page.waitForTimeout(5000)
+            const pages = await context.pages();
+            const secondPage = pages[1];
+            // await expect(await secondPage.getByText('Перецепляемый Тасковый').nth(1)).toHaveText("+74987778978")
+            await expect(await secondPage.locator('div').filter({ hasText: `${bidInfo.carOption.number}` })).toBeVisible();
+            await expect(await secondPage.getByText(`Плановая дата: ${moment().add(1, 'd').format("DD.MM.YYYY 00:00")}`)).toBeVisible();
+            await expect(await secondPage.getByText('ФИО водителя (сменяемого): Перецепляемый Тасковый')).toBeVisible();
+            await expect(await secondPage.locator('[class="leaflet-marker-icon map-icon--item-changes leaflet-zoom-animated leaflet-interactive"]')).toBeVisible();
+            await expect(await secondPage.locator('[class="badge badge-primary"]')).toContainText('Просмотрено')
+            await secondPage.getByText('Принял').click();
+            await expect(secondPage.getByText('Ваш запрос выполнен успешно')).toBeVisible();
         })
     })
 })
