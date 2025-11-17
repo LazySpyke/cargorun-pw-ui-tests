@@ -113,7 +113,8 @@ export class BidCreateInfo {
     paymentStatus,
     reuseCar,
     cargoOwnerFilter,
-    legalPersonFilter
+    legalPersonFilter,
+    driverFilter
   }: {
     responsibleId?: number;
     salesManagerId?: number;
@@ -132,12 +133,14 @@ export class BidCreateInfo {
     paymentStatus?: string,
     reuseCar?: boolean,
     cargoOwnerFilter?: string,
-    legalPersonFilter?: string
+    legalPersonFilter?: string,
+    driverFilter?: string
   }) {
     const clienApi = new APIRequestsClient();
     let carForBid: any
     let cargoOwner: any
     let legalPerson: any
+    let driverForBid: any
     await bidApi.init();
     if (carFilter == null) {
       carForBid = await clienApi.getCar(
@@ -151,10 +154,18 @@ export class BidCreateInfo {
         await getAuthData(userIdForFilter), reuseCar
       );
     }
-    const driverForBid = await clienApi.GetObjectResponse(
-      `${process.env.url}/api/driver/getlist?checkOnline=true&withDeleted=true&$filter=(isDeleted%20eq%20false)&$orderby=id%20desc&$top=10&$skip=0`,
-      await getAuthData(userIdForFilter)
-    );
+    if (driverFilter == null) {
+      driverForBid = await clienApi.GetObjectResponse(
+        `${process.env.url}/api/driver/getlist?checkOnline=true&withDeleted=true&$filter=(isDeleted%20eq%20false)&$orderby=id%20desc&$top=10&$skip=0`,
+        await getAuthData(userIdForFilter)
+      );
+    }
+    else {
+      driverForBid = await clienApi.GetObjectResponse(
+        `${process.env.url}/api/driver/getlist?checkOnline=true&withDeleted=true&$filter=${driverFilter}&$orderby=id%20desc&$top=10&$skip=0`,
+        await getAuthData(userIdForFilter)
+      );
+    }
     const trailerForBid = await clienApi.GetObjectResponse(
       `${process.env.url}/api/trailer/getlist?$filter=(isDeleted%20eq%20false)&$orderby=id%20desc&$top=10&$skip=0&withDeleted=true`,
       await getAuthData(userIdForFilter)

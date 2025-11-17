@@ -1,6 +1,6 @@
 // Пример использования:
 const startValue: number = 1000;
-const startDate: string = moment().subtract(7, 'd').format("YYYY-MM-DDTHH:mm:ssZ")
+const startDate: string = moment().subtract(30, 'd').format("YYYY-MM-DDTHH:mm:ssZ")
 import { test, expect } from '@playwright/test';
 import { LoginPage } from '../../pages/LoginPage';
 import { getAuthData } from '../../database';
@@ -35,7 +35,7 @@ test.describe('Проверка отчётов с данными одометр�
         });
         await test.step('создание и приаязка новой машины и т д', async () => {
             await debugApi.init();
-            newEntity = await debugApi.newCarTracker(await getAuthData(adminId), await getAuthData(36), await emulatorApi.generateCarNumber(), await emulatorApi.generateTrackerNumber('ote'), moment().subtract(14, 'd').format("YYYY-MM-DDT00:00:00+03:00"))
+            newEntity = await debugApi.newCarTracker(await getAuthData(adminId), await getAuthData(36), await emulatorApi.generateCarNumber(), await emulatorApi.generateTrackerNumber('ote'), moment().subtract(31, 'd').format("YYYY-MM-DDT00:00:00+03:00"))
             console.log(newEntity)
             await page.waitForTimeout(25000)
         })
@@ -46,11 +46,11 @@ test.describe('Проверка отчётов с данными одометр�
                 price: 100000,
                 paymentTypeId: 176,
                 ndsTypeId: 175,
-                planEnterLoadDate: moment().subtract(7, 'd').format('YYYY-MM-DDTHH:mm'),
-                planEnterUnloadDate: moment().subtract(6, 'd').format('YYYY-MM-DDTHH:mm'),
+                planEnterLoadDate: moment().subtract(30, 'd').format('YYYY-MM-DDTHH:mm'),
+                planEnterUnloadDate: moment().subtract(16, 'd').format('YYYY-MM-DDTHH:mm'),
                 carFilter: `id eq ${await newEntity.newCarId}`,
-                loadAddress: 'Челны',
-                unloadAddress: 'Уфа',
+                loadAddress: 'Санкт-Петербург',
+                unloadAddress: 'Владивосток',
                 userIdForFilter: adminId
             });
             await bidApi.init();
@@ -66,21 +66,22 @@ test.describe('Проверка отчётов с данными одометр�
             await emulatorApi.init();
             bidInfoResponse = await bidApi.GetBidInfo(bidResponse.id, await getAuthData(adminId));
 
-            await emulatorApi.coordinatSend(bidInfo.carOption.carTracker, moment().subtract(7, 'd').format("YYYY-MM-DDTHH:mm:ss+00:00"), bidInfoResponse.bidPoints[0].geozone.location.coordinates, [bidInfoResponse.bidPoints[0].geozone.location.coordinates, bidInfoResponse.bidPoints[1].geozone.location.coordinates], null, "08:10:00")
+            await emulatorApi.coordinatSend(bidInfo.carOption.carTracker, moment().subtract(30, 'd').format("YYYY-MM-DDTHH:mm:ss+00:00"), bidInfoResponse.bidPoints[0].geozone.location.coordinates, [bidInfoResponse.bidPoints[0].geozone.location.coordinates, bidInfoResponse.bidPoints[1].geozone.location.coordinates], null, "08:10:00", 30)
             await page.waitForTimeout(50000);
-            await debugApi.applyOdometerValues(await getAuthData(36), newEntity.newTrackerId, startValue, startDate, 200)
+            await debugApi.applyOdometerValues(await getAuthData(36), newEntity.newTrackerId, startValue, startDate, 500)
         });
         await test.step('создание второй заявки где дата позже', async () => {
+            await page.waitForTimeout(60000);
             const bidFixture = new BidCreateInfo(page);
             secondBidInfo = await bidFixture.ApiCommonBid({
                 price: 100000,
                 paymentTypeId: 176,
                 ndsTypeId: 175,
-                planEnterLoadDate: moment().subtract(4, 'd').format('YYYY-MM-DDTHH:mm'),
+                planEnterLoadDate: moment().subtract(15, 'd').format('YYYY-MM-DDTHH:mm'),
                 planEnterUnloadDate: moment().subtract(1, 'h').format('YYYY-MM-DDTHH:mm'),
                 carFilter: `(isDeleted eq false and id eq ${bidInfo.carOption.carId})`,
-                loadAddress: 'Набережные Челны',
-                unloadAddress: 'Нижний Новгород',
+                loadAddress: 'Улан-удэ',
+                unloadAddress: 'Москва',
                 userIdForFilter: adminId,
                 reuseCar: true
             });
@@ -88,13 +89,13 @@ test.describe('Проверка отчётов с данными одометр�
             secondBidResponse = await bidApi.apply(secondBidInfo, await getAuthData(adminId));
             await bidApi.setStatus(secondBidResponse.id, await getAuthData(adminId));
             secondBidInfoResponse = await bidApi.GetBidInfo(secondBidResponse.id, await getAuthData(adminId));
-            // const lastTrackerCarInfo = await clienApi.GetObjectResponse(
-            //     `${process.env.url}/api/Map/GetLastCarsLocations?$filter=car/id%20eq%20${bidInfo.carOption.carId}`,
-            //     await getAuthData(adminId)
-            // );
-            await emulatorApi.coordinatSend(bidInfo.carOption.carTracker, `${moment().subtract(3, 'd').format("YYYY-MM-DDTHH:mm:ss")}+00:00`, null, [secondBidInfoResponse.bidPoints[0].geozone.location.coordinates, secondBidInfoResponse.bidPoints[1].geozone.location.coordinates], null, "00:10:00")
+            const lastTrackerCarInfo = await clienApi.GetObjectResponse(
+                `${process.env.url}/api/Map/GetLastCarsLocations?$filter=car/id%20eq%20${bidInfo.carOption.carId}`,
+                await getAuthData(adminId)
+            );
+            await emulatorApi.coordinatSend(bidInfo.carOption.carTracker, lastTrackerCarInfo[0].fixedAt, lastTrackerCarInfo[0].location.coordinates, [secondBidInfoResponse.bidPoints[0].geozone.location.coordinates, secondBidInfoResponse.bidPoints[1].geozone.location.coordinates], null, "16:00:00", 30)
             //TODO допилить проверку на данные что активный км считается даже без выезда из нулевой
-            await debugApi.applyOdometerValues(await getAuthData(36), newEntity.newTrackerId, startValue + 2000, moment().subtract(3, 'd').format("YYYY-MM-DDTHH:mm:ssZ"), 500)
+            await debugApi.applyOdometerValues(await getAuthData(36), newEntity.newTrackerId, startValue + 15000, moment().subtract(3, 'h').format("YYYY-MM-DDTHH:mm:ssZ"), 500)
             await page.waitForTimeout(54000)
         })
         await test.step('проверка данных заявок', async () => {

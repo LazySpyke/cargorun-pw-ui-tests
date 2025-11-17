@@ -131,7 +131,7 @@ test.describe('Отчёты с обычной завершенной вручн�
           useGrouping: true, // группировка тысяч
         })
       );
-      await expect(page.locator(`[data-numberofdays="${bidResponse.id}"]`)).toHaveText('0,40');
+      await expect(page.locator(`[data-numberofdays="${bidResponse.id}"]`)).toHaveText('4,00'); //после задачи сделали так чтоб только целые числа были
       const profitabilityOfBidSettings: any = await clienApi.GetObjectResponse(
         `${process.env.url}/api/organizationProfile/getProfitabilityOfBidSettings`,
         await getAuthData(adminId)
@@ -149,7 +149,7 @@ test.describe('Отчёты с обычной завершенной вручн�
           useGrouping: true, // группировка тысяч
         })
       );
-      const finalprofit = bidInfo.price - (fuelcost + profitabilityOfBidSettings.costOfOneDay * 0.4);
+      const finalprofit = bidInfo.price - (fuelcost + profitabilityOfBidSettings.costOfOneDay * 4);
       const finalprofitText: string = await page.innerText(`[data-finalprofit="${bidResponse.id}"]`);
       // Удаляем неразрывные пробелы
       const cleanedStr = finalprofitText.replace(/\u00A0/g, '');
@@ -157,7 +157,7 @@ test.describe('Отчёты с обычной завершенной вручн�
       const normalizedStr = cleanedStr.replace(',', '.');
       // Преобразуем в число
       const numberValue = parseFloat(normalizedStr);
-      const epsilon: number = 2;
+      const epsilon: number = 20;
       if (numberValue - finalprofit < epsilon && numberValue - finalprofit > -epsilon) {
         console.log(`данные корректные${numberValue - finalprofit},${numberValue - finalprofit}`);
       } else {

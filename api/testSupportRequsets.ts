@@ -60,7 +60,7 @@ class SupportAPIRequestsClient {
         return result;
     }
     //TODO реализовать генератор json'ки и больше параметров для датчиков
-    async coordinatSend(trakerImei: string, startTime?: string, startPoint?: [], routePoints?: any[], sensors?, stopDuration?: string,): Promise<any> {
+    async coordinatSend(trakerImei: string, startTime?: string, startPoint?: [], routePoints?: any[], sensors?, stopDuration?: string, SpeedKmh?: number): Promise<any> {
         if (!this.context) {
             throw new Error('SupportAPIRequestsClient is not initialized. Call init() first.');
         }
@@ -82,7 +82,7 @@ class SupportAPIRequestsClient {
                         "Longitude": startPoint[0]
                     },
                     "RandomPointBounds": null,
-                    "SpeedKmh": 80,
+                    "SpeedKmh": SpeedKmh ?? 80,
                     "Scripts":
                         jsonForRoute
                     ,
