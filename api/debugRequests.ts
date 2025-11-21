@@ -70,7 +70,7 @@ class DebugAPIRequestsClient {
     }
 
 
-    async newCarTracker(userToken: string, roottoken: string, carNumber?: string, carTracker?: string, beginDate?: string, logistId?: number): Promise<any> {
+    async newCarTracker(userToken: string, roottoken: string, carNumber?: string, carTracker?: string, beginDate?: string, logistId?: number, kolumnId?: number): Promise<any> {
         if (!this.context) {
             throw new Error('APIRequestContext is not initialized. Call init() first.');
         }
@@ -95,7 +95,8 @@ class DebugAPIRequestsClient {
                 "isValid": true,
                 "number": carNumber,
                 "brandTypeId": 155,
-                "typeId": 166,
+                "typeId": 10761094,
+                "transportColumnId": kolumnId ?? null,
                 "logistId": logistId ?? null,
                 "fuelTanks":
                     [{

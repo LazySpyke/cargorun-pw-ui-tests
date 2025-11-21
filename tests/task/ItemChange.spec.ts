@@ -165,7 +165,6 @@ test.describe('Работа с задачами на пересменку', () =
             await page.waitForTimeout(500)
             await page.getByRole('option', { name: 'Отправить машину для пересменки' }).click();
             await page.waitForTimeout(3000);
-
             await expect(page.locator('[class="pb-1 font-weight-bold"]')).toHaveText(`Отправить ТС ${bidInfo.carOption.number} в для пересменки Перецепляемый Тасковый`)
             await page.getByRole('link', { name: '#' }).click();
             await expect(page.getByText('Change item Task')).toBeVisible();

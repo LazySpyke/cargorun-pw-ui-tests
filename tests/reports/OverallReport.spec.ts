@@ -9,6 +9,8 @@ import APIRequestsClient from '../../api/clienApiRequsets';
 import api from '../../api/apiRequests';
 import APIBid from '../../api/bidApi';
 import SupportAPIRequestsClient from '../../api/testSupportRequsets'
+const startValue: number = 1000;
+const startDate: string = moment().subtract(30, 'd').format("YYYY-MM-DDTHH:mm:ssZ")
 const clienApi = new APIRequestsClient();
 const bidApi = new APIBid();
 const emulatorApi = new SupportAPIRequestsClient();
@@ -16,6 +18,7 @@ const debugApi = new DebugAPIRequestsClient();
 const apiUse = new api();
 let bidInfo: any;
 const adminId = 36
+const secondAdminId = 1305211
 const bio = {
     firstName: faker.person.firstName(),
     lastName: faker.person.lastName(),
@@ -24,6 +27,17 @@ const bio = {
     comment: `${moment().format()}Cсылки на документы`,
     id: 0
 };
+const logist = {
+    email: `${faker.word.sample()}-${faker.word.sample()}@cargorun.ru`,
+    password: "vjdq4k",
+    firstName: faker.person.firstName(),
+    lastName: faker.person.lastName(),
+    patronymic: faker.person.middleName(),
+    phoneNumber: faker.phone.number({ style: 'international' }),
+    sendLoginData: false
+}
+const kolumn = { "isValid": true, "name": `${faker.word.sample()}-${faker.word.sample()}` }
+
 test.describe('Проверка отчётов с данными одометра', () => {
     let loginPage: LoginPage;
     let bidResponse: any;
@@ -33,6 +47,8 @@ test.describe('Проверка отчётов с данными одометр�
     let secondBidInfoResponse: any
     let newEntity: any;
     let newDriver: any;
+    let filterLogist: any
+    let newKolumn: any;
     test.beforeEach(async ({ page }) => {
         loginPage = new LoginPage(page);
         await loginPage.goto(); // Переходим на страницу логина перед каждым тестом
@@ -45,12 +61,19 @@ test.describe('Проверка отчётов с данными одометр�
             await apiUse.init();
             newDriver = await apiUse.postData(`${process.env.url}/api/driver/apply`, bio, await getAuthData(adminId))
             console.log(newDriver)
+            const newLogist = await apiUse.postData(`${process.env.url}/api/organizationEmployees/applyUser`, logist, await getAuthData(adminId))
+            console.log(newLogist)
+            newKolumn = await apiUse.postData(`${process.env.url}/api/transportColumns/apply`, kolumn, await getAuthData(adminId))
+            console.log(newKolumn)
+            filterLogist = await clienApi.GetObjectResponse(
+                `${process.env.url}/api/adminpanel/getAllUsers?$filter=(contains(tolower(email),'${logist.email}') and roles/any(roles:roles ne 'Driver'))&$orderby=id desc&$top=30&$skip=0`,
+                await getAuthData(adminId))
         })
         await test.step('создание и привязка новой машины и т д', async () => {
             await debugApi.init();
-            newEntity = await debugApi.newCarTracker(await getAuthData(adminId), await getAuthData(36), await emulatorApi.generateCarNumber(), await emulatorApi.generateTrackerNumber('cmd'), moment().subtract(14, 'd').format("YYYY-MM-DDT00:00:00+03:00"))
+            newEntity = await debugApi.newCarTracker(await getAuthData(adminId), await getAuthData(36), await emulatorApi.generateCarNumber(), await emulatorApi.generateTrackerNumber('cmd'), moment().subtract(14, 'd').format("YYYY-MM-DDT00:00:00+03:00"), filterLogist[0].id, newKolumn.id)
             console.log(newEntity)
-            await page.waitForTimeout(25000)
+            await page.waitForTimeout(10000)
         })
         await test.step('Создание заявки и запуск в работу', async () => {
             // await debugApi.init();
@@ -107,10 +130,14 @@ test.describe('Проверка отчётов с данными одометр�
             await expect(page.getByTestId('fact-distance')).toHaveText('651')
             // await expect(page.getByTestId('fact-empty-mileage-distance')).toHaveText('676')
         })
+        await test.step('Проверка фильтров в общем отчёте', async () => {
+
+        })
     })
 })
 
 test.beforeAll(async () => {
+    await clienApi.getToken(process.env.emptyCompanyEmail as string, process.env.emptyCompanyPassword as string);
     await clienApi.getToken(process.env.rootMail as string, process.env.rootPassword as string);
 });
 test.afterAll(async () => {

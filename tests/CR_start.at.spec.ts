@@ -90,7 +90,7 @@ test.describe('Самостоятельная регистрация', () => {
       await page.locator('#typeIdContainer').first().click();
       await page.locator('#typeIdContainer').first().type("Тент", { delay: 100 });
       await page.locator(`text=Тент`).nth(1).click();
-      await page.locator('[class="mb-3 btn btn-sm btn-brand"]').click();
+      await page.locator('[class="r-form__button"]').click();
       await page.locator('[title="Дашборд"]')
     })
     await test.step('проверка корректности созданной машины и трекера', async () => {
