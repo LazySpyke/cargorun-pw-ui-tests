@@ -9,8 +9,6 @@ import APIRequestsClient from '../../api/clienApiRequsets';
 import api from '../../api/apiRequests';
 import APIBid from '../../api/bidApi';
 import SupportAPIRequestsClient from '../../api/testSupportRequsets'
-const startValue: number = 1000;
-const startDate: string = moment().subtract(30, 'd').format("YYYY-MM-DDTHH:mm:ssZ")
 const clienApi = new APIRequestsClient();
 const bidApi = new APIBid();
 const emulatorApi = new SupportAPIRequestsClient();
@@ -18,7 +16,6 @@ const debugApi = new DebugAPIRequestsClient();
 const apiUse = new api();
 let bidInfo: any;
 const adminId = 36
-const secondAdminId = 1305211
 const bio = {
     firstName: faker.person.firstName(),
     lastName: faker.person.lastName(),
@@ -36,9 +33,9 @@ const logist = {
     phoneNumber: faker.phone.number({ style: 'international' }),
     sendLoginData: false
 }
-const kolumn = { "isValid": true, "name": `${faker.word.sample()}-${faker.word.sample()}` }
+const CarColumn = { "isValid": true, "name": `${faker.word.sample()}-${faker.word.sample()}` }
 
-test.describe('Проверка отчётов с данными одометра', () => {
+test.describe('Проверка общего отчёта', () => {
     let loginPage: LoginPage;
     let bidResponse: any;
     let bidInfoResponse: any;
@@ -63,7 +60,7 @@ test.describe('Проверка отчётов с данными одометр�
             console.log(newDriver)
             const newLogist = await apiUse.postData(`${process.env.url}/api/organizationEmployees/applyUser`, logist, await getAuthData(adminId))
             console.log(newLogist)
-            newKolumn = await apiUse.postData(`${process.env.url}/api/transportColumns/apply`, kolumn, await getAuthData(adminId))
+            newKolumn = await apiUse.postData(`${process.env.url}/api/transportColumns/apply`, CarColumn, await getAuthData(adminId))
             console.log(newKolumn)
             filterLogist = await clienApi.GetObjectResponse(
                 `${process.env.url}/api/adminpanel/getAllUsers?$filter=(contains(tolower(email),'${logist.email}') and roles/any(roles:roles ne 'Driver'))&$orderby=id desc&$top=30&$skip=0`,
@@ -81,7 +78,7 @@ test.describe('Проверка отчётов с данными одометр�
             bidInfo = await bidFixture.ApiCommonBid({
                 price: 100000,
                 paymentTypeId: 176,
-                ndsTypeId: 175,
+                ndsTypeId: 173,
                 planEnterLoadDate: moment().subtract(7, 'd').format('YYYY-MM-DDTHH:mm'),
                 planEnterUnloadDate: moment().subtract(6, 'd').format('YYYY-MM-DDTHH:mm'),
                 carFilter: `id eq ${await newEntity.newCarId}`,
@@ -131,7 +128,82 @@ test.describe('Проверка отчётов с данными одометр�
             // await expect(page.getByTestId('fact-empty-mileage-distance')).toHaveText('676')
         })
         await test.step('Проверка фильтров в общем отчёте', async () => {
+            await page.locator('[title="Отчеты"]').click();
+            await page.locator('[name="Общий отчет"]').click();
+            await page.locator('input[name="startDate"]').fill(moment().subtract(7, 'd').format('DD.MM.YYYY HH:mm'));
+            await page.locator('input[name="endDate"]').fill(moment().add(1, 'h').format('DD.MM.YYYY HH:mm'));
+            await page
+                .locator("//div[@class='report__filters--left']//a[@class='btn btn-sm btn-brand'][contains(text(),'Обновить')]")
+                .click();
+            // await page.locator('input[name="car"]').fill(bidInfo.carOption.number);
+            await page.waitForTimeout(5000);
+            await page.locator('#multipleCarTypeIdContainer').click();
+            // await page.locator('div').filter({ hasText: /^Тип грузовика$/ }).nth(2).click();
+            await page.getByRole('option', { name: 'OverallReport' }).click();
+            await page
+                .locator("//div[@class='report__filters--left']//a[@class='btn btn-sm btn-brand'][contains(text(),'Обновить')]")
+                .click();
+            await page.waitForTimeout(5000)
+            // await expect(page.getByRole('cell', { name: `${logist.lastName} ${logist.firstName} ${logist.patronymic}` })).toBeVisible();
 
+            await page.locator('#carLogistIdsContainer').click();
+            await page.locator('#carLogistIdsInput').fill(`${logist.lastName} ${logist.firstName} ${logist.patronymic}`);
+            await page.getByRole('option', { name: `${logist.lastName} ${logist.firstName} ${logist.patronymic}` }).click();
+
+            await expect(page.getByRole('rowgroup')).toContainText('938,00'); //акивный
+            await expect(page.getByRole('rowgroup')).toContainText('0,00 (0,00 %)');//порожка
+
+            await expect(page.getByRole('rowgroup')).toContainText('600,00 (39,01 %)');//порожний без заявки
+            await expect(page.getByRole('rowgroup')).toContainText('1 538,00');//общий
+            await expect(page.getByRole('rowgroup')).toContainText('0,00');//средний вес
+            await expect(page.getByRole('rowgroup')).toContainText('200 000,00'); //ВАЛ
+            await expect(page.getByRole('rowgroup')).toContainText('130,04');//выработку руб/км
+            // await expect(page.getByRole('rowgroup')).toContainText('1 179,07');
+            await page.getByTestId('toggle-with-nds').locator('i').click(); //переключалка БЕЗ НДС
+            await expect(page.getByRole('rowgroup')).toContainText('183 333,30');// вал без ндс
+            await expect(page.getByRole('rowgroup')).toContainText('119,20');//выработка без ндс
+            await page.getByTestId('toggle-with-nds').locator('i').click();// переключение
+            await expect(page.getByRole('table')).toContainText('1 (Общее количество машин)');
+            await expect(page.getByRole('table')).toContainText('1 (Количество активных машин)');
+            await expect(page.getByRole('table')).toContainText('938,00');// футер активный
+            await expect(page.getByRole('table')).toContainText('0,00 (0,00 %)'); //футер порожний по заявке
+            await expect(page.getByRole('table')).toContainText('600,00 (39,00 %)');// футер порожний без заявки
+            await expect(page.getByRole('table')).toContainText('1 538,00');// футер общий
+            await expect(page.getByRole('table')).toContainText('0,00');// футер средний вес
+            await expect(page.getByRole('table')).toContainText('200 000,00 (Всего)100 000,00 (сумма заявок с НДС)100 000,00 (сумма заявок без НДС)'); //футер ВАЛ
+            await expect(page.getByRole('table')).toContainText('130,03 (с учетом НДС)119,19 (без учета НДС)'); //футер выработка
+            // await expect(page.getByRole('table')).toContainText('1 179,07');
+
+            // await page.getByRole('cell', { name: `${logist.lastName} ${logist.firstName} ${logist.patronymic}` }).click();
+            await page.locator('div').filter({ hasText: /^Колонна$/ }).nth(2).click();
+            await page.locator('#transportColumnIdInput').fill(`${CarColumn.name}`);
+            await page.getByRole('option', { name: `${CarColumn.name}` }).click();
+            await page
+                .locator("//div[@class='report__filters--left']//a[@class='btn btn-sm btn-brand'][contains(text(),'Обновить')]")
+                .click();
+            await page.waitForTimeout(10000)
+            await expect(page.getByRole('rowgroup')).toContainText('938,00'); //акивный
+            await expect(page.getByRole('rowgroup')).toContainText('0,00 (0,00 %)');//порожка
+            await expect(page.getByRole('rowgroup')).toContainText('600,00 (39,01 %)');//порожний без заявки
+            await expect(page.getByRole('rowgroup')).toContainText('1 538,00');//общий
+            await expect(page.getByRole('rowgroup')).toContainText('0,00');//средний вес
+            await expect(page.getByRole('rowgroup')).toContainText('200 000,00'); //ВАЛ
+            await expect(page.getByRole('rowgroup')).toContainText('130,04');//выработку руб/км
+            // await expect(page.getByRole('rowgroup')).toContainText('1 179,07');
+            await page.getByTestId('toggle-with-nds').locator('i').click(); //переключалка БЕЗ НДС
+            await expect(page.getByRole('rowgroup')).toContainText('183 333,30');// вал без ндс
+            await expect(page.getByRole('rowgroup')).toContainText('119,20');//выработка без ндс
+            await page.getByTestId('toggle-with-nds').locator('i').click();// переключение
+            await expect(page.getByRole('table')).toContainText('1 (Общее количество машин)');
+            await expect(page.getByRole('table')).toContainText('1 (Количество активных машин)');
+            await expect(page.getByRole('table')).toContainText('938,00');// футер активный
+            await expect(page.getByRole('table')).toContainText('0,00 (0,00 %)'); //футер порожний по заявке
+            await expect(page.getByRole('table')).toContainText('600,00 (39,00 %)');// футер порожний без заявки
+            await expect(page.getByRole('table')).toContainText('1 538,00');// футер общий
+            await expect(page.getByRole('table')).toContainText('0,00');// футер средний вес
+            await expect(page.getByRole('table')).toContainText('200 000,00 (Всего)100 000,00 (сумма заявок с НДС)100 000,00 (сумма заявок без НДС)'); //футер ВАЛ
+            await expect(page.getByRole('table')).toContainText('130,03 (с учетом НДС)119,19 (без учета НДС)'); //футер выработка
+            // await expect(page.getByRole('table')).toContainText('1 179,07');
         })
     })
 })
