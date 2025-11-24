@@ -97,7 +97,8 @@ test.describe('Работа с задачами на пересменку', () =
             const countLocator = await changeLocator.count()
             for (let deleteDriverChange = 0; deleteDriverChange < await countLocator; deleteDriverChange++) {
                 await changeLocator.first().click();
-                await page.locator('//div[@class="popup-dropdown__item popup-dropdown__item--right-arrow"][text()="Удалить"]').click();
+                await page.getByText('Удалить').click()
+                // await page.locator('//div[@class="popup-dropdown__item popup-dropdown__item--right-arrow"][text()="Удалить"]').click();
                 await page.locator('//div[@class="popup-dropdown__item"][text()="Удалить смену"]').click();
                 await page.locator('[class="btn btn-brand btn-sm modal-window__footer-action"]').click();
                 await expect(page.locator('[class="Toastify__toast Toastify__toast-theme--light Toastify__toast--success Toastify__toast--close-on-click"]')).toBeVisible();

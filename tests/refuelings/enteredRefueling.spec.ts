@@ -64,7 +64,7 @@ test.describe('АЗС тесты', () => {
             await page.locator('input[name="totalVolume"]').first().fill('800')
             await page.locator('input[name="minimumVolumeInFinishDesired"]').first().fill('750')
             await page.locator("//div[@class='btn-brand ml-1 btn btn-sm']").click();
-
+            await page.waitForTimeout(30000);
             await page.locator("//div[@class='dropdown__btn']").click();
             await page.locator(`//div[@class="dropdown__item"][contains(text(),'Перерасчет')]`).click();
             await page.locator("//div[@class='btn btn-brand btn-sm modal-window__footer-action']").click();

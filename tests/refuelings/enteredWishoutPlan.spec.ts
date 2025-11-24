@@ -10,8 +10,9 @@ const clienApi = new APIRequestsClient();
 const bidApi = new APIBid();
 const emulatorApi = new SupportAPIRequestsClient();
 let bidInfo: any;
-const inPlanningRefueling = [52.460818, 56.194695]
-const outOfPlanning = [52.453428, 56.198075]
+const azcCoordinate: number[] = [52.75360107421875, 55.63473694021359]
+const inPlanningRefueling = [52.752743, 55.635107]
+const outOfPlanning = [52.766104, 55.635619]
 const adminId = 1319341 //переделать чтоб доставал из логина в фронте
 test.describe('АЗС тесты', () => {
     let loginPage: LoginPage;
@@ -64,7 +65,7 @@ test.describe('АЗС тесты', () => {
             await page.locator('input[name="totalVolume"]').first().fill('800')
             await page.locator('input[name="minimumVolumeInFinishDesired"]').first().fill('750')
             await page.locator("//div[@class='btn-brand ml-1 btn btn-sm']").click();
-
+            await page.waitForTimeout(30000)
             await page.locator("//div[@class='dropdown__btn']").click();
             await page.locator(`//div[@class="dropdown__item"][contains(text(),'Перерасчет')]`).click();
             await page.locator("//div[@class='btn btn-brand btn-sm modal-window__footer-action']").click();
@@ -73,27 +74,21 @@ test.describe('АЗС тесты', () => {
                 `${process.env.url}/api/Map/GetLastCarsLocations?$filter=car/id%20eq%20${bidInfo.carOption.carId}`,
                 await getAuthData(adminId)
             );
-
-            const planningRefuelingsArray = await clienApi.GetObjectResponse(
-                `${process.env.url}/api/refueling/getPlannedRefuelings/${bidResponse.id}`,
-                await getAuthData(adminId)
-            );
-
             if (bidInfoResponse.bidPoints.length > 2) {
-                await emulatorApi.coordinatSend(bidInfo.carOption.carTracker, moment().subtract(1, 'd').format("YYYY-MM-DDTHH:mm:ss+03:00"), lastTrackerCarInfo[0].location.coordinates, [bidInfoResponse.bidPoints[0].geozone.location.coordinates, planningRefuelingsArray.plannedRefuelings[planningRefuelingsArray.plannedRefuelings.length - 1].mapObject.location.coordinates],
+                await emulatorApi.coordinatSend(bidInfo.carOption.carTracker, moment().subtract(1, 'd').format("YYYY-MM-DDTHH:mm:ss+03:00"), lastTrackerCarInfo[0].location.coordinates, [bidInfoResponse.bidPoints[0].geozone.location.coordinates, azcCoordinate],
                     [
                         { Number: 7, Address: 65535, Value: 200, ChangePer100Km: 0 },
                     ], "00:20:00")
             }
             else {
-                await emulatorApi.coordinatSend(bidInfo.carOption.carTracker, moment().subtract(1, 'd').format("YYYY-MM-DDTHH:mm:ss+03:00"), lastTrackerCarInfo[0].location.coordinates, [bidInfoResponse.bidPoints[0].geozone.location.coordinates, bidInfoResponse.bidPoints[1].geozone.location.coordinates, planningRefuelingsArray.plannedRefuelings[planningRefuelingsArray.plannedRefuelings.length - 1].mapObject.location.coordinates],
+                await emulatorApi.coordinatSend(bidInfo.carOption.carTracker, moment().subtract(1, 'd').format("YYYY-MM-DDTHH:mm:ss+03:00"), lastTrackerCarInfo[0].location.coordinates, [bidInfoResponse.bidPoints[0].geozone.location.coordinates, bidInfoResponse.bidPoints[1].geozone.location.coordinates, azcCoordinate],
                     [
                         { Number: 7, Address: 65535, Value: 200, ChangePer100Km: 0 },
                     ], "00:20:00")
             }
             await page.waitForTimeout(310000);
-            await emulatorApi.coordinatSend(bidInfo.carOption.carTracker, moment().subtract(2, 'm').format("YYYY-MM-DDTHH:mm:ss+03:00"), planningRefuelingsArray.plannedRefuelings[planningRefuelingsArray.plannedRefuelings.length - 1].mapObject.location.coordinates, [
-                planningRefuelingsArray.plannedRefuelings[planningRefuelingsArray.plannedRefuelings.length - 1].mapObject.location.coordinates,
+            await emulatorApi.coordinatSend(bidInfo.carOption.carTracker, moment().subtract(2, 'm').format("YYYY-MM-DDTHH:mm:ss+03:00"), azcCoordinate, [
+                azcCoordinate,
                 inPlanningRefueling
             ],
                 [
@@ -101,16 +96,16 @@ test.describe('АЗС тесты', () => {
                 ],
                 "00:02:00")
             await page.waitForTimeout(310000);
-            await emulatorApi.coordinatSend(bidInfo.carOption.carTracker, moment().subtract(2, 'm').format("YYYY-MM-DDTHH:mm:ss+03:00"), planningRefuelingsArray.plannedRefuelings[planningRefuelingsArray.plannedRefuelings.length - 1].mapObject.location.coordinates, [
-                planningRefuelingsArray.plannedRefuelings[planningRefuelingsArray.plannedRefuelings.length - 1].mapObject.location.coordinates, inPlanningRefueling
+            await emulatorApi.coordinatSend(bidInfo.carOption.carTracker, moment().subtract(2, 'm').format("YYYY-MM-DDTHH:mm:ss+03:00"), azcCoordinate, [
+                azcCoordinate, inPlanningRefueling
             ],
                 [
                     { Number: 7, Address: 65535, Value: 700, ChangePer100Km: 0 },
                 ],
                 "00:02:00")
             await page.waitForTimeout(310000);
-            await emulatorApi.coordinatSend(bidInfo.carOption.carTracker, moment().subtract(2, 'm').format("YYYY-MM-DDTHH:mm:ss+03:00"), planningRefuelingsArray.plannedRefuelings[planningRefuelingsArray.plannedRefuelings.length - 1].mapObject.location.coordinates, [
-                planningRefuelingsArray.plannedRefuelings[planningRefuelingsArray.plannedRefuelings.length - 1].mapObject.location.coordinates, outOfPlanning
+            await emulatorApi.coordinatSend(bidInfo.carOption.carTracker, moment().subtract(2, 'm').format("YYYY-MM-DDTHH:mm:ss+03:00"), azcCoordinate, [
+                azcCoordinate, outOfPlanning
             ],
                 [
                     { Number: 7, Address: 65535, Value: 680, ChangePer100Km: 0 },

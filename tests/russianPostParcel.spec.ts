@@ -40,6 +40,7 @@ test.describe('Отслеживание треке почты России', () 
             await page.waitForTimeout(5000);
             await test.step('привязка трек-номера', async () => {
                 await page.goto(`${process.env.url}/bids/bid/${bidResponse.id}`)
+                await page.locator('[class="parcel__picker"]').first().click();// выбираем из 2 вариантов Почту России
                 await page.locator('[placeholder="Введите трек-код, например: LA0942127883SE"]').fill(process.env.parcelTrack as string)
                 await page.locator("//button[@type='button']").click();
                 await page.waitForSelector('[class="notification notification-success notification-enter-done"]', {
@@ -53,14 +54,15 @@ test.describe('Отслеживание треке почты России', () 
             await test.step('проверка данных в отчёте Отслеживание документов', async () => {
                 await page.locator('[title="Финансы и учет"]').click();
                 await page.locator('[name="Отслеживание документов"]').click();
-                await page.locator('[name="id"]').fill(bidResponse.id)
+                await page.locator('[name="id"]').fill(`${bidResponse.id}`)
                 await page.waitForTimeout(1500);
                 await page.locator('[class="btn btn-sm btn-brand"]').click();
                 await page.waitForTimeout(5000)
                 await page.waitForSelector(`[href="/bids/bid/${bidResponse.id}"]`, {
                     state: 'visible'
                 })
-                await expect(page.locator("//div[@class='book-list__head']//small[1]")).toHaveText('Отображены 1-1 из 1') //проверяем что всего 1 элемент в списке
+                await expect(page.locator("//div[@class='book-list__head']//small[1]")).toHaveText('(Отображены 1-1 из 1)') //проверяем что всего 1 элемент в списке
+                await expect(page.locator("//span[@class='badge badge-success']")).toBeVisible();
             })
         });
     })

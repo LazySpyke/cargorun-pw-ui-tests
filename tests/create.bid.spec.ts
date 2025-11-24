@@ -35,6 +35,7 @@ test.describe('Создание разных заявок с фронта', () =
       await bidPage.goto();
       await bidPage.CreateEmptyBid(bidInfo);
       await bidPage.BidFieldReconciliation(bidInfo, 'Черновик');
+      await page.close();
     });
   });
 });

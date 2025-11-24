@@ -5,9 +5,7 @@ export class LoginPage {
   readonly usernameInputSelector = 'input[type="email"]';
   readonly passwordInputSelector = 'input[type="password"]';
   readonly submitButtonSelector = 'button[type="submit"]';
-  readonly errorMessageSelector =
-    'div["class="identity-field__error field-validation-error"]';
-
+  readonly errorMessageSelector = 'div["class="identity-field__error field-validation-error"]';
   constructor(page: Page) {
     this.page = page;
   }

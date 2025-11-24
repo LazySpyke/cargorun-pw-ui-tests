@@ -46,6 +46,7 @@ test.describe('Проверка общего отчёта', () => {
     let newDriver: any;
     let filterLogist: any
     let newKolumn: any;
+    let legalPersonList: any
     test.beforeEach(async ({ page }) => {
         loginPage = new LoginPage(page);
         await loginPage.goto(); // Переходим на страницу логина перед каждым тестом
@@ -65,6 +66,10 @@ test.describe('Проверка общего отчёта', () => {
             filterLogist = await clienApi.GetObjectResponse(
                 `${process.env.url}/api/adminpanel/getAllUsers?$filter=(contains(tolower(email),'${logist.email}') and roles/any(roles:roles ne 'Driver'))&$orderby=id desc&$top=30&$skip=0`,
                 await getAuthData(adminId))
+            legalPersonList = await clienApi.GetObjectResponse(
+                `${process.env.url}/api/legalPersons/getlist?$top=30&$skip=0`,
+                await getAuthData(adminId)
+            );
         })
         await test.step('создание и привязка новой машины и т д', async () => {
             await debugApi.init();
@@ -85,7 +90,8 @@ test.describe('Проверка общего отчёта', () => {
                 loadAddress: 'Челны',
                 unloadAddress: 'Уфа',
                 userIdForFilter: adminId,
-                driverFilter: `id eq ${await newDriver.id}`
+                driverFilter: `id eq ${await newDriver.id}`,
+                legalPersonFilter: `id eq ${await legalPersonList[0].id}`
             });
             await bidApi.init();
             bidResponse = await bidApi.apply(bidInfo, await getAuthData(adminId));
@@ -109,7 +115,8 @@ test.describe('Проверка общего отчёта', () => {
                 unloadAddress: 'Нижний Новгород',
                 userIdForFilter: adminId,
                 reuseCar: true,
-                driverFilter: `id eq ${await newDriver.id}`
+                driverFilter: `id eq ${await newDriver.id}`,
+                legalPersonFilter: `id eq ${await legalPersonList[1].id}`
             });
             await bidApi.init();
             secondBidResponse = await bidApi.apply(secondBidInfo, await getAuthData(adminId));
@@ -204,6 +211,11 @@ test.describe('Проверка общего отчёта', () => {
             await expect(page.getByRole('table')).toContainText('200 000,00 (Всего)100 000,00 (сумма заявок с НДС)100 000,00 (сумма заявок без НДС)'); //футер ВАЛ
             await expect(page.getByRole('table')).toContainText('130,03 (с учетом НДС)119,19 (без учета НДС)'); //футер выработка
             // await expect(page.getByRole('table')).toContainText('1 179,07');
+        })
+        await test.step('Проверка фильтра по организациям', async () => {
+            await page.locator('#legalPersonIdContainer').click();
+            // await page.locator('div').filter({ hasText: /^Тип грузовика$/ }).nth(2).click();
+            await page.getByRole('option', { name: `${legalPersonList[0].name}` }).click();
         })
     })
 })

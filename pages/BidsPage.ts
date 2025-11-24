@@ -32,11 +32,11 @@ export class BidPage {
     paymentPeriodInDays?: string;
   }) {
     await this.page.locator('#paymentTypeIdContainer').click();
-    await this.page.locator(`text=${paymentType}`).first().click();
+    await this.page.getByRole('option', { name: `${paymentType}` }).click();
     await this.page.locator('#ndsTypeIdContainer').click();
-    await this.page.locator(`text=${ndsType}`).click();
+    await this.page.getByRole('option', { name: `${ndsType}` }).click();
     await this.page.locator('#paymentPeriodTypeContainer').click();
-    await this.page.locator(`text=${paymentPeriodType}`).click();
+    await this.page.getByRole('option', { name: `${paymentPeriodType}` }).click();
     await this.page.locator('input[name="paymentPeriodInDays"]').fill(paymentPeriodInDays || '1');
     await this.page.locator('input[name="price"]').fill(price);
     if (isVatTop == true) {
@@ -256,14 +256,6 @@ export class BidPage {
   }
 
   async CreateCommonBid(CenerateBidInfo: gerateBidCreateInfo) {
-    await this.SetPaymentInfo({
-      price: '100000',
-      isVatTop: false,
-      paymentType: 'Безналичный',
-      ndsType: '10%',
-      paymentPeriodType: 'В календарных днях',
-      paymentPeriodInDays: '90',
-    });
     await this.SetDeliveryInfo({
       driver: CenerateBidInfo.driver,
       car: CenerateBidInfo.car,
@@ -298,14 +290,6 @@ export class BidPage {
       secondDate: '',
       planLeaveDate: '',
     });
-    await this.page.locator("//INPUT[@type='submit']").click();
-    await expect(this.page.getByText('Ваш запрос выполнен успешно')).toBeVisible();
-    await this.page.locator("//DIV[@class='book-form__close close close--sm']").click();
-    await this.page.locator("//SPAN[@class='badge badge-light'][text()='Черновик']").isVisible({ timeout: 10000 });
-    await this.page.locator("//SMALL[@class='pl-1 icon-uEA90-bolt b-point__tooltip-icon']").isVisible();
-  }
-
-  async CreateCommonDistributionBid(CenerateBidInfo: gerateBidCreateInfo) {
     await this.SetPaymentInfo({
       price: '100000',
       isVatTop: false,
@@ -314,6 +298,14 @@ export class BidPage {
       paymentPeriodType: 'В календарных днях',
       paymentPeriodInDays: '90',
     });
+    await this.page.locator("//INPUT[@type='submit']").click();
+    await expect(this.page.getByText('Ваш запрос выполнен успешно')).toBeVisible();
+    await this.page.locator("//DIV[@class='book-form__close close close--sm']").click();
+    await this.page.locator("//SPAN[@class='badge badge-light'][text()='Черновик']").isVisible({ timeout: 10000 });
+    await this.page.locator("//SMALL[@class='pl-1 icon-uEA90-bolt b-point__tooltip-icon']").isVisible();
+  }
+
+  async CreateCommonDistributionBid(CenerateBidInfo: gerateBidCreateInfo) {
     await this.SetGeneralParameters({
       responible: 'Главный Тестовый',
       documents: ['SMTP', 'Forest'],
@@ -338,6 +330,14 @@ export class BidPage {
       secondDate: '',
       planLeaveDate: '',
       isDistribution: true
+    });
+    await this.SetPaymentInfo({
+      price: '100000',
+      isVatTop: false,
+      paymentType: 'Безналичный',
+      ndsType: '10%',
+      paymentPeriodType: 'В календарных днях',
+      paymentPeriodInDays: '90',
     });
     await this.page.locator("//INPUT[@type='submit']").click();
     await expect(this.page.getByText('Ваш запрос выполнен успешно')).toBeVisible();
@@ -420,25 +420,42 @@ export class BidPage {
     // await expect(this.page.locator('div[class="b-timeline-point__city--full"]').first()).toContainText(
     //   'Россия, Республика Татарстан, Набережные Челны'
     // );
-    await this.page.locator('[class="icon-uEA72-chevron-down rotated"]').first().click();
-    await expect(this.page.locator('div[data-point-counterparty="0"]')).toContainText(
-      CenerateBidInfo.cargoOwnersBid[0].name
-    );
+    if (CenerateBidInfo.isEmpty != true) {
+      await this.page.locator('[class="icon-uEA72-chevron-down rotated"]').first().click();
+      await expect(this.page.locator('div[data-point-counterparty="0"]')).toContainText(
+        CenerateBidInfo.cargoOwnersBid[0].name
+      );
+    }
     ////////// точка выгрузки
     ////////////////// точка загрузки
     await expect(this.page.locator('span[class="b-timeline-point__city--name"]').nth(1)).toContainText(
       CenerateBidInfo.secondPointCity
     );
-    await expect(this.page.locator('small[class="b-timeline-point__city--timezone"]').nth(1)).toContainText('(+03:00)');
+    if (CenerateBidInfo.isEmpty != true) {
+      await expect(this.page.locator('small[class="b-timeline-point__city--timezone"]').nth(1)).toContainText('(+03:00)');
+    }
+    else {
+      await expect(this.page.locator('small[class="b-timeline-point__city--timezone"]').nth(1)).toContainText('(+05:00)'); //для проверки порожней заявки выбрал Уфу как выгрузку
+
+    }
     await expect(this.page.locator('small[class="b-timeline-point__city--type"]').nth(1)).toContainText(
       'Точка выгрузки'
     );
-    await expect(this.page.locator('div[class="b-timeline-point__city--full"]').nth(4)).toContainText(
-      'Россия, Республика Татарстан, Казань'
-    );
-    await this.page.locator('[class="icon-uEA72-chevron-down rotated"]').nth(0).click();
-    await expect(this.page.locator('div[data-point-counterparty="1"]')).toContainText(
-      CenerateBidInfo.cargoOwnersBid[1].name
-    );
+    if (CenerateBidInfo.isEmpty != true) {
+      await expect(this.page.locator('div[class="b-timeline-point__city--full"]').nth(4)).toContainText(
+        'Россия, Республика Татарстан, Казань'
+      );
+    }
+    else {
+      await expect(this.page.locator('div[class="b-timeline-point__city--full"]').nth(2)).toContainText(
+        'Россия, Республика Башкортостан, Уфа'
+      );
+    }
+    if (CenerateBidInfo.isEmpty != true) {
+      await this.page.locator('[class="icon-uEA72-chevron-down rotated"]').nth(0).click();
+      await expect(this.page.locator('div[data-point-counterparty="1"]')).toContainText(
+        CenerateBidInfo.cargoOwnersBid[1].name
+      );
+    }
   }
 }

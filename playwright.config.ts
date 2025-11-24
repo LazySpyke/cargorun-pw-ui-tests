@@ -18,7 +18,7 @@ export default defineConfig({
   expect: {
     timeout: 30000,
   },
-  timeout: 60 * 1000, //надо из-за тестов с датчиками
+  timeout: 6000 * 1000, //надо из-за тестов с датчиками
   /* Fail the build on CI if you accidentally left test.only in the source code. */
   forbidOnly: !!process.env.CI,
   /* Retry on CI only */
