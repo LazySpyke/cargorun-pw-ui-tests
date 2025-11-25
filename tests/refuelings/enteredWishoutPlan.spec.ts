@@ -35,9 +35,9 @@ test.describe('АЗС тесты', () => {
                 ndsTypeId: 175,
                 planEnterLoadDate: moment().subtract(2, 'd').format('YYYY-MM-DDTHH:mm'),
                 planEnterUnloadDate: moment().add(1, 'd').format('YYYY-MM-DDTHH:mm'),
-                carFilter: `(isDeleted eq false and lastFixedAt le ${moment().subtract(3, 'd').format("YYYY-MM-DDTHH:mm:ss")}.000Z and lastFixedAt le ${moment().subtract(2, 'd').format("YYYY-MM-DDTHH:mm:ss")}.000Z)`,
-                loadAddress: 'Челны',
-                unloadAddress: 'Можга',
+                carFilter: `(isDeleted eq false and lastFixedAt le ${moment().subtract(5, 'd').format("YYYY-MM-DDTHH:mm:ss")}.000Z and lastFixedAt le ${moment().subtract(2, 'd').format("YYYY-MM-DDTHH:mm:ss")}.000Z)`,
+                loadAddress: 'Елабуга',
+                unloadAddress: 'Россия, Удмуртская Республика, Можгинский район, деревня Атабаево, Советская улица, 46',
                 userIdForFilter: adminId,
                 cargoOwnerFilter: '(isDeleted eq false)'
             });
@@ -57,31 +57,20 @@ test.describe('АЗС тесты', () => {
         });
         await test.step('Планирование заправок по заявке ', async () => {
             await page.goto(`${process.env.url}/bids/bid/${bidResponse.id}`)
-            await page.locator("//div[@class='dropdown__btn']").click();
-            await page.locator(`//div[@class="dropdown__item"][contains(text(),'Запланировать заправки')]`).click();
-            await page.locator('input[name="fuelConsumption"]').first().fill('33')
-            await page.locator('input[name="minimumVolume"]').first().fill('200')
-            await page.locator('input[name="currentVolume"]').first().fill('250')
-            await page.locator('input[name="totalVolume"]').first().fill('800')
-            await page.locator('input[name="minimumVolumeInFinishDesired"]').first().fill('750')
-            await page.locator("//div[@class='btn-brand ml-1 btn btn-sm']").click();
-            await page.waitForTimeout(30000)
-            await page.locator("//div[@class='dropdown__btn']").click();
-            await page.locator(`//div[@class="dropdown__item"][contains(text(),'Перерасчет')]`).click();
-            await page.locator("//div[@class='btn btn-brand btn-sm modal-window__footer-action']").click();
-            await expect(page.getByText('Ваш запрос выполнен успешно')).toBeVisible();
             const lastTrackerCarInfo = await clienApi.GetObjectResponse(
                 `${process.env.url}/api/Map/GetLastCarsLocations?$filter=car/id%20eq%20${bidInfo.carOption.carId}`,
                 await getAuthData(adminId)
             );
-            if (bidInfoResponse.bidPoints.length > 2) {
-                await emulatorApi.coordinatSend(bidInfo.carOption.carTracker, moment().subtract(1, 'd').format("YYYY-MM-DDTHH:mm:ss+03:00"), lastTrackerCarInfo[0].location.coordinates, [bidInfoResponse.bidPoints[0].geozone.location.coordinates, azcCoordinate],
+            const orderSort = bidInfoResponse.bidPoints.sort((a, b) => a.order - b.order);
+
+            if (bidInfoResponse.bidPoints.length <= 2) {
+                await emulatorApi.coordinatSend(bidInfo.carOption.carTracker, moment().subtract(1, 'd').format("YYYY-MM-DDTHH:mm:ss+03:00"), lastTrackerCarInfo[0].location.coordinates, [orderSort[0].geozone.location.coordinates, azcCoordinate],
                     [
                         { Number: 7, Address: 65535, Value: 200, ChangePer100Km: 0 },
                     ], "00:20:00")
             }
             else {
-                await emulatorApi.coordinatSend(bidInfo.carOption.carTracker, moment().subtract(1, 'd').format("YYYY-MM-DDTHH:mm:ss+03:00"), lastTrackerCarInfo[0].location.coordinates, [bidInfoResponse.bidPoints[0].geozone.location.coordinates, bidInfoResponse.bidPoints[1].geozone.location.coordinates, azcCoordinate],
+                await emulatorApi.coordinatSend(bidInfo.carOption.carTracker, moment().subtract(1, 'd').format("YYYY-MM-DDTHH:mm:ss+03:00"), lastTrackerCarInfo[0].location.coordinates, [orderSort[0].geozone.location.coordinates, orderSort[1].geozone.location.coordinates, azcCoordinate],
                     [
                         { Number: 7, Address: 65535, Value: 200, ChangePer100Km: 0 },
                     ], "00:20:00")
@@ -96,9 +85,7 @@ test.describe('АЗС тесты', () => {
                 ],
                 "00:02:00")
             await page.waitForTimeout(310000);
-            await emulatorApi.coordinatSend(bidInfo.carOption.carTracker, moment().subtract(2, 'm').format("YYYY-MM-DDTHH:mm:ss+03:00"), azcCoordinate, [
-                azcCoordinate, inPlanningRefueling
-            ],
+            await emulatorApi.coordinatSend(bidInfo.carOption.carTracker, moment().subtract(2, 'm').format("YYYY-MM-DDTHH:mm:ss+03:00"), azcCoordinate, [azcCoordinate, inPlanningRefueling],
                 [
                     { Number: 7, Address: 65535, Value: 700, ChangePer100Km: 0 },
                 ],
@@ -109,6 +96,14 @@ test.describe('АЗС тесты', () => {
             ],
                 [
                     { Number: 7, Address: 65535, Value: 680, ChangePer100Km: 0 },
+                ],
+                "00:02:00")
+            await page.waitForTimeout(310000);
+            await emulatorApi.coordinatSend(bidInfo.carOption.carTracker, moment().subtract(1, 'm').format("YYYY-MM-DDTHH:mm:ss+03:00"), orderSort[bidInfoResponse.bidPoints.length - 1].geozone.location.coordinates, [
+                orderSort[bidInfoResponse.bidPoints.length - 1].geozone.location.coordinates
+            ],
+                [
+                    { Number: 7, Address: 65535, Value: 650, ChangePer100Km: 0 },
                 ],
                 "00:02:00")
         })

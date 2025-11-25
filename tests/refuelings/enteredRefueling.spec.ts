@@ -78,15 +78,15 @@ test.describe('АЗС тесты', () => {
                 `${process.env.url}/api/refueling/getPlannedRefuelings/${bidResponse.id}`,
                 await getAuthData(adminId)
             );
-
+            const orderSort = bidInfoResponse.bidPoints.sort((a, b) => a.order - b.order);
             if (bidInfoResponse.bidPoints.length > 2) {
-                await emulatorApi.coordinatSend(bidInfo.carOption.carTracker, moment().subtract(1, 'd').format("YYYY-MM-DDTHH:mm:ss+03:00"), lastTrackerCarInfo[0].location.coordinates, [bidInfoResponse.bidPoints[0].geozone.location.coordinates, planningRefuelingsArray.plannedRefuelings[planningRefuelingsArray.plannedRefuelings.length - 1].mapObject.location.coordinates],
+                await emulatorApi.coordinatSend(bidInfo.carOption.carTracker, moment().subtract(1, 'd').format("YYYY-MM-DDTHH:mm:ss+03:00"), lastTrackerCarInfo[0].location.coordinates, [orderSort[0].geozone.location.coordinates, planningRefuelingsArray.plannedRefuelings[planningRefuelingsArray.plannedRefuelings.length - 1].mapObject.location.coordinates],
                     [
                         { Number: 7, Address: 65535, Value: 200, ChangePer100Km: 0 },
                     ], "00:20:00")
             }
             else {
-                await emulatorApi.coordinatSend(bidInfo.carOption.carTracker, moment().subtract(1, 'd').format("YYYY-MM-DDTHH:mm:ss+03:00"), lastTrackerCarInfo[0].location.coordinates, [bidInfoResponse.bidPoints[0].geozone.location.coordinates, bidInfoResponse.bidPoints[1].geozone.location.coordinates, planningRefuelingsArray.plannedRefuelings[planningRefuelingsArray.plannedRefuelings.length - 1].mapObject.location.coordinates],
+                await emulatorApi.coordinatSend(bidInfo.carOption.carTracker, moment().subtract(1, 'd').format("YYYY-MM-DDTHH:mm:ss+03:00"), lastTrackerCarInfo[0].location.coordinates, [orderSort[0].geozone.location.coordinates, orderSort[1].geozone.location.coordinates, planningRefuelingsArray.plannedRefuelings[planningRefuelingsArray.plannedRefuelings.length - 1].mapObject.location.coordinates],
                     [
                         { Number: 7, Address: 65535, Value: 200, ChangePer100Km: 0 },
                     ], "00:20:00")
@@ -118,6 +118,8 @@ test.describe('АЗС тесты', () => {
                 "00:02:00")
         })
         await test.step('Проверяю что определился факт заправки на АЗС', async () => {
+
+            await page.waitForTimeout(120000);
             const beforeRefuelingFact = '180';
 
             const locatorBeforeRefueling = page.locator('.b-timeline-point__date--value', { hasText: beforeRefuelingFact });
