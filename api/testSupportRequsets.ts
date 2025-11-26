@@ -60,7 +60,7 @@ class SupportAPIRequestsClient {
         return result;
     }
     //TODO реализовать генератор json'ки и больше параметров для датчиков
-    async coordinatSend(trakerImei: string, startTime?: string, startPoint?: [], routePoints?: any[], sensors?, stopDuration?: string, SpeedKmh?: number): Promise<any> {
+    async coordinatSend(trakerImei: string, startTime?: string, startPoint?: [], routePoints?: any[], sensors?, stopDuration?: string, SpeedKmh?: number, endDate?: string): Promise<any> {
         if (!this.context) {
             throw new Error('SupportAPIRequestsClient is not initialized. Call init() first.');
         }
@@ -72,6 +72,9 @@ class SupportAPIRequestsClient {
         }
         console.log(startTime)
         const jsonForRoute = await this.createSegments(routePoints, sensors, stopDuration)
+        if (endDate != null) {
+            jsonForRoute[jsonForRoute.length - 1].EndTime = endDate
+        }
         const response = await this.context.post(`${process.env.trackerEmulatorHost}`, {
             data: {
                 "Emulator": null,

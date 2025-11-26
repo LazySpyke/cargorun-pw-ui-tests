@@ -190,7 +190,7 @@ export class BidCreateInfo {
     }
     else {
       legalPerson = await clienApi.GetObjectResponse(
-        `${process.env.url}/api/legalPersons/get?$filter=${legalPersonFilter}&$orderby=id%20desc&$top=5&$skip=0&withDeleted=true`,
+        `${process.env.url}/api/legalPersons/getlist?$filter=${legalPersonFilter}&$orderby=id%20desc&$top=5&$skip=0&withDeleted=true`,
         await getAuthData(userIdForFilter)
       );
       legalPerson = legalPerson[0].id

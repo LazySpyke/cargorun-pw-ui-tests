@@ -8,8 +8,10 @@ import { BidCreateInfo } from '../../pages/Fixtures';
 import moment from 'moment';
 import DebugAPIRequestsClient from '../../api/debugRequests'
 import APIRequestsClient from '../../api/clienApiRequsets';
+import api from '../../api/apiRequests';
 import APIBid from '../../api/bidApi';
 import SupportAPIRequestsClient from '../../api/testSupportRequsets'
+const apiUse = new api();
 const clienApi = new APIRequestsClient();
 const bidApi = new APIBid();
 const emulatorApi = new SupportAPIRequestsClient();
@@ -97,6 +99,16 @@ test.describe('Проверка отчётов с данными одометр�
             //TODO допилить проверку на данные что активный км считается даже без выезда из нулевой
             await debugApi.applyOdometerValues(await getAuthData(36), newEntity.newTrackerId, startValue + 15000, moment().subtract(3, 'h').format("YYYY-MM-DDTHH:mm:ssZ"), 500)
             await page.waitForTimeout(54000)
+            await apiUse.init();
+            const recalculateCar = await apiUse.postData(`${process.env.url}/api/adminpanel/recalculateCoordinates`, {
+                "carIds": [
+                    bidInfo.carOption.carId
+                ],
+                "from": moment().subtract(30, 'd').format("YYYY-MM-DD"),
+                "to": moment().format("YYYY-MM-DD"),
+                "intCalculateFlags": 7
+            }, await getAuthData(36))
+            console.log(recalculateCar)
         })
         await test.step('проверка данных заявок', async () => {
             await page.waitForTimeout(180000)//ждём перерасчётов

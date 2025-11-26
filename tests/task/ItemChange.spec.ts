@@ -35,6 +35,14 @@ test.describe('Работа с задачами на пересменку', () =
             newEntity = await debugApi.newCarTracker(await getAuthData(adminId), await getAuthData(36), await emulatorApi.generateCarNumber(), await emulatorApi.generateTrackerNumber('ict'), moment().subtract(7, 'd').format("YYYY-MM-DDT00:00:00+03:00"), 1380601)
             console.log(newEntity)
             await page.waitForTimeout(5000)
+            await bidApi.init();
+            const bidList = await clienApi.GetObjectResponse(
+                `${process.env.url}/api/bids/getlist?$filter=driverIds/any(driverIds:driverIds in (${10813186}))and ((((status in ('Started')) or (status in ('Planned')))))&$orderby=id desc&$top=100&$skip=0`,
+                await getAuthData(adminId)
+            );
+            bidList.forEach(async (element) => {
+                bidApi.cancelBid(element.id, await getAuthData(adminId));
+            });
         })
         await test.step('Создание заявки и запуск в работу', async () => {
             // await debugApi.init();
@@ -48,7 +56,8 @@ test.describe('Работа с задачами на пересменку', () =
                 carFilter: `id eq ${await newEntity.newCarId}`,
                 loadAddress: 'Челны',
                 unloadAddress: 'Уфа',
-                userIdForFilter: adminId
+                userIdForFilter: adminId,
+                driverFilter: `id eq 10813186` //хардкоженная проверка
             });
             await bidApi.init();
             bidResponse = await bidApi.apply(bidInfo, await getAuthData(adminId));
@@ -172,14 +181,15 @@ test.describe('Работа с задачами на пересменку', () =
             await page.waitForTimeout(5000)
             const pages = await context.pages();
             const secondPage = pages[1];
-            // await expect(await secondPage.getByText('Перецепляемый Тасковый').nth(1)).toHaveText("+74987778978")
-            await expect(await secondPage.locator('div').filter({ hasText: `${bidInfo.carOption.number}` })).toBeVisible();
-            await expect(await secondPage.getByText(`Плановая дата: ${moment().add(1, 'd').format("DD.MM.YYYY 00:00")}`)).toBeVisible();
-            await expect(await secondPage.getByText('ФИО водителя (сменяемого): Перецепляемый Тасковый')).toBeVisible();
-            await expect(await secondPage.locator('[class="leaflet-marker-icon map-icon--item-changes leaflet-zoom-animated leaflet-interactive"]')).toBeVisible();
-            await expect(await secondPage.locator('[class="badge badge-primary"]')).toContainText('Просмотрено')
-            await secondPage.getByText('Принял').click();
-            await expect(secondPage.getByText('Ваш запрос выполнен успешно')).toBeVisible();
+            await page.waitForTimeout(5000)
+            await expect(await secondPage.locator('[class="pb-4"]').nth(0)).toHaveText(`Отправить ТС ${bidInfo.carOption.number} в для пересменки Перецепляемый Тасковый`)
+            // await expect(await page.locator('div').filter({ hasText: `${bidInfo.carOption.number}` })).toBeVisible();
+            await expect(await secondPage.getByText(`${moment().add(1, 'd').format("DD.MM.YYYY 00:00")}`)).toBeVisible(); //план дата
+            await expect(await secondPage.getByText('Перецепляемый Тасковый')).toBeVisible(); //фио сменяемого
+            await expect(await secondPage.locator('[class="leaflet-marker-icon map-icon--item-changes leaflet-zoom-animated leaflet-interactive"]')).toBeVisible(); //точка на карте
+            await expect(await secondPage.locator('[class="badge badge-primary"]')).toContainText('Просмотрено') //статус задачи
+            await secondPage.getByText('Согласовать').click();
+            await expect(secondPage.getByText('Ваш запрос выполнен успешно')).toBeVisible(); //статус задачи
         })
     })
 })

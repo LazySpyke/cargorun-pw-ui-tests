@@ -10,9 +10,9 @@ const clienApi = new APIRequestsClient();
 const bidApi = new APIBid();
 const emulatorApi = new SupportAPIRequestsClient();
 let bidInfo: any;
-const azcCoordinate: number[] = [52.75360107421875, 55.63473694021359]
-const inPlanningRefueling = [52.752743, 55.635107]
-const outOfPlanning = [52.766104, 55.635619]
+const azcCoordinate: number[] = [51.797082, 55.640817]
+const inPlanningRefueling = [51.797460, 55.640870]
+const outOfPlanning = [51.809522, 55.648804]
 const adminId = 1319341 //переделать чтоб доставал из логина в фронте
 test.describe('АЗС тесты', () => {
     let loginPage: LoginPage;
@@ -35,9 +35,9 @@ test.describe('АЗС тесты', () => {
                 ndsTypeId: 175,
                 planEnterLoadDate: moment().subtract(2, 'd').format('YYYY-MM-DDTHH:mm'),
                 planEnterUnloadDate: moment().add(1, 'd').format('YYYY-MM-DDTHH:mm'),
-                carFilter: `(isDeleted eq false and lastFixedAt le ${moment().subtract(5, 'd').format("YYYY-MM-DDTHH:mm:ss")}.000Z and lastFixedAt le ${moment().subtract(2, 'd').format("YYYY-MM-DDTHH:mm:ss")}.000Z)`,
+                carFilter: `(isDeleted eq false and lastFixedAt le ${moment().subtract(10, 'd').format("YYYY-MM-DDTHH:mm:ss")}.000Z and lastFixedAt le ${moment().subtract(4, 'd').format("YYYY-MM-DDTHH:mm:ss")}.000Z)`,
                 loadAddress: 'Елабуга',
-                unloadAddress: 'Россия, Удмуртская Республика, Можгинский район, деревня Атабаево, Советская улица, 46',
+                unloadAddress: 'Челны, машиностроительна 91А',
                 userIdForFilter: adminId,
                 cargoOwnerFilter: '(isDeleted eq false)'
             });
@@ -67,13 +67,13 @@ test.describe('АЗС тесты', () => {
                 await emulatorApi.coordinatSend(bidInfo.carOption.carTracker, moment().subtract(1, 'd').format("YYYY-MM-DDTHH:mm:ss+03:00"), lastTrackerCarInfo[0].location.coordinates, [orderSort[0].geozone.location.coordinates, azcCoordinate],
                     [
                         { Number: 7, Address: 65535, Value: 200, ChangePer100Km: 0 },
-                    ], "00:20:00")
+                    ], "00:20:00", null, moment().format("YYYY-MM-DDTHH:mm:ss+03:00"))
             }
             else {
                 await emulatorApi.coordinatSend(bidInfo.carOption.carTracker, moment().subtract(1, 'd').format("YYYY-MM-DDTHH:mm:ss+03:00"), lastTrackerCarInfo[0].location.coordinates, [orderSort[0].geozone.location.coordinates, orderSort[1].geozone.location.coordinates, azcCoordinate],
                     [
                         { Number: 7, Address: 65535, Value: 200, ChangePer100Km: 0 },
-                    ], "00:20:00")
+                    ], "00:20:00", null, moment().format("YYYY-MM-DDTHH:mm:ss+03:00"))
             }
             await page.waitForTimeout(310000);
             await emulatorApi.coordinatSend(bidInfo.carOption.carTracker, moment().subtract(2, 'm').format("YYYY-MM-DDTHH:mm:ss+03:00"), azcCoordinate, [
@@ -99,13 +99,12 @@ test.describe('АЗС тесты', () => {
                 ],
                 "00:02:00")
             await page.waitForTimeout(310000);
-            await emulatorApi.coordinatSend(bidInfo.carOption.carTracker, moment().subtract(1, 'm').format("YYYY-MM-DDTHH:mm:ss+03:00"), orderSort[bidInfoResponse.bidPoints.length - 1].geozone.location.coordinates, [
-                orderSort[bidInfoResponse.bidPoints.length - 1].geozone.location.coordinates
+            await emulatorApi.coordinatSend(bidInfo.carOption.carTracker, moment().subtract(5, 'm').format("YYYY-MM-DDTHH:mm:ss+03:00"), outOfPlanning, [
+                outOfPlanning, orderSort[bidInfoResponse.bidPoints.length - 1].geozone.location.coordinates
             ],
                 [
                     { Number: 7, Address: 65535, Value: 650, ChangePer100Km: 0 },
-                ],
-                "00:02:00")
+                ], null, null, moment().format("YYYY-MM-DDTHH:mm:ss+03:00"))
         })
         await test.step('Проверяю что определился факт заправки на АЗС', async () => {
             const beforeRefuelingFact = '180';

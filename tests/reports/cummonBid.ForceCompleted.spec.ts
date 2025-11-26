@@ -13,6 +13,7 @@ test.describe('Отчёты с обычной завершенной вручн�
   let loginPage: LoginPage;
   let bidResponse: any;
   let bidInfoResponse: any;
+  let carMountKm: any;
   test.beforeEach(async ({ page }) => {
     loginPage = new LoginPage(page);
     await loginPage.goto(); // Переходим на страницу логина перед каждым тестом
@@ -54,6 +55,8 @@ test.describe('Отчёты с обычной завершенной вручн�
       await page.locator('[name="Общий отчет"]').click();
       await page.locator('input[name="startDate"]').fill(moment().subtract(7, 'h').format('DD.MM.YYYY HH:mm'));
       await page.locator('input[name="endDate"]').fill(moment().add(1, 'h').format('DD.MM.YYYY HH:mm'));
+      await page.waitForTimeout(500)
+      await page.locator('[class="book-show__title"]').click(); //чтоб датапикеры скрылись
       await page
         .locator("//div[@class='report__filters--left']//a[@class='btn btn-sm btn-brand'][contains(text(),'Обновить')]")
         .click();
@@ -136,6 +139,12 @@ test.describe('Отчёты с обычной завершенной вручн�
         `${process.env.url}/api/organizationProfile/getProfitabilityOfBidSettings`,
         await getAuthData(adminId)
       );
+      const overallMounthInfo: any = await clienApi.GetObjectResponse(
+        `${process.env.url}/api/report/getDataQuery/OverallReport/?paramsQuery=$filter=StartedAt gt ${moment().format("YYYY-MM-01")}T00:00:00.000Z and EndedAt lt ${moment().format("YYYY-MM-DD")}T23:59:59.000Z`,
+        await getAuthData(adminId)
+      );
+      carMountKm = overallMounthInfo.data.filter(item => item.carId == bidInfo.carOption.carId)
+      console.log(carMountKm)
       const planKm = Number(bidInfoResponse.planMileage / 100000).toFixed(2);
       const fuelcost =
         Number(planKm) *
@@ -291,28 +300,20 @@ test.describe('Отчёты с обычной завершенной вручн�
           `ожидаемый номер машины по тексту не совпадает${fullTrailerNumber.replace(/\s+/g, '')} и ${bidInfo.trailerOption.number.replace(/\s+/g, '')}`
         );
       }
-      const planKminPlanning: any = Number(bidInfoResponse.planMileage / 1000).toFixed(0);
-      console.log(planKminPlanning)
-      console.log(planKminPlanning.toLocaleString('ru-RU', {
+      console.log(carMountKm)
+      await expect(page.locator('[class="badge badge-pill badge-secondary mr-2"]')).toContainText(carMountKm[0].overallMileage.toLocaleString('ru-RU', {
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 0,
+        style: 'decimal', // обычное число, без валюты
+        useGrouping: true, // группировка тысяч
+      }))
+      await expect(page.locator('[class="badge badge-pill badge-secondary"]')).toContainText(carMountKm[0].output.toLocaleString('ru-RU', {
         minimumFractionDigits: 2,
         maximumFractionDigits: 2,
         style: 'decimal', // обычное число, без валюты
         useGrouping: true, // группировка тысяч
       }))
-      await expect(page.locator('[class="badge badge-pill badge-secondary mr-2"]')).toHaveText(planKminPlanning.toLocaleString('ru-RU', {
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2,
-        style: 'decimal', // обычное число, без валюты
-        useGrouping: true, // группировка тысяч
-      }))
-      const rubKm: any = (100000 / planKminPlanning)
-      await expect(page.locator('[class="badge badge-pill badge-secondary"]')).toHaveText(rubKm.toLocaleString('ru-RU', {
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2,
-        style: 'decimal', // обычное число, без валюты
-        useGrouping: true, // группировка тысяч
-      }))
-      await page.waitForTimeout(60000);
+      // await page.waitForTimeout(60000);
     })
   });
 });

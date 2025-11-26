@@ -139,6 +139,8 @@ test.describe('Проверка общего отчёта', () => {
             await page.locator('[name="Общий отчет"]').click();
             await page.locator('input[name="startDate"]').fill(moment().subtract(7, 'd').format('DD.MM.YYYY HH:mm'));
             await page.locator('input[name="endDate"]').fill(moment().add(1, 'h').format('DD.MM.YYYY HH:mm'));
+            await page.waitForTimeout(500)
+            await page.locator('[class="book-show__title"]').click(); //чтоб датапикеры скрылись
             await page
                 .locator("//div[@class='report__filters--left']//a[@class='btn btn-sm btn-brand'][contains(text(),'Обновить')]")
                 .click();
