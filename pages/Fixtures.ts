@@ -114,7 +114,9 @@ export class BidCreateInfo {
     reuseCar,
     cargoOwnerFilter,
     legalPersonFilter,
-    driverFilter
+    driverFilter,
+    cargosWeight,
+    externalId
   }: {
     responsibleId?: number;
     salesManagerId?: number;
@@ -134,7 +136,9 @@ export class BidCreateInfo {
     reuseCar?: boolean,
     cargoOwnerFilter?: string,
     legalPersonFilter?: string,
-    driverFilter?: string
+    driverFilter?: string,
+    cargosWeight?: number,
+    externalId?: string
   }) {
     const clienApi = new APIRequestsClient();
     let carForBid: any
@@ -221,6 +225,7 @@ export class BidCreateInfo {
         {
           name: cargosName,
           typeId: typeId,
+          weight: cargosWeight ?? null
         },
       ],
       typeOptions: [],
@@ -294,12 +299,14 @@ export class BidCreateInfo {
       extendedProperties: [],
       driver: {
         id: driverForBid[0].id,
-        fullName: driverForBid[0].user.fullName
+        fullName: driverForBid[0].user.fullName,
+        shortName: `${driverForBid[0].user.lastName} ${driverForBid[0].user.firstName[0]}. ${driverForBid[0].user.patronymic[0]}.`
       },
       carOption: {
         number: carForBid.number,
         carId: carForBid.id,
-        carTracker: carForBid.trackerDeviceNumber
+        carTracker: carForBid.trackerDeviceNumber,
+        carLogistId: carForBid.logistId
       },
       trailerOption: {
         trailerId: trailerForBid[0].id,
@@ -311,6 +318,7 @@ export class BidCreateInfo {
         releaseDate: null,
         status: 'Idle',
       },
+      externalId: externalId ?? null
     };
     return apiBidBody;
   }

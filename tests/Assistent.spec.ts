@@ -1,8 +1,8 @@
 import { expect, test } from '@playwright/test';
 import { LoginPage } from '../pages/LoginPage';
 import { getAuthData } from '../database';
-import DebugAPIRequestsClient from '../api/debugRequests'
 import moment from 'moment';
+import DebugAPIRequestsClient from '../api/debugRequests'
 const debugApi = new DebugAPIRequestsClient();
 test.describe('Настройка отправки данных ассистенту', () => {
     let loginPage: LoginPage;

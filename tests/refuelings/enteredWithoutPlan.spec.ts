@@ -6,6 +6,8 @@ import moment from 'moment';
 import APIRequestsClient from '../../api/clienApiRequsets';
 import APIBid from '../../api/bidApi';
 import SupportAPIRequestsClient from '../../api/testSupportRequsets'
+import DebugAPIRequestsClient from '../../api/debugRequests'
+const debugApi = new DebugAPIRequestsClient();
 const clienApi = new APIRequestsClient();
 const bidApi = new APIBid();
 const emulatorApi = new SupportAPIRequestsClient();
@@ -23,7 +25,7 @@ test.describe('АЗС тесты', () => {
         await loginPage.goto(); // Переходим на страницу логина перед каждым тестом
     });
 
-    test('Создание заявки с АЗС', async ({ page }) => {
+    test('Посещение АЗС вне планирования', async ({ page }) => {
         await test.step('Логин', async () => {
             await loginPage.login(process.env.cargorunRefPlanningLogin as string, process.env.cargorunRefPlanningPassword as string);
         });
@@ -105,47 +107,22 @@ test.describe('АЗС тесты', () => {
                 [
                     { Number: 7, Address: 65535, Value: 650, ChangePer100Km: 0 },
                 ], null, null, moment().format("YYYY-MM-DDTHH:mm:ss+03:00"))
+            await debugApi.init();
+            await debugApi.runTask('ICalculateBidRefuelingsOutsidePlanReminder', await getAuthData(36))
         })
-        await test.step('Проверяю что определился факт заправки на АЗС', async () => {
-            const beforeRefuelingFact = '180';
-
-            const locatorBeforeRefueling = page.locator('.b-timeline-point__date--value', { hasText: beforeRefuelingFact });
-
-            // Проверка, существует ли такой элемент
-            const countBeforeRefueling = await locatorBeforeRefueling.count();
-
-            if (countBeforeRefueling > 0) {
-                console.log(`есть факт заправки до на ${beforeRefuelingFact}`);
-            } else {
-                throw new Error(`не зафиксирована факт заправка до`)
-            }
-
-            const afterRefuelingFact = '700';
-
-            const locatorAfterRefueling = page.locator('.b-timeline-point__date--value', { hasText: afterRefuelingFact });
-
-            // Проверка, существует ли такой элемент
-            const countAfterRefueling = await locatorAfterRefueling.count();
-
-            if (countAfterRefueling > 0) {
-                console.log(`есть факт заправки до на ${afterRefuelingFact}`);
-            } else {
-                throw new Error(`не зафиксирована факт заправка после`)
-            }
-
-
-            const refuelingFact = '520';
-
-            const locatorRefueling = page.locator('.b-timeline-point__date--value', { hasText: refuelingFact });
-
-            // Проверка, существует ли такой элемент
-            const countRefueling = await locatorRefueling.count();
-
-            if (countRefueling > 0) {
-                console.log(`есть факт заправки до на ${refuelingFact}`);
-            } else {
-                throw new Error(`не зафиксирована факт заправка после`)
-            }
+        await test.step('Проверяю в отчёте что определилась как посещенная вне плана', async () => {
+            await page.locator('[title="Отчеты"]').click();
+            await page.locator('[name="Отчет по АЗС"]').click();
+            await page.locator('input[name="startDate"]').fill(moment().subtract(1, 'd').format('DD.MM.YYYY HH:mm'));
+            await page.locator('input[name="endDate"]').fill(moment().add(1, 'd').format('DD.MM.YYYY HH:mm'));
+            await page.locator("//div[@class='report__filters--left']//a[@class='btn btn-sm btn-brand'][contains(text(),'Обновить')]").click();
+            await page.locator('[name="bidId"]').fill(`${bidResponse.id}`)
+            await page.waitForTimeout(1500)
+            await page.locator('#react-select-visitStatusInstance-placeholder').scrollIntoViewIfNeeded()
+            await page.locator('#visitStatusInput').click();
+            await page.getByRole('option', { name: 'Посещена без планирования' }).click();
+            await page.waitForTimeout(5000);
+            await expect(page.locator(`[data-bidid="${bidResponse.id}"]`)).toBeVisible();
         })
     })
 })

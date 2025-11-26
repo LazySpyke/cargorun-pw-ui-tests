@@ -132,7 +132,6 @@ test.describe('Проверка отчётов с азс', () => {
             await page.locator('[name="gasStationBrandName"]').fill('Тестовая')
             await page.waitForTimeout(1000);
             await page.locator(`[data-bidid="${bidResponse.id}"]`).isVisible();
-
             await page.locator('#visitStatusContainer').click();
             await page.locator('#visitStatusContainer').type('Посетил', { delay: 100 });
             await page.locator(`text=Посетил`).nth(1).click();
