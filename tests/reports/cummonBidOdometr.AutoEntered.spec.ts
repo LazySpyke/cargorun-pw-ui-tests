@@ -35,7 +35,7 @@ test.describe('Проверка отчётов с данными одометр�
         await test.step('Логин', async () => {
             await loginPage.login(process.env.emptyCompanyEmail as string, process.env.emptyCompanyPassword as string);
         });
-        await test.step('создание и приаязка новой машины и т д', async () => {
+        await test.step('создание и привязка новой машины и т д', async () => {
             await debugApi.init();
             newEntity = await debugApi.newCarTracker(await getAuthData(adminId), await getAuthData(36), await emulatorApi.generateCarNumber(), await emulatorApi.generateTrackerNumber('ote'), moment().subtract(31, 'd').format("YYYY-MM-DDT00:00:00+03:00"))
             console.log(newEntity)

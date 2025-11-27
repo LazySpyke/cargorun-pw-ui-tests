@@ -167,8 +167,23 @@ class DebugAPIRequestsClient {
         }
         return {
             newTrackerId: trackerCreateResponseJSON.entityId,
-            newCarId: carCreateResponseJSON.id
+            newCarId: carCreateResponseJSON.id,
+            newCarNumber: carNumber
         }
+    }
+    async deactivateCityPlanning(orgId: number, bearerToken: string): Promise<any> {
+        if (!this.context) {
+            throw new Error('APIRequestContext is not initialized. Call init() first.');
+        }
+        const response = await this.context.post(`${process.env.url}/api/dev/grain/deactivate?name=IPlanningCacheGrain&id=${orgId}&persistent=false`, {
+            data: {},
+            headers: {
+                'Content-Type': 'application/json',
+                Authorization: bearerToken,
+                // другие заголовки, если нужны
+            },
+        });
+        console.log(`статус деактивации Планирования по городам ${response.status} у компании ${orgId}`)
     }
 }
 

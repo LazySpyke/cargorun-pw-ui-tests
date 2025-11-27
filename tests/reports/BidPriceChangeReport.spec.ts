@@ -196,23 +196,27 @@ test.describe('Отчёты по Изменению стоимости заяв�
             await page.goto(`${process.env.url}/bids/bid/${bidResponse.id}`);
             await page.locator('[class="dropdown__btn"]').click();
             await page.getByText('Создать копию заявки').click();
+            await page.locator('[class="checkbox d-inline-block checkbox--checked"]').click()//делаем копию с датами
             await page.locator('[class="btn btn-sm btn-brand btn-block"]').click();
             await expect(page.getByText('Ваш запрос выполнен успешно.')).toBeVisible();
+            await page.getByText('Ваш запрос выполнен успешно.').click()
             await page.locator('[value="Обновить заявку"]').click();
             await expect(page.getByText('Ваш запрос выполнен успешно.')).toBeVisible();
             const currentUrl = await page.url();
             copyBidId = currentUrl.match(/\d+/g);
+            console.log(copyBidId)
             await page.locator("//div[@class='inline-btn inline-btn--edit']").first().click();
             await page.locator('input[name="price"]').fill('1000')
             await page.locator('input[value="Обновить заявку"]').click();
             await expect(page.getByText('Ваш запрос выполнен успешно')).toBeVisible();
+            await page.getByText('Ваш запрос выполнен успешно.').click()
             await page.waitForTimeout(15000);
         });
         await test.step('Меняем данные по цене в черновике', async () => {
             await apiUse.init();
             const patchPrice = await apiUse.postData(`${process.env.url}/api/truckingbids/patch`, {
                 "price": 2000,
-                "id": copyBidId
+                "id": copyBidId[0]
             }, await getAuthData(adminId))
             console.log(patchPrice)
         })
@@ -223,8 +227,8 @@ test.describe('Отчёты по Изменению стоимости заяв�
             await page.locator('input[name="endDate"]').fill(moment().add(2, 'd').format('DD.MM.YYYY HH:mm'));
             await page.locator('[class="btn btn-sm btn-brand"]').first().click();
             await page.waitForTimeout(5000);
-            await page.locator('[name="bidId"]').fill(`${copyBidId}`)
-            await page.waitForTimeout(1000);
+            await page.locator('[name="bidId"]').fill(`${copyBidId[0]}`)
+            await page.waitForTimeout(5000);
             await expect(page.locator(`a[data-bidid="${bidResponse.id}"]`)).toBeHidden();
         });
     })

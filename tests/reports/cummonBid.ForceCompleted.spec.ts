@@ -98,7 +98,7 @@ test.describe('Отчёты с обычной завершенной вручн�
       await expect(page.locator(`[data-counterpartyname="${bidResponse.id}"]`)).toHaveText(
         bidInfoResponse.cargoOwnerDictionaryItem.name
       );
-      await expect(page.locator(`[data-externalid="${bidResponse.id}"]`)).toBeEmpty();
+      await expect(page.locator(`[data-externalid="${bidResponse.id}"]`)).toHaveText(`${externalId}`);
       await expect(page.locator(`[data-route="${bidResponse.id}"]`)).toHaveText('Набережные Челны - ');
       await expect(page.locator(`[data-executiondaterange="${bidResponse.id}"]`)).toHaveText(
         `${moment(bidInfoResponse.bidPoints[0].planEnterDate, 'YYYY-MM-DDTHH:mm').format('DD.MM.YYYY HH:mm')} (+03:00) - ${moment(bidInfoResponse.bidPoints[1].planEnterDate, 'YYYY-MM-DDTHH:mm').add(1, 'm').format('DD.MM.YYYY HH:mm')} (+03:00)`
