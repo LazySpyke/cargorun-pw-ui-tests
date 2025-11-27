@@ -9,7 +9,6 @@ import APIRequestsClient from '../../api/clienApiRequsets';
 import api from '../../api/apiRequests';
 import APIBid from '../../api/bidApi';
 import SupportAPIRequestsClient from '../../api/testSupportRequsets'
-import { text } from 'stream/consumers';
 const clienApi = new APIRequestsClient();
 const bidApi = new APIBid();
 const emulatorApi = new SupportAPIRequestsClient();
@@ -25,20 +24,17 @@ const bio = {
     comment: `${moment().format()}Cсылки на документы`,
     id: 0
 };
-test.describe('Проверка работы сокета планирования', () => {
+test.describe('Планирование по городам', () => {
     let loginPage: LoginPage;
     let bidResponse: any;
     let bidInfoResponse: any;
-    let secondBidInfo: any
-    let secondBidResponse: any
-    let secondBidInfoResponse: any
     let newEntity: any;
     let newDriver: any;
     test.beforeEach(async ({ page }) => {
         loginPage = new LoginPage(page);
         await loginPage.goto(); // Переходим на страницу логина перед каждым тестом
     });
-    test('Создание обычной заявки', async ({ page }) => {
+    test('Проверка сокетов', async ({ page }) => {
         await test.step('Логин', async () => {
             await loginPage.login(process.env.rootMail as string, process.env.rootPassword as string);
         });
@@ -135,8 +131,107 @@ test.describe('Проверка работы сокета планировани
             await expect(page.locator('[class="carnumber__wrap carnumber__wrap--yellow"]')).toBeHidden(); //статус машины
             await expect(page.locator('[class="carnumber__wrap carnumber__wrap--lightgray"]')).toBeVisible(); //смена статуса в реалтайм по сокету на забронированно
             await expect(page.locator('[class="icon-uEA88-info-circle text-info pr-2"]')).toBeVisible(); //знак коммента
+            await page.waitForTimeout(5000)
             await page.locator('[class="icon-uEA88-info-circle text-info pr-2"]').hover();
             await expect(page.locator('[class="rc-tooltip-inner"]')).toContainText(bookingComment)
+        })
+        await test.step('сокет редактирования необходимости ТО машины', async () => {
+            const needsMaintenanceComment = `Необхордимость ТО в ${moment().format()}`
+            const carInfo = await clienApi.GetObjectResponse(
+                `${process.env.url}/api/car/getForEdit?id=${newEntity.newCarId}`,
+                await getAuthData(adminId)
+            )
+            carInfo.needsMaintenanceComment = needsMaintenanceComment
+            const applyCar = await apiUse.postData(`${process.env.url}/api/car/apply`, carInfo, await getAuthData(adminId))
+            await expect(page.locator('[class="carnumber__wrap carnumber__wrap--yellow"]')).toBeHidden(); //статус машины
+            await expect(page.locator('[class="carnumber__wrap carnumber__wrap--lightgray"]')).toBeVisible(); //смена статуса в реалтайм по сокету на забронированно
+            await expect(page.locator('[class="icon-uEA88-info-circle text-info pr-2"]')).toBeVisible(); //знак коммента
+            await page.waitForTimeout(5000)
+            await expect(page.locator('[class="pr-2 icon-uEA97-wrench text-muted"]')).toBeVisible();
+            await page.locator('[class="carnumber__number carnumber__number--without-region py-1"]').first().hover();
+            await page.locator('[class="pr-2 icon-uEA97-wrench text-muted"]').hover();
+            await expect(page.locator('[class="rc-tooltip-inner"]').nth(1)).toContainText(needsMaintenanceComment)
+        })
+        await test.step('сокет редактирования водителя', async () => {
+            const editbio = {
+                firstName: faker.person.firstName(),
+                lastName: faker.person.lastName(),
+                patronymic: faker.person.middleName(),
+                phoneNumber: faker.phone.number({ style: 'international' }),
+                comment: `${moment().format()}Cсылки на документы`,
+                id: 0
+            };
+            const driverInfo = await clienApi.GetObjectResponse(
+                `${process.env.url}/api/driver/getForEdit?id=${newDriver.id}`,
+                await getAuthData(adminId)
+            )
+            const oldDriverName = driverInfo.firstName
+            driverInfo.firstName = editbio.firstName
+            const applyDriver = await apiUse.postData(`${process.env.url}/api/driver/apply`, driverInfo, await getAuthData(adminId))
+            await expect(page.locator('[class="carnumber__wrap carnumber__wrap--yellow"]')).toBeHidden(); //статус машины
+            await expect(page.locator('[class="carnumber__wrap carnumber__wrap--lightgray"]')).toBeVisible(); //смена статуса в реалтайм по сокету на забронированно
+            await expect(page.locator('[class="icon-uEA88-info-circle text-info pr-2"]')).toBeVisible(); //знак коммента
+            await page.waitForTimeout(5000)
+            await page.locator('[class="carnumber__number carnumber__number--without-region py-1"]').first().hover();
+            await page.locator("//div[contains(text(),'Планирование по городам')]").click();
+            await page.waitForTimeout(10000)
+            await page.locator('[class="carnumber__number"]').hover();
+            await expect(page.locator('[class="rc-tooltip-inner"]').nth(0)).toContainText(`${editbio.firstName}`) //измененённое имя
+            await expect(page.locator('[class="rc-tooltip-inner"]').nth(0)).not.toContainText(`${oldDriverName}`) //старое имя
+        })
+        await test.step('сокет редактирования прицепа', async () => {
+            const editTrailerNumber = await emulatorApi.generateCarNumber()
+            const trailerInfo = await clienApi.GetObjectResponse(
+                `${process.env.url}/api/trailer/getForEdit?id=${bidInfo.trailerOption.trailerId}`,
+                await getAuthData(adminId)
+            )
+            const oldTrailerNumber = trailerInfo.number
+            trailerInfo.number = editTrailerNumber
+            const applyTrailer = await apiUse.postData(`${process.env.url}/api/trailer/apply`, trailerInfo, await getAuthData(adminId))
+            await expect(page.locator('[class="carnumber__wrap carnumber__wrap--yellow"]')).toBeHidden(); //статус машины
+            await expect(page.locator('[class="carnumber__wrap carnumber__wrap--lightgray"]')).toBeVisible(); //смена статуса в реалтайм по сокету на забронированно
+            await expect(page.locator('[class="icon-uEA88-info-circle text-info pr-2"]')).toBeVisible(); //знак коммента
+            await page.waitForTimeout(5000)
+            await page.locator('[class="carnumber__number carnumber__number--without-region py-1"]').first().hover();
+            await page.locator("//div[contains(text(),'Планирование по городам')]").click();
+            await page.waitForTimeout(5000)
+            await page.locator('[class="carnumber__number"]').hover();
+            await expect(page.locator('[class="rc-tooltip-inner"]').nth(0)).toContainText(`${editTrailerNumber}`) //измененённый прицеп
+            await expect(page.locator('[class="rc-tooltip-inner"]').nth(0)).not.toContainText(`${oldTrailerNumber}`) //старый номер прицепа
+        })
+        await test.step('сокет редактирования машины', async () => {
+            const editCarNumber = await emulatorApi.generateCarNumber()
+            const carInfo = await clienApi.GetObjectResponse(
+                `${process.env.url}/api/car/getForEdit?id=${newEntity.newCarId}`,
+                await getAuthData(adminId)
+            )
+            carInfo.number = editCarNumber
+            const applyCar = await apiUse.postData(`${process.env.url}/api/car/apply`, carInfo, await getAuthData(adminId))
+            await expect(page.locator('[class="carnumber__wrap carnumber__wrap--yellow"]')).toBeHidden(); //статус машины
+            await expect(page.locator('[class="carnumber__wrap carnumber__wrap--lightgray"]')).toBeVisible(); //смена статуса в реалтайм по сокету на забронированно
+            await expect(page.locator('[class="icon-uEA88-info-circle text-info pr-2"]')).toBeVisible(); //знак коммента
+            const carSelector: string = await page.locator('[class="carnumber__number"]').first().innerText(); //получаем кол-вол заявок
+            const carRegionText: string = await page.locator('[class="carnumber__region carnumber__region--small"]').first().innerText(); //получаем кол-вол заявок
+            const allcarText = carSelector + carRegionText
+            if (allcarText.replace(/\D/g, '') != editCarNumber.replace(/\D/g, '')) {
+                throw new Error(`номер машины не обновился ожидаемый ${editCarNumber.replace(/\D/g, '')}, приходит ${allcarText.replace(/\D/g, '')}`)
+            }
+            else {
+                console.log(`всё в кайф`)
+            }
+        })
+        await test.step('сокет редактирования логиста машины', async () => {
+            const carInfo = await clienApi.GetObjectResponse(
+                `${process.env.url}/api/car/getForEdit?id=${newEntity.newCarId}`,
+                await getAuthData(adminId)
+            )
+            carInfo.logistId = 427
+            const applyCar = await apiUse.postData(`${process.env.url}/api/car/apply`, carInfo, await getAuthData(adminId))
+            await expect(page.locator('[class="carnumber__wrap carnumber__wrap--yellow"]')).toBeHidden(); //статус машины
+            await expect(page.locator('[class="carnumber__wrap carnumber__wrap--lightgray"]')).toBeVisible(); //смена статуса в реалтайм по сокету на забронированно
+            await expect(page.locator('[class="icon-uEA88-info-circle text-info pr-2"]')).toBeVisible(); //знак коммента
+            await page.locator('[class="carnumber__number"]').hover();
+            await expect(page.locator('[class="rc-tooltip-inner"]')).toContainText(`Тестовый Логист перезагрузить`)
         })
         await test.step('сокет редактирования расчётного времени', async () => {
             const estimatedDate = moment().add(4, 'd').format("YYYY-MM-DDTHH:mm:ss")
