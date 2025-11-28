@@ -230,8 +230,8 @@ test.describe('Проверка работы метода natcar/bids/getlist', 
             await page.waitForTimeout(5000);
         })
         await test.step('проверка работы natcar/bids/getlist', async () => {
-            bidInfoResponse = await bidApi.GetBidInfo(secondBidResponse.id, await getAuthData(emptyAdminId));
             await page.waitForTimeout(15000)
+            bidInfoResponse = await bidApi.GetBidInfo(secondBidResponse.id, await getAuthData(emptyAdminId));
             const expectedJson = {
                 id: bidInfoResponse.id,
                 distributionBidId: bidInfoResponse.distributionBidId,

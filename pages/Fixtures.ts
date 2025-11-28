@@ -300,7 +300,7 @@ export class BidCreateInfo {
       driver: {
         id: driverForBid[0].id,
         fullName: driverForBid[0].user.fullName,
-        shortName: `${driverForBid[0].user.lastName} ${driverForBid[0].user.firstName[0]}. ${driverForBid[0].user.patronymic[0]}.`
+        shortName: `${driverForBid[0].user.lastName} ${driverForBid[0].user.firstName[0]}.` //отчество не добавил так как может его не быть
       },
       carOption: {
         number: carForBid.number,

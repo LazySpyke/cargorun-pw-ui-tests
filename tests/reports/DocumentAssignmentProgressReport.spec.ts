@@ -112,12 +112,9 @@ test.describe('Отчёты по работе водителей с задани
             await page.locator('input[name="documentAssignmentId"]').fill(`${documentAssignmentResponse[0].id}`);
             await page.waitForTimeout(1500);
             await page.locator(`[data-bidid="${bidResponse.id}"]`).isVisible();
-
-
             await page.locator('input[name="bidId"]').fill(`${bidResponse.id}`);
             await page.waitForTimeout(1500);
             await page.locator(`[data-bidid="${bidResponse.id}"]`).isVisible();
-
             await page.locator('input[name="bidId"]').fill(`${bidResponse.id}`);
             await page.waitForTimeout(1500);
             await page.locator(`[data-bidid="${bidResponse.id}"]`).isVisible();

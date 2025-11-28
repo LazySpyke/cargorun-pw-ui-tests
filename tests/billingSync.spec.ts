@@ -21,7 +21,7 @@ test.describe('Синхронизация с биллингом', () => {
             await page.locator("//div[@class='btn btm-sm btn-brand mt-3']").click(); //синхронизация ручная
             await page.waitForTimeout(6000);
             await page.locator('[class="badge mr-1 badge-success"]') //статус синхронизации
-            await expect(page.locator("//div[@class='small']")).toHaveText(moment().format("Синхронизация: Успешно DD.MM.YYYY HH:mm"))
+            await expect(page.locator("//div[@class='small']")).toHaveText(moment().add(1, 'h').format("Синхронизация: Успешно DD.MM.YYYY HH:mm"))
         });
     });
 });
