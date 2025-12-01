@@ -116,7 +116,8 @@ export class BidCreateInfo {
     legalPersonFilter,
     driverFilter,
     cargosWeight,
-    externalId
+    externalId,
+    trailerFilter
   }: {
     responsibleId?: number;
     salesManagerId?: number;
@@ -138,13 +139,15 @@ export class BidCreateInfo {
     legalPersonFilter?: string,
     driverFilter?: string,
     cargosWeight?: number,
-    externalId?: string
+    externalId?: string,
+    trailerFilter?: string,
   }) {
     const clienApi = new APIRequestsClient();
     let carForBid: any
     let cargoOwner: any
     let legalPerson: any
     let driverForBid: any
+    let trailerForBid: any
     await bidApi.init();
     if (carFilter == null) {
       carForBid = await clienApi.getCar(
@@ -170,11 +173,18 @@ export class BidCreateInfo {
         await getAuthData(userIdForFilter)
       );
     }
-    const trailerForBid = await clienApi.GetObjectResponse(
-      `${process.env.url}/api/trailer/getlist?$filter=(isDeleted%20eq%20false)&$orderby=id%20desc&$top=10&$skip=0&withDeleted=true`,
-      await getAuthData(userIdForFilter)
-    );
-
+    if (trailerFilter == null) {
+      trailerForBid = await clienApi.GetObjectResponse(
+        `${process.env.url}/api/trailer/getlist?$filter=(isDeleted%20eq%20false)&$orderby=id%20desc&$top=10&$skip=0&withDeleted=true`,
+        await getAuthData(userIdForFilter)
+      );
+    }
+    else {
+      trailerForBid = await clienApi.GetObjectResponse(
+        `${process.env.url}/api/trailer/getlist?checkOnline=true&withDeleted=true&$filter=${trailerFilter}&$orderby=id%20desc&$top=10&$skip=0`,
+        await getAuthData(userIdForFilter)
+      );
+    }
     if (cargoOwnerFilter == null) {
       cargoOwner = await clienApi.GetObjectResponse(
         `${process.env.url}/api/cargoOwnerDictionary/get?$filter=(isDeleted%20eq%20false)&$orderby=id%20desc&$top=5&$skip=0&withDeleted=true`,
