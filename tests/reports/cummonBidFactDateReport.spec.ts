@@ -1,6 +1,3 @@
-// Пример использования:
-const startValue: number = 1000;
-const startDate: string = moment().subtract(7, 'd').format("YYYY-MM-DDTHH:mm:ssZ")
 import { test, expect } from '@playwright/test';
 import { LoginPage } from '../../pages/LoginPage';
 import { getAuthData } from '../../database';

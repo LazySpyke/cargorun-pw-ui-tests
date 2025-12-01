@@ -36,7 +36,8 @@ test.describe('Отчёты с обычной завершенной вручн�
         unloadAddress: 'Москва',
         userIdForFilter: adminId,
         cargosWeight: 10,
-        externalId: externalId
+        externalId: externalId,
+        carFilter: `logistId ge 0 and isDeleted eq false and lastFixedAt ge 2024-08-31T21:00:00.000Z`
       });
       await bidApi.init();
       const bidList = await clienApi.GetObjectResponse(
@@ -128,7 +129,7 @@ test.describe('Отчёты с обычной завершенной вручн�
           useGrouping: true, // группировка тысяч
         })
       );
-      await expect(page.locator(`[data-averageplanweight="${bidResponse.id}"]`)).toHaveText('0,00');
+      await expect(page.locator(`[data-averageplanweight="${bidResponse.id}"]`)).toHaveText('10,00');
       await expect(page.locator(`[data-output="${bidResponse.id}"]`)).toHaveText(
         (bidInfo.price / Math.ceil(bidInfoResponse.planMileage / 1000)).toLocaleString('ru-RU', {
           minimumFractionDigits: 2,
