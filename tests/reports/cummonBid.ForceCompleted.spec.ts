@@ -37,7 +37,7 @@ test.describe('Отчёты с обычной завершенной вручн�
         userIdForFilter: adminId,
         cargosWeight: 10,
         externalId: externalId,
-        carFilter: `logistId ge 0 and isDeleted eq false and lastFixedAt ge 2024-08-31T21:00:00.000Z`
+        carFilter: `logistId ge 1 and isDeleted eq false and lastFixedAt ge 2024-08-31T21:00:00.000Z`
       });
       await bidApi.init();
       const bidList = await clienApi.GetObjectResponse(
