@@ -52,7 +52,7 @@ test.describe('Отчёты по Дебиторской задолженност
             bidResponse = await bidApi.apply(bidInfo, await getAuthData(adminId));
             await bidApi.setStatus(bidResponse.id, await getAuthData(adminId));
         });
-        await test.step('Проверка отображения информации очастичной оплате', async () => {
+        await test.step('Проверка отображения информации о частичной оплате', async () => {
             await page.locator('[title="Финансы и учет"]').click();
             await page.locator(`[name='Отчет "Дебиторская задолженность"']`).click();
             await page.locator('input[name="startDate"]').fill(moment().subtract(2, 'd').format('DD.MM.YYYY HH:mm'));

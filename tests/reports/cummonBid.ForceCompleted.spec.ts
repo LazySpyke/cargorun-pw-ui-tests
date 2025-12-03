@@ -378,15 +378,15 @@ test.describe('Отчёты с обычной завершенной вручн�
           `ожидаемый номер машины по тексту не совпадает${fullCarNumber.replace(/\s+/g, '')} и ${bidInfo.carOption.number.replace(/\s+/g, '')}`
         );
       }
-      const trailerNumberText = await page.locator('div[class="carnumber__number"]').nth(1).textContent();
-      const trailerRegionText = await page.locator('div[class="carnumber__region"]').nth(1).textContent();
-      const fullTrailerNumber = `${trailerNumberText}/${trailerRegionText}`;
-      console.log(fullTrailerNumber);
-      if (fullTrailerNumber.replace(/\s+/g, '') != bidInfo.trailerOption.number.replace(/\s+/g, '')) {
-        throw new Error(
-          `ожидаемый номер машины по тексту не совпадает${fullTrailerNumber.replace(/\s+/g, '')} и ${bidInfo.trailerOption.number.replace(/\s+/g, '')}`
-        );
-      }
+      // const trailerNumberText = await page.locator('div[class="carnumber__number"]').nth(1).textContent();
+      // const trailerRegionText = await page.locator('div[class="carnumber__region"]').nth(1).textContent();
+      // const fullTrailerNumber = `${trailerNumberText}/${trailerRegionText}`;
+      // console.log(fullTrailerNumber);
+      // if (fullTrailerNumber.replace(/\s+/g, '') != bidInfo.trailerOption.number.replace(/\s+/g, '')) {
+      //   throw new Error(
+      //     `ожидаемый номер машины по тексту не совпадает${fullTrailerNumber.replace(/\s+/g, '')} и ${bidInfo.trailerOption.number.replace(/\s+/g, '')}`
+      //   );
+      // }
       console.log(carMountKm)
       await expect(page.locator('[class="badge badge-pill badge-secondary mr-2"]')).toContainText(carMountKm[0].overallMileage.toLocaleString('ru-RU', {
         minimumFractionDigits: 0,

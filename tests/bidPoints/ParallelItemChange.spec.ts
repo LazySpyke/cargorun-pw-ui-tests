@@ -70,7 +70,7 @@ test.describe('паралелльная перецепка', () => {
                 paymentTypeId: 176,
                 ndsTypeId: 175,
                 planEnterLoadDate: moment().subtract(14, 'd').format('YYYY-MM-DDTHH:mm'),
-                planEnterUnloadDate: moment().add(10, 'd').format('YYYY-MM-DDTHH:mm'),
+                planEnterUnloadDate: moment().subtract(10, 'd').format('YYYY-MM-DDTHH:mm'),
                 carFilter: `id eq ${await newEntity.newCarId}`,
                 loadAddress: 'Казань',
                 unloadAddress: 'Нижний Новгород',
@@ -169,7 +169,7 @@ test.describe('паралелльная перецепка', () => {
             await page.locator('[class="btn btn-brand map__submit-btn"]').click();
             await page.locator('[name="radius"]').fill('500')
             await page.waitForTimeout(5000)
-            await page.locator('[name="planEnterDate"]').fill(`${moment().subtract(3, 'd').format("DD.MM.YYYY HH:mm")}`)
+            await page.locator('[name="planEnterDate"]').fill(`${moment().subtract(4, 'd').format("DD.MM.YYYY HH:mm")}`)
             await page.waitForTimeout(5000)
             await expect(page.locator("//div[@class='card-header']")).toHaveText('Вы можете связать точку перецепки с заявкой. При выполнении перецепки заявки поменяются указанными составляющими.')
             await page.locator("//div[@class='inline-btn inline-btn--checkmark']").click();
