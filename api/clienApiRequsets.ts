@@ -38,11 +38,11 @@ class APIRequestsClient {
     await this.api.getData(endpoint, authHeaders).then((response: any) => {
       responseBody = response;
     });
-    console.log(responseBody);
+    // console.log(responseBody);
     return responseBody;
   }
   async getToken(username: string, password: string) {
-    console.log(username, password);
+    // console.log(username, password);
     const date: Date = new Date(); // Explicit type declaration
     await this.api.init();
     const authEndpoint = `${process.env.url}/api/Account/GenerateToken`; // Замените на ваш URL
