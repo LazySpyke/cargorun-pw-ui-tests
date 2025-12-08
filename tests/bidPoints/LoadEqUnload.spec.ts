@@ -13,7 +13,7 @@ const emulatorApi = new SupportAPIRequestsClient();
 const debugApi = new DebugAPIRequestsClient();
 let bidInfo: any;
 const adminId = 1308041
-test.describe('Проверка отчётов с данными одометра', () => {
+test.describe('Нулевая точка', () => {
     let loginPage: LoginPage;
     let bidResponse: any;
     let bidInfoResponse: any;
@@ -25,7 +25,8 @@ test.describe('Проверка отчётов с данными одометр�
         loginPage = new LoginPage(page);
         await loginPage.goto(); // Переходим на страницу логина перед каждым тестом
     });
-    test('Создание обычной заявки', async ({ page }) => {
+    //TODO сделать проверку по пробегу и то что нулевой нет у второй заявки
+    test('Создание 2 заявок без порожнего пробега', async ({ page }) => {
         await test.step('Логин', async () => {
             await loginPage.login(process.env.compoundCompanyEmail as string, process.env.compoundCompanyPassword as string);
         });
@@ -45,8 +46,8 @@ test.describe('Проверка отчётов с данными одометр�
                 planEnterLoadDate: moment().subtract(7, 'd').format('YYYY-MM-DDTHH:mm'),
                 planEnterUnloadDate: moment().subtract(6, 'd').format('YYYY-MM-DDTHH:mm'),
                 carFilter: `id eq ${await newEntity.newCarId}`,
-                loadAddress: 'Сыктывкар',
-                unloadAddress: 'Москва',
+                loadAddress: 'Челны',
+                unloadAddress: 'Уфа',
                 userIdForFilter: adminId
             });
             await bidApi.init();
@@ -54,24 +55,8 @@ test.describe('Проверка отчётов с данными одометр�
             await bidApi.setStatus(bidResponse.id, await getAuthData(adminId));
             await emulatorApi.init();
             bidInfoResponse = await bidApi.GetBidInfo(bidResponse.id, await getAuthData(adminId));
-            const routeBid = await clienApi.GetObjectResponse(
-                `${process.env.url}/api/Routes/Get/${bidResponse.id}`,
-                await getAuthData(adminId)
-            )
-            const selectedPoints = routeBid.segments[0].points.map((point: any, index: number) => {
-                if (index === 0 || index === routeBid.segments[0].points.length - 1 || index % 25 === 0) {
-                    return point;
-                } else {
-                    return null; // пропускаем
-                }
-            })
-                .filter(point => point !== null); // удаляем null
 
-            console.log(selectedPoints);
-            selectedPoints.forEach(async function (item: any, index: number, body: any) {
-                await emulatorApi.coordinatSend(bidInfo.carOption.carTracker, moment().subtract(8, 'd').add(index * 15, 'm').format("YYYY-MM-DDTHH:mm:ss+00:00"), item, [item], null, "00:00:01")
-                await page.waitForTimeout(2000)
-            })
+            await emulatorApi.coordinatSend(bidInfo.carOption.carTracker, moment().subtract(7, 'd').format("YYYY-MM-DDTHH:mm:ss+00:00"), bidInfoResponse.bidPoints[0].geozone.location.coordinates, [bidInfoResponse.bidPoints[0].geozone.location.coordinates, bidInfoResponse.bidPoints[1].geozone.location.coordinates], null, "00:10:00")
             await page.waitForTimeout(50000);
         });
         await test.step('создание второй заявки где дата позже', async () => {
@@ -80,11 +65,11 @@ test.describe('Проверка отчётов с данными одометр�
                 price: 100000,
                 paymentTypeId: 176,
                 ndsTypeId: 175,
-                planEnterLoadDate: moment().subtract(4, 'd').format('YYYY-MM-DDTHH:mm'),
-                planEnterUnloadDate: moment().subtract(1, 'h').format('YYYY-MM-DDTHH:mm'),
+                planEnterLoadDate: moment().subtract(6, 'd').add(2, 'h').format('YYYY-MM-DDTHH:mm'),
+                planEnterUnloadDate: moment().add(1, 'h').format('YYYY-MM-DDTHH:mm'),
                 carFilter: `(isDeleted eq false and id eq ${bidInfo.carOption.carId})`,
-                loadAddress: 'Нижний Новгород',
-                unloadAddress: 'Киров',
+                loadAddress: 'Уфа',
+                unloadAddress: 'Нижний Новгород',
                 userIdForFilter: adminId,
                 reuseCar: true
             });
@@ -92,57 +77,18 @@ test.describe('Проверка отчётов с данными одометр�
             secondBidResponse = await bidApi.apply(secondBidInfo, await getAuthData(adminId));
             await bidApi.setStatus(secondBidResponse.id, await getAuthData(adminId));
             secondBidInfoResponse = await bidApi.GetBidInfo(secondBidResponse.id, await getAuthData(adminId));
-            const routeBid = await clienApi.GetObjectResponse(
-                `${process.env.url}/api/Routes/Get/${secondBidResponse.id}`,
-                await getAuthData(adminId)
-            )
-            const selectedPointsEmptyRoute = routeBid.segments[0].points.map((point: any, index: number) => {
-                if (index === 0 || index === routeBid.segments[0].points.length - 1 || index % 50 === 0) {
-                    return point;
-                } else {
-                    return null; // пропускаем
-                }
-            })
-                .filter(point => point !== null); // удаляем null
-
-            console.log(selectedPointsEmptyRoute);
-            selectedPointsEmptyRoute.forEach(async function (item: any, index: number, body: any) {
-                await emulatorApi.coordinatSend(bidInfo.carOption.carTracker, moment().subtract(5, 'd').add(index * 15, 'm').format("YYYY-MM-DDTHH:mm:ss+00:00"), item, [item], null, "00:00:01")
-                await page.waitForTimeout(1500)
-            })
-            const selectedPointsMainRoute = routeBid.segments[1].points.map((point: any, index: number) => {
-                if (index === 0 || index === routeBid.segments[1].points.length - 1 || index % 50 === 0) {
-                    return point;
-                } else {
-                    return null; // пропускаем
-                }
-            })
-                .filter(point => point !== null); // удаляем null
-
-            console.log(selectedPointsMainRoute);
-            selectedPointsMainRoute.forEach(async function (item: any, index: number, body: any) {
-                await emulatorApi.coordinatSend(bidInfo.carOption.carTracker, moment().subtract(2, 'd').add(index * 15, 'm').format("YYYY-MM-DDTHH:mm:ss+00:00"), item, [item], null, "00:00:01")
-                await page.waitForTimeout(1500)
-            })
+            await emulatorApi.coordinatSend(bidInfo.carOption.carTracker, `${moment().subtract(3, 'd').format("YYYY-MM-DDTHH:mm:ss")}+00:00`, null, [secondBidInfoResponse.bidPoints[0].geozone.location.coordinates, secondBidInfoResponse.bidPoints[1].geozone.location.coordinates], null, "00:10:00")
             //TODO допилить проверку на данные что активный км считается даже без выезда из нулевой
             await page.waitForTimeout(54000)
         })
         await test.step('проверка данных заявок', async () => {
             await page.waitForTimeout(180000)//ждём перерасчётов
             await page.goto(`${process.env.url}/bids/bid/${bidResponse.id}`)
-            await expect(page.getByTestId('fact-distance')).toHaveText('1 296') //активный
-            await page.locator('[class="dropdown__btn"]').click();
-            await page.getByText('Фильтрация трекер логов').click()
-            await page.locator('[class="btn btn-brand btn-sm modal-window__footer-action"]').click()
-            await expect(page.getByText('Анализ трекер логов успешно запущен')).toBeVisible();
-            await page.waitForTimeout(10000)
-            await page.reload();
-            await expect(page.getByTestId('fact-distance')).toHaveText('1 315') //активный
+            await expect(page.getByTestId('fact-distance')).toHaveText('284') //активный
             await page.goto(`${process.env.url}/bids/bid/${secondBidResponse.id}`)
-            await expect(page.getByTestId('fact-distance')).toHaveText('629') //активный
-            await expect(page.getByTestId('fact-empty-mileage-distance')).toHaveText('429') //порожний
+            await expect(page.getByTestId('fact-distance')).toHaveText('646') //активный по одометру
+            await expect(page.getByTestId('fact-empty-mileage-distance')).toHaveText('676') //порожний по одометру
         })
-
         await test.step('Проверка 1.Общего отчёта', async () => {
             await page.locator('[title="Отчеты"]').click();
             await page.locator('[name="Общий отчет"]').click();

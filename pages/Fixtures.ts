@@ -117,7 +117,8 @@ export class BidCreateInfo {
     driverFilter,
     cargosWeight,
     externalId,
-    trailerFilter
+    trailerFilter,
+    isVatTop
   }: {
     responsibleId?: number;
     salesManagerId?: number;
@@ -141,6 +142,7 @@ export class BidCreateInfo {
     cargosWeight?: number,
     externalId?: string,
     trailerFilter?: string,
+    isVatTop?: boolean
   }) {
     const clienApi = new APIRequestsClient();
     let carForBid: any
@@ -221,6 +223,7 @@ export class BidCreateInfo {
     );
     const paymentPaidStatus = paymentStatus ?? null; //статус оплаты, так как без модуля дебиторской задолженности работать не будет
     const apiBidBody = {
+      isVatTop: isVatTop ?? false,
       isEmpty: isEmpty ?? false,
       isExpressBid: false,
       legalPersonId: legalPerson,
