@@ -108,7 +108,7 @@ test.describe('Проверка отчётов с данными одометр�
             console.log(selectedPointsEmptyRoute);
             selectedPointsEmptyRoute.forEach(async function (item: any, index: number, body: any) {
                 await emulatorApi.coordinatSend(bidInfo.carOption.carTracker, moment().subtract(5, 'd').add(index * 15, 'm').format("YYYY-MM-DDTHH:mm:ss+00:00"), item, [item], null, "00:00:01")
-                await page.waitForTimeout(1500)
+                await page.waitForTimeout(500)
             })
             const selectedPointsMainRoute = routeBid.segments[1].points.map((point: any, index: number) => {
                 if (index === 0 || index === routeBid.segments[1].points.length - 1 || index % 50 === 0) {
@@ -122,7 +122,7 @@ test.describe('Проверка отчётов с данными одометр�
             console.log(selectedPointsMainRoute);
             selectedPointsMainRoute.forEach(async function (item: any, index: number, body: any) {
                 await emulatorApi.coordinatSend(bidInfo.carOption.carTracker, moment().subtract(2, 'd').add(index * 15, 'm').format("YYYY-MM-DDTHH:mm:ss+00:00"), item, [item], null, "00:00:01")
-                await page.waitForTimeout(1500)
+                await page.waitForTimeout(2000)
             })
             //TODO допилить проверку на данные что активный км считается даже без выезда из нулевой
             await page.waitForTimeout(54000)

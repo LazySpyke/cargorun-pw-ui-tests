@@ -5,13 +5,16 @@ import { BidCreateInfo } from '../../pages/Fixtures';
 import moment from 'moment';
 import APIRequestsClient from '../../api/clienApiRequsets';
 import APIBid from '../../api/bidApi';
+import SupportAPIRequestsClient from '../../api/testSupportRequsets'
 const clienApi = new APIRequestsClient();
+const emulatorApi = new SupportAPIRequestsClient();
 const bidApi = new APIBid();
 let bidInfo: any;
 const adminId = 1322148
 test.describe('Работа с ЭТРН', () => {
     let loginPage: LoginPage;
     let bidResponse: any;
+    let bidInfoResponse: any;
     test.beforeEach(async ({ page }) => {
         loginPage = new LoginPage(page);
         await loginPage.goto(); // Переходим на страницу логина перед каждым тестом
@@ -26,6 +29,7 @@ test.describe('Работа с ЭТРН', () => {
             bidInfo = await bidFixture.ApiCommonBid({
                 price: 100000,
                 paymentTypeId: 176,
+                carFilter: `(isDeleted eq false and lastFixedAt le ${moment().subtract(7, 'd').format("YYYY-MM-DDTHH:mm:ss")}.000Z)`,
                 ndsTypeId: 175,
                 planEnterLoadDate: moment().subtract(2, 'd').format('YYYY-MM-DDTHH:mm'),
                 planEnterUnloadDate: moment().add(1, 'd').format('YYYY-MM-DDTHH:mm'),
@@ -51,6 +55,9 @@ test.describe('Работа с ЭТРН', () => {
             bidResponse = await bidApi.apply(bidInfo, await getAuthData(adminId));
             await bidApi.setStatus(bidResponse.id, await getAuthData(adminId));
             await page.waitForTimeout(5000);
+            bidInfoResponse = await bidApi.GetBidInfo(bidResponse.id, await getAuthData(adminId));
+            await emulatorApi.init();
+            await emulatorApi.coordinatSend(bidInfo.carOption.carTracker, `${moment().subtract(4, 'h').format("YYYY-MM-DDTHH:mm:ss")}+00:00`, bidInfoResponse.bidPoints[0].geozone.location.coordinates, [bidInfoResponse.bidPoints[0].geozone.location.coordinates], null, "00:30:00")
             const driverAuth = await clienApi.GetObjectResponse(
                 `${process.env.url}/api/driver/getlist?checkOnline=true&withDeleted=true&$filter=(isDeleted eq false and contains(cast(id, Model.String),'${bidInfo.driver.id}'))&$orderby=id desc&$top=30&$skip=0`,
                 await getAuthData(adminId)
