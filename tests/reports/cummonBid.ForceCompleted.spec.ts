@@ -376,7 +376,7 @@ test.describe('Отчёты с обычной завершенной вручн�
       await expect(page.locator(`[data-bidid="${bidResponse.id}"]`)).toBeVisible();
       await page.locator('[name="bids"]').fill(`${bidResponse.id}`)
       await page.waitForTimeout(5000)
-      await expect(page.locator('[class="pl-1 icon-uEA83-user-edit b-point__tooltip-icon"]')).toBeVisible(); //знак закрытия вручную
+      await expect(page.locator('[class="icon-uEA83-user-edit b-point__tooltip-icon"]')).toBeVisible(); //знак закрытия вручную
       await expect(page.locator(`//div[normalize-space()='${externalId}']`)).toBeVisible(); //внешний id
       await expect(page.locator(`[data-car="${bidInfo.carOption.number}"]`)).toHaveText(`${bidInfo.carOption.number}`)
       await expect(page.locator(`[data-planmileage="${bidInfo.carOption.number}"]`)).toContainText(Math.ceil(bidInfoResponse.planMileage / 1000).toLocaleString('ru-RU', {
@@ -410,7 +410,8 @@ test.describe('Отчёты с обычной завершенной вручн�
         .locator("//div[@class='report__filters--left']//a[@class='btn btn-sm btn-brand'][contains(text(),'Обновить')]")
         .click();
       await page.locator('[name="ТС"]').fill(`${bidInfo.carOption.number}`)
-      await expect(page.locator('[data-brandtype')).toHaveText(`Проверочная модель машины`) //TODo доделать на нормальную проверку пока так
+      await page.waitForTimeout(2500)
+      await expect(page.locator('[data-brandtype]')).toHaveText(`Проверочная модель машины`) //TODo доделать на нормальную проверку пока так
       await expect(page.locator('[data-logists]')).toHaveText(`${filterLogist[0].fullName}`)
       await expect(page.locator('[data-overallmileage]')).toContainText(Math.ceil(bidInfoResponse.planMileage / 1000).toLocaleString('ru-RU', {
         minimumFractionDigits: 2,
