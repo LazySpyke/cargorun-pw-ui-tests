@@ -207,6 +207,7 @@ test.describe('Планирование по городам', () => {
             )
             carInfo.number = editCarNumber
             const applyCar = await apiUse.postData(`${process.env.url}/api/car/apply`, carInfo, await getAuthData(adminId))
+            await page.waitForTimeout(6000);//ожидание так как обнова данных раз в 5 сек
             await expect(page.locator('[class="carnumber__wrap carnumber__wrap--yellow"]')).toBeHidden(); //статус машины
             await expect(page.locator('[class="carnumber__wrap carnumber__wrap--lightgray"]')).toBeVisible(); //смена статуса в реалтайм по сокету на забронированно
             await expect(page.locator('[class="icon-uEA88-info-circle text-info pr-2"]')).toBeVisible(); //знак коммента

@@ -158,12 +158,12 @@ class SupportAPIRequestsClient {
             return str;
         }
         const setOfLeters = 'АВУКМНОРСТУХ';
-        const strNumDigs = randomThreeDigs(1, 999);
+        const strNumDigs = randomThreeDigs(1000, 9999);
         const regionDig = String(randomThreeDigs(1, 999));
         for (let i = 0; i < 2; i++) {
             leters += setOfLeters[customRandom(0, setOfLeters.length - 1)];
         };
-        const TrailerNumberString = leters[0] + leters[1] + String(randomThreeDigs(1, 999)) + '/' + regionDig;
+        const TrailerNumberString = leters[0] + leters[1] + String(randomThreeDigs(1000, 9999)) + '/' + regionDig;
         return TrailerNumberString
     }
     async generateTrackerNumber(name: string) {
