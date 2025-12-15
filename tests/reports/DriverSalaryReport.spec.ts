@@ -107,6 +107,31 @@ test.describe('Проверка отчётов с данными одометр�
             await expect(page.getByTestId('fact-distance')).toHaveText('651')
             // await expect(page.getByTestId('fact-empty-mileage-distance')).toHaveText('676')
         })
+        await test.step('проверка данных в отчёте Расчет ЗП водителей', async () => {
+            await page.locator('[title="Финансы и учет"]').click();
+            await page.locator(`[name="Расчет ЗП водителей"]`).click();
+            await page.getByText(`${bio.lastName} ${bio.firstName} ${bio.patronymic}`).click();
+            await expect(page.locator("//td[contains(text(),'1610')]")).toBeVisible() //общий км
+            await expect(page.locator("//td[contains(text(),'4 суток(и)')]").first()).toBeVisible() //время в рейсе
+            await expect(page.locator("//td[contains(text(),'4 суток(и)')]").nth(1)).toBeVisible() //командировочные
+            await expect(page.locator("//td[contains(text(),'4 ч. 30 мин.')]").first()).toBeVisible() //простой на загрузке
+            await expect(page.locator("//td[contains(text(),'4 ч. 30 мин.')]").nth(1)).toBeVisible() //простой на выгрузке
+
+            const driverRealZP = 39650
+            const driverZPText: string = await page.innerText(`tbody tr td:nth-child(2) b:nth-child(1)`);
+            // Удаляем неразрывные пробелы
+            const cleanedStr = driverZPText.replace(/\u00A0/g, '');
+            // Меняем запятую на точку
+            const normalizedStr = cleanedStr.replace(',', '.');
+            // Преобразуем в число
+            const numberValue = parseFloat(normalizedStr);
+            const epsilon: number = 20;
+            if (numberValue - driverRealZP < epsilon && numberValue - driverRealZP > -epsilon) {
+                console.log(`данные корректные${numberValue - driverRealZP},${numberValue - driverRealZP}`);
+            } else {
+                throw new TypeError(`не совпадает ожидаемое значение ${numberValue} текст такой, ${driverRealZP} расчёт такой`);
+            }
+        })
     })
 })
 

@@ -186,11 +186,11 @@ test.describe('Учёт кастомных точек', () => {
             //TODO сделать проверку что дата последняя меньше отправляемого 
             if (orderSort.length == 4) {
                 console.log(orderSort.length, 'делаем посещение 3 точек')
-                await emulatorApi.coordinatSend(shiftCar.trackerDeviceNumber, moment().subtract(5, 'd').format("YYYY-MM-DDTHH:mm:ss+00:00"), lastTrackerShiftCarInfo[0].location.coordinates, [orderSort[0].geozone.location.coordinates, orderSort[1].geozone.location.coordinates, shiftCoordinate, orderSort[3].geozone.location.coordinates], null, "00:35:00") //делаем 4 посещения через точки
+                await emulatorApi.coordinatSend(shiftCar.trackerDeviceNumber, moment().subtract(5, 'd').format("YYYY-MM-DDTHH:mm:ss+00:00"), lastTrackerShiftCarInfo[0].location.coordinates, [orderSort[0].geozone.location.coordinates, orderSort[1].geozone.location.coordinates, shiftCoordinate, orderSort[3].geozone.location.coordinates], null, "04:35:00") //делаем 4 посещения через точки
             }
             else {
                 console.log(orderSort.length, `делаем посещение 2 точек`)
-                await emulatorApi.coordinatSend(shiftCar.trackerDeviceNumber, moment().subtract(5, 'd').format("YYYY-MM-DDTHH:mm:ss+00:00"), lastTrackerShiftCarInfo[0].location.coordinates, [orderSort[0].geozone.location.coordinates, shiftCoordinate, orderSort[2].geozone.location.coordinates], null, "00:35:00") //делаем 3 посещения через точки
+                await emulatorApi.coordinatSend(shiftCar.trackerDeviceNumber, moment().subtract(5, 'd').format("YYYY-MM-DDTHH:mm:ss+00:00"), lastTrackerShiftCarInfo[0].location.coordinates, [orderSort[0].geozone.location.coordinates, shiftCoordinate, orderSort[2].geozone.location.coordinates], null, "04:35:00") //делаем 3 посещения через точки
             }
             await bidApi.setStatus(bidResponse.id, await getAuthData(adminId));
             await page.waitForTimeout(75000);// жду пока пройдёт перерасчёт
