@@ -8,17 +8,20 @@ import APIBid from '../../api/bidApi';
 import SupportAPIRequestsClient from '../../api/testSupportRequsets'
 import api from '../../api/apiRequests';
 import DebugAPIRequestsClient from '../../api/debugRequests'
+import { faker } from '@faker-js/faker';
 const emulatorApi = new SupportAPIRequestsClient();
 const clienApi = new APIRequestsClient();
 const bidApi = new APIBid();
 let bidInfo: any;
 const apiUse = new api();
 const debugApi = new DebugAPIRequestsClient();
+const randomCardName = faker.word.sample() + moment().format()
 const adminId = process.env.refuelingAdminId //переделать чтоб доставал из логина в фронте
 test.describe('Создание транзакций по азс', () => {
     let loginPage: LoginPage;
     let bidResponse: any;
     let bidInfoResponse: any;
+    let cardNumber: string;
     let planningRefuelingsArray: any;
     test.beforeEach(async ({ page }) => {
         loginPage = new LoginPage(page);
@@ -151,7 +154,7 @@ test.describe('Создание транзакций по азс', () => {
         await test.step('Логин', async () => {
             await loginPage.login(process.env.cargorunRefPlanningLogin as string, process.env.cargorunRefPlanningPassword as string);
         });
-        await test.step('Создание заявки и запуск в работу', async () => {
+        await test.step('добавление топливной карты к машине', async () => {
             const bidFixture = new BidCreateInfo(page);
             bidInfo = await bidFixture.ApiCommonBid({
                 price: 100000,
@@ -166,6 +169,42 @@ test.describe('Создание транзакций по азс', () => {
                 cargoOwnerFilter: '(isDeleted eq false)'
             });
             await bidApi.init();
+            await page.goto(`${process.env.url}/fuel-cards/list?tab=cars`)
+            await page.locator('#carIdContainer').click();
+            await page.waitForTimeout(5000)
+            await page.locator('#carIdInput').fill(bidInfo.carOption.number)
+            await page.waitForTimeout(1500)
+            await page.getByRole('option', {
+                name: `${bidInfo.carOption.number}`
+            }).nth(0).click();
+            const exists = await page.getByText('Нет данных для отображения') !== null;
+
+            if (exists) {
+                // селектор найден
+                console.log(`селектор найден`)
+                await page.locator('[class="btn btn-brand btn-sm"]').click();
+                await page.locator('[name="number"]').nth(1).fill(`${randomCardName}`)
+                await page.locator('#typeContainer').nth(0).click();
+                await page.getByRole('option', {
+                    name: 'Лукойл'
+                }).nth(2).click();
+                await page.locator('#carIdContainer').nth(1).click();
+                await page.waitForTimeout(5000)
+                await page.locator('#carIdInput').nth(1).fill(bidInfo.carOption.number)
+                await page.waitForTimeout(1500)
+                await page.getByRole('option', {
+                    name: `${bidInfo.carOption.number}`
+                }).nth(0).click();
+                await page.locator('[type="submit"]').click(); //создание и привязка карты
+                await expect(page.getByText('Ваш запрос выполнен успешно.')).toBeVisible();
+            } else {
+                // селектор не найден
+                await page.getByText(`${bidInfo.carOption.number}`).click();
+                cardNumber = await page.innerText('div[class="td"]');
+                console.log(cardNumber)
+            }
+        })
+        await test.step('создание заявки', async () => {
             const bidList = await clienApi.GetObjectResponse(
                 `${process.env.url}/api/bids/getlist?$filter=carIds/any(carids:carids in (${bidInfo.carOption.carId}))and ((((status in ('Started')) or (status in ('Planned')))))&$orderby=id desc&$top=30&$skip=0`,
                 await getAuthData(adminId)
@@ -178,15 +217,6 @@ test.describe('Создание транзакций по азс', () => {
             await emulatorApi.init();
             bidInfoResponse = await bidApi.GetBidInfo(bidResponse.id, await getAuthData(adminId));
             await page.waitForTimeout(15000)
-        });
-        await test.step('добавление топливной карты к машине', async () => {
-            await page.goto(`${process.env.url}/fuel-cards/list?tab=cars`)
-            await page.locator('#carIdContainer').click();
-            await page.locator('#carIdInput').fill(bidInfo.carOption.number)
-            await page.getByRole('option', {
-                name: `${bidInfo.carOption.number}`
-            }).click();
-            
         })
         await test.step('Планирование заправок по заявке ', async () => {
             await page.goto(`${process.env.url}/bids/bid/${bidResponse.id}`)
@@ -217,8 +247,8 @@ test.describe('Создание транзакций по азс', () => {
                 {
                     "transactions": [
                         {
-                            "cardNumber": "",
-                            "deviceNumber": `${bidInfo.carOption.carTracker}`,
+                            "cardNumber": `${randomCardName}`,
+                            "deviceNumber": "",
                             "createdAt": `${moment().subtract(5, 'h').format("YYYY-MM-DDTHH:mm:ss")}`,
                             "externalId": `${bidInfo.carOption.carTracker}${moment().format("YYYY-MM-DDTHH:mm:ss")}`,
                             "volume": 300,
@@ -236,8 +266,8 @@ test.describe('Создание транзакций по азс', () => {
                 {
                     "transactions": [
                         {
-                            "cardNumber": "",
-                            "deviceNumber": `${bidInfo.carOption.carTracker}`,
+                            "cardNumber": `${randomCardName}`,
+                            "deviceNumber": "",
                             "createdAt": `${moment().subtract(5, 'h').subtract(10, 'm').format("YYYY-MM-DDTHH:mm:ss")}`,
                             "externalId": `${bidInfo.carOption.carTracker}${moment().format("YYYY-MM-DDTHH:mm:ss")}`,
                             "volume": 300,
@@ -255,8 +285,8 @@ test.describe('Создание транзакций по азс', () => {
                 {
                     "transactions": [
                         {
-                            "cardNumber": "",
-                            "deviceNumber": `${bidInfo.carOption.carTracker}`,
+                            "cardNumber": `${randomCardName}`,
+                            "deviceNumber": "",
                             "createdAt": `${moment().subtract(3, 'h').add(10, 'm').format("YYYY-MM-DDTHH:mm:ss")}`,
                             "externalId": `${bidInfo.carOption.carTracker}${moment().format("YYYY-MM-DDTHH:mm:ss")}`,
                             "volume": 300,
@@ -277,9 +307,9 @@ test.describe('Создание транзакций по азс', () => {
 
             //TODO доделать завершение вручную и отредачить даты
         });
-    })
-})
 
+    })
+});
 test.beforeAll(async () => {
     await clienApi.getToken(process.env.rootMail as string, process.env.rootPassword as string);
     await clienApi.getToken(process.env.cargorunRefPlanningLogin as string, process.env.cargorunRefPlanningPassword as string);
@@ -287,3 +317,4 @@ test.beforeAll(async () => {
 test.afterAll(async () => {
     await clienApi.deleteUsedCar(bidInfo.carOption.carId)
 });
+
