@@ -15,7 +15,7 @@ const emulatorApi = new SupportAPIRequestsClient();
 const debugApi = new DebugAPIRequestsClient();
 const apiUse = new api();
 let bidInfo: any;
-const adminId = 36
+const adminId = process.env.rootId
 const bio = {
     firstName: faker.person.firstName(),
     lastName: faker.person.lastName(),
@@ -45,7 +45,7 @@ test.describe('Планирование по городам', () => {
         })
         await test.step('создание и привязка новой машины и т д', async () => {
             await debugApi.init();
-            newEntity = await debugApi.newCarTracker(await getAuthData(adminId), await getAuthData(36), await emulatorApi.generateCarNumber(), await emulatorApi.generateTrackerNumber('cmd'), moment().subtract(14, 'd').format("YYYY-MM-DDT00:00:00+03:00"))
+            newEntity = await debugApi.newCarTracker(await getAuthData(adminId), await getAuthData(process.env.rootId), await emulatorApi.generateCarNumber(), await emulatorApi.generateTrackerNumber('cmd'), moment().subtract(14, 'd').format("YYYY-MM-DDT00:00:00+03:00"))
             console.log(newEntity)
             await page.waitForTimeout(25000)
         })
@@ -54,8 +54,8 @@ test.describe('Планирование по городам', () => {
             const bidFixture = new BidCreateInfo(page);
             bidInfo = await bidFixture.ApiCommonBid({
                 price: 100000,
-                paymentTypeId: 176,
-                ndsTypeId: 175,
+                paymentTypeId: process.env.paymentTypeId,
+                ndsTypeId: process.env.ndsTypeId,
                 planEnterLoadDate: moment().subtract(7, 'd').format('YYYY-MM-DDTHH:mm'),
                 planEnterUnloadDate: moment().subtract(6, 'd').format('YYYY-MM-DDTHH:mm'),
                 carFilter: `id eq ${await newEntity.newCarId}`,
@@ -77,8 +77,8 @@ test.describe('Планирование по городам', () => {
         //     const bidFixture = new BidCreateInfo(page);
         //     secondBidInfo = await bidFixture.ApiCommonBid({
         //         price: 100000,
-        //         paymentTypeId: 176,
-        //         ndsTypeId: 175,
+        //         paymentTypeId: process.env.paymentTypeId,
+        //         ndsTypeId: process.env.ndsTypeId,
         //         planEnterLoadDate: moment().subtract(4, 'd').format('YYYY-MM-DDTHH:mm'),
         //         planEnterUnloadDate: moment().subtract(1, 'h').format('YYYY-MM-DDTHH:mm'),
         //         carFilter: `(isDeleted eq false and id eq ${bidInfo.carOption.carId})`,
@@ -226,7 +226,7 @@ test.describe('Планирование по городам', () => {
                 `${process.env.url}/api/car/getForEdit?id=${newEntity.newCarId}`,
                 await getAuthData(adminId)
             )
-            carInfo.logistId = 427
+            carInfo.logistId = process.env.logistId
             const applyCar = await apiUse.postData(`${process.env.url}/api/car/apply`, carInfo, await getAuthData(adminId))
             await expect(page.locator('[class="carnumber__wrap carnumber__wrap--yellow"]')).toBeHidden(); //статус машины
             await expect(page.locator('[class="carnumber__wrap carnumber__wrap--lightgray"]')).toBeVisible(); //смена статуса в реалтайм по сокету на забронированно

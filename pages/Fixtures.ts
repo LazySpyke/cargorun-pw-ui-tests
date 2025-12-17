@@ -26,23 +26,23 @@ export class BidCreateInfo {
     const clienApi = new APIRequestsClient();
     const carForBid = await clienApi.getCar(
       `${process.env.url}/api/car/getlist?$filter=(isDeleted%20eq%20false)&$orderby=id%20desc&$top=100&$skip=0`,
-      await getAuthData(36)
+      await getAuthData(process.env.rootId)
     );
     const driverForBid = await clienApi.GetObjectResponse(
       `${process.env.url}/api/driver/getlist?checkOnline=true&withDeleted=true&$filter=(isDeleted%20eq%20false)&$orderby=id%20desc&$top=100&$skip=0`,
-      await getAuthData(36)
+      await getAuthData(process.env.rootId)
     );
     const trailerForBid = await clienApi.GetObjectResponse(
       `${process.env.url}/api/trailer/getlist?$filter=(isDeleted%20eq%20false)&$orderby=id%20desc&$top=10&$skip=0&withDeleted=true`,
-      await getAuthData(36)
+      await getAuthData(process.env.rootId)
     );
     const cargoOwnerForBid = await clienApi.GetObjectResponse(
       `${process.env.url}/api/cargoOwnerDictionary/get?$filter=(isDeleted%20eq%20false)&$orderby=id%20desc&$top=5&$skip=0&withDeleted=true`,
-      await getAuthData(36)
+      await getAuthData(process.env.rootId)
     );
     const legalPersonForBid = await clienApi.GetObjectResponse(
       `${process.env.url}/api/legalPersons/getlist?$filter=(isDeleted%20eq%20false)&$orderby=id%20desc&$top=5&$skip=0&withDeleted=true`,
-      await getAuthData(36)
+      await getAuthData(process.env.rootId)
     );
     const prepearBidInfo: gerateBidCreateInfo = {
       car: carForBid.number,
@@ -62,23 +62,23 @@ export class BidCreateInfo {
     const clienApi = new APIRequestsClient();
     const carForBid = await clienApi.getCar(
       `${process.env.url}/api/car/getlist?$filter=(isDeleted%20eq%20false)&$orderby=id%20desc&$top=100&$skip=0`,
-      await getAuthData(36)
+      await getAuthData(process.env.rootId)
     );
     const driverForBid = await clienApi.GetObjectResponse(
       `${process.env.url}/api/driver/getlist?checkOnline=true&withDeleted=true&$filter=(isDeleted%20eq%20false)&$orderby=id%20desc&$top=10&$skip=0`,
-      await getAuthData(36)
+      await getAuthData(process.env.rootId)
     );
     const trailerForBid = await clienApi.GetObjectResponse(
       `${process.env.url}/api/trailer/getlist?$filter=(isDeleted%20eq%20false)&$orderby=id%20desc&$top=10&$skip=0&withDeleted=true`,
-      await getAuthData(36)
+      await getAuthData(process.env.rootId)
     );
     const cargoOwnerForBid = await clienApi.GetObjectResponse(
       `${process.env.url}/api/cargoOwnerDictionary/get?$filter=(isDeleted%20eq%20false)&$orderby=id%20desc&$top=5&$skip=0&withDeleted=true`,
-      await getAuthData(36)
+      await getAuthData(process.env.rootId)
     );
     const legalPersonForBid = await clienApi.GetObjectResponse(
       `${process.env.url}/api/legalPersons/getlist?$filter=(isDeleted%20eq%20false)&$orderby=id%20desc&$top=5&$skip=0&withDeleted=true`,
-      await getAuthData(36)
+      await getAuthData(process.env.rootId)
     );
     const apiBidBody = {
       car: carForBid.number,

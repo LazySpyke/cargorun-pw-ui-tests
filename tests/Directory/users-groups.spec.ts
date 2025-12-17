@@ -105,7 +105,7 @@ test.describe('Справочник Группы Пользователей', ()
             await page.locator('input[name="name"]').fill(groupName);
             await page.waitForTimeout(2500)
             await expect(page.locator(`//a[normalize-space()='${groupName}']`)).toBeVisible();
-            await expect(page.locator('[class="text-center"]').nth(1)).toHaveText('Да')//скрыт от планирования или нет
+            await expect(page.locator('[class="text-center"]').nth(0)).toHaveText('Да')//скрыт от планирования или нет
         });
 
         await test.step('редактирование группы', async () => {
@@ -126,7 +126,7 @@ test.describe('Справочник Группы Пользователей', ()
             await page.locator('input[name="name"]').fill(editGroupName);
             await page.waitForTimeout(2500)
             await expect(page.locator(`//a[normalize-space()='${editGroupName}']`)).toBeVisible();
-            await expect(page.locator('[class="text-center"]').nth(1)).toHaveText('Да')//скрыт от планирования или нет
+            await expect(page.locator('[class="text-center"]').nth(0)).toHaveText('Да')//скрыт от планирования или нет
         });
     });
 });

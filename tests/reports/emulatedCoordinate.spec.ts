@@ -12,7 +12,7 @@ const bidApi = new APIBid();
 const emulatorApi = new SupportAPIRequestsClient();
 const debugApi = new DebugAPIRequestsClient();
 let bidInfo: any;
-const adminId = 1308041
+const adminId = process.env.compoundAdminId
 test.describe('Проверка отчётов с данными одометра', () => {
     let loginPage: LoginPage;
     let bidResponse: any;
@@ -31,7 +31,7 @@ test.describe('Проверка отчётов с данными одометр�
         });
         await test.step('создание и привязка новой машины и т д', async () => {
             await debugApi.init();
-            newEntity = await debugApi.newCarTracker(await getAuthData(adminId), await getAuthData(36), await emulatorApi.generateCarNumber(), await emulatorApi.generateTrackerNumber('cmd'), moment().subtract(14, 'd').format("YYYY-MM-DDT00:00:00+03:00"))
+            newEntity = await debugApi.newCarTracker(await getAuthData(adminId), await getAuthData(process.env.rootId), await emulatorApi.generateCarNumber(), await emulatorApi.generateTrackerNumber('cmd'), moment().subtract(14, 'd').format("YYYY-MM-DDT00:00:00+03:00"))
             console.log(newEntity)
             await page.waitForTimeout(25000)
         })
@@ -40,8 +40,8 @@ test.describe('Проверка отчётов с данными одометр�
             const bidFixture = new BidCreateInfo(page);
             bidInfo = await bidFixture.ApiCommonBid({
                 price: 100000,
-                paymentTypeId: 176,
-                ndsTypeId: 175,
+                paymentTypeId: process.env.paymentTypeId,
+                ndsTypeId: process.env.ndsTypeId,
                 planEnterLoadDate: moment().subtract(7, 'd').format('YYYY-MM-DDTHH:mm'),
                 planEnterUnloadDate: moment().subtract(6, 'd').format('YYYY-MM-DDTHH:mm'),
                 carFilter: `id eq ${await newEntity.newCarId}`,
@@ -78,8 +78,8 @@ test.describe('Проверка отчётов с данными одометр�
             const bidFixture = new BidCreateInfo(page);
             secondBidInfo = await bidFixture.ApiCommonBid({
                 price: 100000,
-                paymentTypeId: 176,
-                ndsTypeId: 175,
+                paymentTypeId: process.env.paymentTypeId,
+                ndsTypeId: process.env.ndsTypeId,
                 planEnterLoadDate: moment().subtract(4, 'd').format('YYYY-MM-DDTHH:mm'),
                 planEnterUnloadDate: moment().subtract(1, 'h').format('YYYY-MM-DDTHH:mm'),
                 carFilter: `(isDeleted eq false and id eq ${bidInfo.carOption.carId})`,
@@ -108,7 +108,7 @@ test.describe('Проверка отчётов с данными одометр�
             console.log(selectedPointsEmptyRoute);
             selectedPointsEmptyRoute.forEach(async function (item: any, index: number, body: any) {
                 await emulatorApi.coordinatSend(bidInfo.carOption.carTracker, moment().subtract(5, 'd').add(index * 15, 'm').format("YYYY-MM-DDTHH:mm:ss+00:00"), item, [item], null, "00:00:01")
-                await page.waitForTimeout(500)
+                await page.waitForTimeout(1000)
             })
             const selectedPointsMainRoute = routeBid.segments[1].points.map((point: any, index: number) => {
                 if (index === 0 || index === routeBid.segments[1].points.length - 1 || index % 50 === 0) {

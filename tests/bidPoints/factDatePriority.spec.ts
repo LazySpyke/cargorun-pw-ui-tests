@@ -10,7 +10,7 @@ const clienApi = new APIRequestsClient();
 const bidApi = new APIBid();
 const emulatorApi = new SupportAPIRequestsClient();
 let bidInfo: any;
-const adminId = 1305211
+const adminId = process.env.emptyCompanyAddminId
 interface Visit {
     id: number;
     isMobile: boolean;
@@ -60,8 +60,8 @@ test.describe('Учёт точек при кругорейсах, даты пр�
             const bidFixture = new BidCreateInfo(page);
             bidInfo = await bidFixture.ApiCommonBid({
                 price: 100000,
-                paymentTypeId: 176,
-                ndsTypeId: 175,
+                paymentTypeId: process.env.paymentTypeId,
+                ndsTypeId: process.env.ndsTypeId,
                 planEnterLoadDate: moment().subtract(5, 'd').format('YYYY-MM-DDT00:00'),
                 planEnterUnloadDate: moment().subtract(4, 'd').format('YYYY-MM-DDT00:00'),
                 carFilter: `(isDeleted eq false and lastFixedAt le ${moment().subtract(7, 'd').format("YYYY-MM-DDTHH:mm:ss")}.000Z)`,

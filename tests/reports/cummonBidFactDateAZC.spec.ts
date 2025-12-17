@@ -12,7 +12,7 @@ const emulatorApi = new SupportAPIRequestsClient();
 let bidInfo: any;
 const inPlanningRefueling = [52.460818, 56.194695]
 const outOfPlanning = [52.453428, 56.198075]
-const adminId = 1319341 //переделать чтоб доставал из логина в фронте
+const adminId = process.env.refuelingAdminId //переделать чтоб доставал из логина в фронте
 test.describe('Проверка отчётов с азс', () => {
     let loginPage: LoginPage;
     let bidResponse: any;
@@ -30,8 +30,8 @@ test.describe('Проверка отчётов с азс', () => {
             const bidFixture = new BidCreateInfo(page);
             bidInfo = await bidFixture.ApiCommonBid({
                 price: 100000,
-                paymentTypeId: 176,
-                ndsTypeId: 175,
+                paymentTypeId: process.env.paymentTypeId,
+                ndsTypeId: process.env.ndsTypeId,
                 planEnterLoadDate: moment().subtract(2, 'd').format('YYYY-MM-DDTHH:mm'),
                 planEnterUnloadDate: moment().add(1, 'd').format('YYYY-MM-DDTHH:mm'),
                 carFilter: `(isDeleted eq false and lastFixedAt le ${moment().subtract(3, 'd').format("YYYY-MM-DDTHH:mm:ss")}.000Z and lastFixedAt le ${moment().subtract(1, 'd').format("YYYY-MM-DDTHH:mm:ss")}.000Z)`,

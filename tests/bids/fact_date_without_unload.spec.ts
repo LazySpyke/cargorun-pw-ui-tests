@@ -30,30 +30,30 @@ test.describe('Учёт факт дат, при не фиксации выезд
             const bidFixture = new BidCreateInfo(page);
             bidInfo = await bidFixture.ApiCommonBid({
                 price: 100000,
-                paymentTypeId: 176,
-                ndsTypeId: 175,
+                paymentTypeId: process.env.paymentTypeId,
+                ndsTypeId: process.env.ndsTypeId,
                 planEnterLoadDate: moment().subtract(7, 'd').format('YYYY-MM-DDTHH:mm'),
                 planEnterUnloadDate: moment().subtract(6, 'd').format('YYYY-MM-DDTHH:mm'),
                 carFilter: `(isDeleted eq false and lastFixedAt le ${moment().subtract(7, 'd').format("YYYY-MM-DDTHH:mm:ss")}.000Z)`,
                 loadAddress: 'Челны',
                 unloadAddress: 'Уфа',
-                userIdForFilter: 1305211
+                userIdForFilter: process.env.emptyCompanyAddminId
             });
             await bidApi.init();
             const bidList = await clienApi.GetObjectResponse(
                 `${process.env.url}/api/bids/getlist?$filter=carIds/any(carids:carids in (${bidInfo.carOption.carId}))and ((((status in ('Started')) or (status in ('Planned')))))&$orderby=id desc&$top=30&$skip=0`,
-                await getAuthData(1305211)
+                await getAuthData(process.env.emptyCompanyAddminId)
             );
             bidList.forEach(async (element: any) => {
-                bidApi.cancelBid(element.id, await getAuthData(1305211));
+                bidApi.cancelBid(element.id, await getAuthData(process.env.emptyCompanyAddminId));
             });
-            bidResponse = await bidApi.apply(bidInfo, await getAuthData(1305211));
-            await bidApi.setStatus(bidResponse.id, await getAuthData(1305211));
+            bidResponse = await bidApi.apply(bidInfo, await getAuthData(process.env.emptyCompanyAddminId));
+            await bidApi.setStatus(bidResponse.id, await getAuthData(process.env.emptyCompanyAddminId));
             await emulatorApi.init();
-            bidInfoResponse = await bidApi.GetBidInfo(bidResponse.id, await getAuthData(1305211));
+            bidInfoResponse = await bidApi.GetBidInfo(bidResponse.id, await getAuthData(process.env.emptyCompanyAddminId));
             const lastTrackerCarInfo = await clienApi.GetObjectResponse(
                 `${process.env.url}/api/Map/GetLastCarsLocations?$filter=car/id%20eq%20${bidInfo.carOption.carId}`,
-                await getAuthData(1305211)
+                await getAuthData(process.env.emptyCompanyAddminId)
             );
             await emulatorApi.coordinatSend(bidInfo.carOption.carTracker, lastTrackerCarInfo[0].fixedAt, lastTrackerCarInfo[0].location.coordinates, [bidInfoResponse.bidPoints[0].geozone.location.coordinates, bidInfoResponse.bidPoints[1].geozone.location.coordinates], null, "00:10:00")
             await page.waitForTimeout(50000);
@@ -62,24 +62,24 @@ test.describe('Учёт факт дат, при не фиксации выезд
             const bidFixture = new BidCreateInfo(page);
             secondBidInfo = await bidFixture.ApiCommonBid({
                 price: 100000,
-                paymentTypeId: 176,
-                ndsTypeId: 175,
+                paymentTypeId: process.env.paymentTypeId,
+                ndsTypeId: process.env.ndsTypeId,
                 planEnterLoadDate: moment().subtract(2, 'd').format('YYYY-MM-DDTHH:mm'),
                 planEnterUnloadDate: moment().subtract(1, 'h').format('YYYY-MM-DDTHH:mm'),
                 carFilter: `(isDeleted eq false and id eq ${bidInfo.carOption.carId})`,
                 loadAddress: 'Москва',
                 unloadAddress: 'Нижний Новгород',
-                userIdForFilter: 1305211,
+                userIdForFilter: process.env.emptyCompanyAddminId,
                 reuseCar: true
             });
             await bidApi.init();
-            secondBidResponse = await bidApi.apply(secondBidInfo, await getAuthData(1305211));
-            await bidApi.setStatus(secondBidResponse.id, await getAuthData(1305211));
+            secondBidResponse = await bidApi.apply(secondBidInfo, await getAuthData(process.env.emptyCompanyAddminId));
+            await bidApi.setStatus(secondBidResponse.id, await getAuthData(process.env.emptyCompanyAddminId));
             await emulatorApi.init();
-            secondBidInfoResponse = await bidApi.GetBidInfo(secondBidResponse.id, await getAuthData(1305211));
+            secondBidInfoResponse = await bidApi.GetBidInfo(secondBidResponse.id, await getAuthData(process.env.emptyCompanyAddminId));
             const lastTrackerCarInfo = await clienApi.GetObjectResponse(
                 `${process.env.url}/api/Map/GetLastCarsLocations?$filter=car/id%20eq%20${bidInfo.carOption.carId}`,
-                await getAuthData(1305211)
+                await getAuthData(process.env.emptyCompanyAddminId)
             );
             await emulatorApi.coordinatSend(bidInfo.carOption.carTracker, `${moment(lastTrackerCarInfo[0].fixedAt, "YYYY-MM-DDTHH:mm:ss").add(5, 'd').format("YYYY-MM-DDTHH:mm:ss")}+00:00`, lastTrackerCarInfo[0].location.coordinates, [secondBidInfoResponse.bidPoints[0].geozone.location.coordinates, secondBidInfoResponse.bidPoints[1].geozone.location.coordinates], null, "00:10:00")
             //TODO допилить проверку на данные что активный км считается даже без выезда из нулевой

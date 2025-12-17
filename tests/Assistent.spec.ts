@@ -35,9 +35,9 @@ test.describe('Настройка отправки данных ассистен
 
         await test.step('Ожидаю что отправится 2 отчёта через минуту', async () => {
             await debugApi.init();
-            await debugApi.runTask('IProcessInvolvementAnalysisReminderGrain', await getAuthData(36))
+            await debugApi.runTask('IProcessInvolvementAnalysisReminderGrain', await getAuthData(process.env.rootId))
             await page.waitForTimeout(30000)
-            await debugApi.runTask('ISendAssistantChatReportNotificationsReminderGrain', await getAuthData(36))
+            await debugApi.runTask('ISendAssistantChatReportNotificationsReminderGrain', await getAuthData(process.env.rootId))
             await page.waitForTimeout(1500)
         })
     });

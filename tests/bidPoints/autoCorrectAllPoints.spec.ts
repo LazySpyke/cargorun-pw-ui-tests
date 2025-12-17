@@ -12,7 +12,7 @@ const bidApi = new APIBid();
 const emulatorApi = new SupportAPIRequestsClient();
 const debugApi = new DebugAPIRequestsClient()
 let bidInfo: any;
-const adminId = 36
+const adminId = process.env.rootId
 test.describe('Учёт факт дат, при не фиксации выезда из прошлой заявки(нулевой)', () => {
     let loginPage: LoginPage;
     let bidResponse: any;
@@ -30,8 +30,8 @@ test.describe('Учёт факт дат, при не фиксации выезд
             const bidFixture = new BidCreateInfo(page);
             bidInfo = await bidFixture.ApiCommonBid({
                 price: 100000,
-                paymentTypeId: 176,
-                ndsTypeId: 175,
+                paymentTypeId: process.env.paymentTypeId,
+                ndsTypeId: process.env.ndsTypeId,
                 planEnterLoadDate: moment().subtract(1, 'd').format('YYYY-MM-DDTHH:mm'),
                 planEnterUnloadDate: moment().add(2, 'd').format('YYYY-MM-DDTHH:mm'),
                 carFilter: `(isDeleted eq false and lastFixedAt le ${moment().subtract(7, 'd').format("YYYY-MM-DDTHH:mm:ss")}.000Z)`,
@@ -57,15 +57,15 @@ test.describe('Учёт факт дат, при не фиксации выезд
             await page.locator("//span[contains(text(),'Начата')]").isVisible(); //ожидаю что точка будет в статусе Начата
             await page.waitForTimeout(300000);
             await debugApi.init();
-            await debugApi.runTask('ICorrectBidPointsReminderGrain', await getAuthData(36));
+            await debugApi.runTask('ICorrectBidPointsReminderGrain', await getAuthData(process.env.rootId));
             await page.waitForTimeout(300000);
         });
         await test.step('Создание заявки с проверкой для автоперемещения точки B', async () => {
             const bidFixture = new BidCreateInfo(page);
             bidInfo = await bidFixture.ApiCommonBid({
                 price: 100000,
-                paymentTypeId: 176,
-                ndsTypeId: 175,
+                paymentTypeId: process.env.paymentTypeId,
+                ndsTypeId: process.env.ndsTypeId,
                 planEnterLoadDate: moment().subtract(1, 'd').format('YYYY-MM-DDTHH:mm'),
                 planEnterUnloadDate: moment().add(2, 'd').format('YYYY-MM-DDTHH:mm'),
                 carFilter: `(isDeleted eq false and lastFixedAt le ${moment().subtract(6, 'd').format("YYYY-MM-DDTHH:mm:ss")}.000Z)`,
@@ -91,15 +91,15 @@ test.describe('Учёт факт дат, при не фиксации выезд
             await page.locator("//span[contains(text(),'Загрузился')]").isVisible(); //ожидаю что точка будет в статусе Загурзился
             await page.waitForTimeout(300000);
             await debugApi.init();
-            await debugApi.runTask('ICorrectBidPointsReminderGrain', await getAuthData(36));
+            await debugApi.runTask('ICorrectBidPointsReminderGrain', await getAuthData(process.env.rootId));
             await page.waitForTimeout(300000);
         });
         await test.step('Создание заявки с проверкой предложения точки А, B', async () => {
             const bidFixture = new BidCreateInfo(page);
             bidInfo = await bidFixture.ApiCommonBid({
                 price: 100000,
-                paymentTypeId: 176,
-                ndsTypeId: 175,
+                paymentTypeId: process.env.paymentTypeId,
+                ndsTypeId: process.env.ndsTypeId,
                 planEnterLoadDate: moment().subtract(1, 'd').format('YYYY-MM-DDTHH:mm'),
                 planEnterUnloadDate: moment().add(2, 'd').format('YYYY-MM-DDTHH:mm'),
                 carFilter: `(isDeleted eq false and lastFixedAt le ${moment().subtract(7, 'd').format("YYYY-MM-DDTHH:mm:ss")}.000Z)`,

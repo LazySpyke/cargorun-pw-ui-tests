@@ -15,7 +15,7 @@ let bidInfo: any;
 const azcCoordinate: number[] = [51.797082, 55.640817]
 const inPlanningRefueling = [51.797460, 55.640870]
 const outOfPlanning = [51.809522, 55.648804]
-const adminId = 1319341 //переделать чтоб доставал из логина в фронте
+const adminId = process.env.refuelingAdminId //переделать чтоб доставал из логина в фронте
 test.describe('АЗС тесты', () => {
     let loginPage: LoginPage;
     let bidResponse: any;
@@ -33,8 +33,8 @@ test.describe('АЗС тесты', () => {
             const bidFixture = new BidCreateInfo(page);
             bidInfo = await bidFixture.ApiCommonBid({
                 price: 100000,
-                paymentTypeId: 176,
-                ndsTypeId: 175,
+                paymentTypeId: process.env.paymentTypeId,
+                ndsTypeId: process.env.ndsTypeId,
                 planEnterLoadDate: moment().subtract(2, 'd').format('YYYY-MM-DDTHH:mm'),
                 planEnterUnloadDate: moment().add(1, 'd').format('YYYY-MM-DDTHH:mm'),
                 carFilter: `(isDeleted eq false and lastFixedAt le ${moment().subtract(10, 'd').format("YYYY-MM-DDTHH:mm:ss")}.000Z and lastFixedAt le ${moment().subtract(4, 'd').format("YYYY-MM-DDTHH:mm:ss")}.000Z)`,
@@ -108,7 +108,7 @@ test.describe('АЗС тесты', () => {
                     { Number: 7, Address: 65535, Value: 650, ChangePer100Km: 0 },
                 ], null, null, moment().format("YYYY-MM-DDTHH:mm:ss+03:00"))
             await debugApi.init();
-            await debugApi.runTask('ICalculateBidRefuelingsOutsidePlanReminder', await getAuthData(36))
+            await debugApi.runTask('ICalculateBidRefuelingsOutsidePlanReminder', await getAuthData(process.env.rootId))
         })
         await test.step('Проверяю в отчёте что определилась как посещенная вне плана', async () => {
             await page.locator('[title="Отчеты"]').click();

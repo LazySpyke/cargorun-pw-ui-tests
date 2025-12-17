@@ -42,7 +42,7 @@ test.describe('Отчёт по учёту наёмного ТС', () => {
             await page.locator("//div[@class='inline-btn inline-btn--edit']").click();
             await page.locator('[name="hasHiredCar"]').click();
             await apiUse.init();
-            cargoOwnerForHiredCar = await apiUse.postData(`${process.env.url}/api/cargoOwnerDictionary/apply`, newCargoOwner, await getAuthData(36))
+            cargoOwnerForHiredCar = await apiUse.postData(`${process.env.url}/api/cargoOwnerDictionary/apply`, newCargoOwner, await getAuthData(process.env.rootId))
             console.log(cargoOwnerForHiredCar)
             await page.locator('#hiredCarCounterpartyIdContainer').first().click();
             await page.locator('#hiredCarCounterpartyIdContainer').first().type(newCargoOwner.name, { delay: 100 });

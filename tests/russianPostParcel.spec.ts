@@ -8,7 +8,7 @@ import APIBid from '../api/bidApi';
 const clienApi = new APIRequestsClient();
 const bidApi = new APIBid();
 let bidInfo: any;
-const adminId = 36
+const adminId = process.env.rootId
 test.describe('Отслеживание треке почты России', () => {
     let loginPage: LoginPage;
     let bidResponse: any;
@@ -25,8 +25,8 @@ test.describe('Отслеживание треке почты России', () 
             const bidFixture = new BidCreateInfo(page);
             bidInfo = await bidFixture.ApiCommonBid({
                 price: 100000,
-                paymentTypeId: 176,
-                ndsTypeId: 175,
+                paymentTypeId: process.env.paymentTypeId,
+                ndsTypeId: process.env.ndsTypeId,
                 planEnterLoadDate: moment().subtract(2, 'd').format('YYYY-MM-DDTHH:mm'),
                 planEnterUnloadDate: moment().add(1, 'd').format('YYYY-MM-DDTHH:mm'),
                 loadAddress: 'Челны',

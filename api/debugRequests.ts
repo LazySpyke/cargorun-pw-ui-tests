@@ -94,8 +94,8 @@ class DebugAPIRequestsClient {
             data: {
                 "isValid": true,
                 "number": carNumber,
-                "brandTypeId": 155,
-                "typeId": 10761094,
+                "brandTypeId": process.env.carBrandTypeId,
+                "typeId": process.env.carTypeId,
                 "transportColumnId": kolumnId ?? null,
                 "logistId": logistId ?? null,
                 "fuelTanks":

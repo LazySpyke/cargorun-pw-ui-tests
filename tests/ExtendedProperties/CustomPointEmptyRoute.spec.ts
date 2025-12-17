@@ -12,7 +12,7 @@ const bidApi = new APIBid();
 const emulatorApi = new SupportAPIRequestsClient();
 const debugApi = new DebugAPIRequestsClient();
 let bidInfo: any;
-const adminId = 1308041
+const adminId = process.env.compoundAdminId
 test.describe('Проверка отчётов с данными одометра', () => {
     let loginPage: LoginPage;
     let bidResponse: any;
@@ -31,8 +31,8 @@ test.describe('Проверка отчётов с данными одометр�
             const bidFixture = new BidCreateInfo(page);
             bidInfo = await bidFixture.ApiCommonBid({
                 price: 100000,
-                paymentTypeId: 176,
-                ndsTypeId: 175,
+                paymentTypeId: process.env.paymentTypeId,
+                ndsTypeId: process.env.ndsTypeId,
                 planEnterLoadDate: moment().subtract(7, 'd').format('YYYY-MM-DDTHH:mm'),
                 planEnterUnloadDate: moment().add(6, 'd').format('YYYY-MM-DDTHH:mm'),
                 loadAddress: 'Челны',

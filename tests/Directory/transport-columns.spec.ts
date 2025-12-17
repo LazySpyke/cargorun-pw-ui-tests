@@ -50,7 +50,7 @@ test.describe('Справочник Колонны', () => {
             await page.locator('input[name="name"]').fill(editKolumnName);
             await page.waitForTimeout(2500)
             await expect(page.locator(`//a[normalize-space()='${editKolumnName}']`)).toBeVisible();
-            await expect(page.locator('[class="text-center"]').nth(1)).toHaveText('Нет')//скрыт от планирования или нет
+            await expect(page.locator('[class="text-center"]').nth(0)).toHaveText('Нет')//скрыт от планирования или нет
         });
 
         await test.step('Удаление колонны', async () => {

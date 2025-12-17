@@ -15,7 +15,7 @@ const emulatorApi = new SupportAPIRequestsClient();
 const debugApi = new DebugAPIRequestsClient();
 const apiUse = new api();
 let bidInfo: any;
-const adminId = 36
+const adminId = process.env.rootId
 const bio = {
     firstName: faker.person.firstName(),
     lastName: faker.person.lastName(),
@@ -44,8 +44,8 @@ test.describe('Страница Мониторинг', () => {
             const trailer = {
                 "isValid": true,
                 "number": await emulatorApi.generateTrailerNumber(),
-                "brandTypeId": 1229293,
-                "typeId": 3997,
+                "brandTypeId": process.env.trilerBrandTypeId,
+                "typeId": process.env.trailerTypeId,
                 "loadUnloadOptions": []
             }
             await apiUse.init();
@@ -56,7 +56,7 @@ test.describe('Страница Мониторинг', () => {
         })
         await test.step('создание и привязка новой машины и т д', async () => {
             await debugApi.init();
-            newEntity = await debugApi.newCarTracker(await getAuthData(adminId), await getAuthData(36), await emulatorApi.generateCarNumber(), await emulatorApi.generateTrackerNumber('cmd'), moment().subtract(14, 'd').format("YYYY-MM-DDT00:00:00+03:00"), 427)
+            newEntity = await debugApi.newCarTracker(await getAuthData(adminId), await getAuthData(process.env.rootId), await emulatorApi.generateCarNumber(), await emulatorApi.generateTrackerNumber('cmd'), moment().subtract(14, 'd').format("YYYY-MM-DDT00:00:00+03:00"), process.env.logistId)
             console.log(newEntity)
             await page.waitForTimeout(10000)
         })
@@ -65,8 +65,8 @@ test.describe('Страница Мониторинг', () => {
             const bidFixture = new BidCreateInfo(page);
             bidInfo = await bidFixture.ApiCommonBid({
                 price: 100000,
-                paymentTypeId: 176,
-                ndsTypeId: 175,
+                paymentTypeId: process.env.paymentTypeId,
+                ndsTypeId: process.env.ndsTypeId,
                 planEnterLoadDate: moment().subtract(4, 'd').format('YYYY-MM-DDTHH:mm'),
                 planEnterUnloadDate: moment().subtract(2, 'd').format('YYYY-MM-DDTHH:mm'),
                 carFilter: `id eq ${await newEntity.newCarId}`,

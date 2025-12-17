@@ -10,7 +10,7 @@ const clienApi = new APIRequestsClient();
 const bidApi = new APIBid();
 const debugApi = new DebugAPIRequestsClient()
 let bidInfo: any;
-const adminId = 36
+const adminId = process.env.rootId
 test.describe('Отчёт по Дебиторской задолженности', () => {
     let loginPage: LoginPage;
     let bidResponse: any;
@@ -27,8 +27,8 @@ test.describe('Отчёт по Дебиторской задолженности
             const bidFixture = new BidCreateInfo(page);
             bidInfo = await bidFixture.ApiCommonBid({
                 price: 75000,
-                paymentTypeId: 176,
-                ndsTypeId: 175,
+                paymentTypeId: process.env.paymentTypeId,
+                ndsTypeId: process.env.ndsTypeId,
                 planEnterLoadDate: moment().subtract(2, 'd').format('YYYY-MM-DDTHH:mm'),
                 planEnterUnloadDate: moment().add(1, 'h').format('YYYY-MM-DDTHH:mm'),
                 loadAddress: 'Челны',
@@ -76,8 +76,8 @@ test.describe('Отчёт по Дебиторской задолженности
             const bidFixture = new BidCreateInfo(page);
             bidInfo = await bidFixture.ApiCommonBid({
                 price: 75000,
-                paymentTypeId: 176,
-                ndsTypeId: 175,
+                paymentTypeId: process.env.paymentTypeId,
+                ndsTypeId: process.env.ndsTypeId,
                 planEnterLoadDate: moment().subtract(2, 'd').format('YYYY-MM-DDTHH:mm'),
                 planEnterUnloadDate: moment().add(1, 'h').format('YYYY-MM-DDTHH:mm'),
                 loadAddress: 'Челны',
@@ -108,7 +108,7 @@ test.describe('Отчёт по Дебиторской задолженности
             await page.waitForTimeout(60000);
             await bidApi.ForceCompletedBid(bidResponse.id, await getAuthData(adminId));
             await page.waitForTimeout(15000)
-            await debugApi.runTask('ICheckPaymentLatenessReminderGrain', await getAuthData(36)) //запускаем таск на проставление статуса просрочена
+            await debugApi.runTask('ICheckPaymentLatenessReminderGrain', await getAuthData(process.env.rootId)) //запускаем таск на проставление статуса просрочена
         })
         await test.step('Проверка отображения информации о частичной оплате', async () => {
             await page.locator('[title="Финансы и учет"]').click();

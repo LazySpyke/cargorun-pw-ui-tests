@@ -14,7 +14,7 @@ test.describe('Справочник Прицепы', () => {
         await loginPage.goto(); // Переходим на страницу логина перед каждым тестом
     });
 
-    test('CRUD по грузовикам', async ({ page }) => {
+    test('CRUD по прицепам', async ({ page }) => {
         await test.step('Логин', async () => {
             await loginPage.login(process.env.rootMail as string, process.env.rootPassword as string);
         });

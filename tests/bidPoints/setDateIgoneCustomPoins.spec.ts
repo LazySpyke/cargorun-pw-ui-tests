@@ -12,7 +12,7 @@ const clienApi = new APIRequestsClient();
 const bidApi = new APIBid();
 const emulatorApi = new SupportAPIRequestsClient();
 let bidInfo: any;
-const adminId = 1308041
+const adminId = process.env.compoundAdminId
 const shiftCoordinate = [52.952065999999995, 55.690988]
 test.describe('Учёт кастомных точек', () => {
     let loginPage: LoginPage;
@@ -31,8 +31,8 @@ test.describe('Учёт кастомных точек', () => {
             const bidFixture = new BidCreateInfo(page);
             bidInfo = await bidFixture.ApiCommonBid({
                 price: 100000,
-                paymentTypeId: 176,
-                ndsTypeId: 175,
+                paymentTypeId: process.env.paymentTypeId,
+                ndsTypeId: process.env.ndsTypeId,
                 planEnterLoadDate: moment().subtract(5, 'd').format('YYYY-MM-DDT00:00'),
                 planEnterUnloadDate: moment().subtract(1, 'd').format('YYYY-MM-DDT00:00'),
                 carFilter: `(isDeleted eq false and lastFixedAt le ${moment().subtract(7, 'd').format("YYYY-MM-DDTHH:mm:ss")}.000Z)`,
@@ -101,8 +101,8 @@ test.describe('Учёт кастомных точек', () => {
             const bidFixture = new BidCreateInfo(page);
             bidInfo = await bidFixture.ApiCommonBid({
                 price: 100000,
-                paymentTypeId: 176,
-                ndsTypeId: 175,
+                paymentTypeId: process.env.paymentTypeId,
+                ndsTypeId: process.env.ndsTypeId,
                 planEnterLoadDate: moment().subtract(5, 'd').format('YYYY-MM-DDT00:00'),
                 planEnterUnloadDate: moment().subtract(1, 'd').format('YYYY-MM-DDT00:00'),
                 carFilter: `(isDeleted eq false and lastFixedAt le ${moment().subtract(7, 'd').format("YYYY-MM-DDTHH:mm:ss")}.000Z)`,

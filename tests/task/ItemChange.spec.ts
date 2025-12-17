@@ -15,7 +15,7 @@ const bidApi = new APIBid();
 const emulatorApi = new SupportAPIRequestsClient();
 const debugApi = new DebugAPIRequestsClient();
 let bidInfo: any;
-const adminId = 1305211
+const adminId = process.env.emptyCompanyAddminId
 test.describe('Работа с задачами на пересменку', () => {
     let loginPage: LoginPage;
     let bidResponse: any;
@@ -32,7 +32,7 @@ test.describe('Работа с задачами на пересменку', () =
         });
         await test.step('создание и привязка новой машины и т д', async () => {
             await debugApi.init();
-            newEntity = await debugApi.newCarTracker(await getAuthData(adminId), await getAuthData(36), await emulatorApi.generateCarNumber(), await emulatorApi.generateTrackerNumber('ict'), moment().subtract(7, 'd').format("YYYY-MM-DDT00:00:00+03:00"), 1380601)
+            newEntity = await debugApi.newCarTracker(await getAuthData(adminId), await getAuthData(process.env.rootId), await emulatorApi.generateCarNumber(), await emulatorApi.generateTrackerNumber('ict'), moment().subtract(7, 'd').format("YYYY-MM-DDT00:00:00+03:00"), 1380601)
             console.log(newEntity)
             await page.waitForTimeout(5000)
             await bidApi.init();
@@ -49,8 +49,8 @@ test.describe('Работа с задачами на пересменку', () =
             const bidFixture = new BidCreateInfo(page);
             bidInfo = await bidFixture.ApiCommonBid({
                 price: 100000,
-                paymentTypeId: 176,
-                ndsTypeId: 175,
+                paymentTypeId: process.env.paymentTypeId,
+                ndsTypeId: process.env.ndsTypeId,
                 planEnterLoadDate: moment().subtract(7, 'd').format('YYYY-MM-DDTHH:mm'),
                 planEnterUnloadDate: moment().subtract(6, 'd').format('YYYY-MM-DDTHH:mm'),
                 carFilter: `id eq ${await newEntity.newCarId}`,
@@ -67,7 +67,7 @@ test.describe('Работа с задачами на пересменку', () =
 
             await emulatorApi.coordinatSend(bidInfo.carOption.carTracker, moment().subtract(7, 'd').format("YYYY-MM-DDTHH:mm:ss+00:00"), bidInfoResponse.bidPoints[0].geozone.location.coordinates, [bidInfoResponse.bidPoints[0].geozone.location.coordinates, bidInfoResponse.bidPoints[1].geozone.location.coordinates], null, "08:10:00")
             await page.waitForTimeout(500);
-            await debugApi.applyOdometerValues(await getAuthData(36), newEntity.newTrackerId, startValue, startDate, 200)
+            await debugApi.applyOdometerValues(await getAuthData(process.env.rootId), newEntity.newTrackerId, startValue, startDate, 200)
         });
         await test.step('создание машины и смены с в Эксплуатации(НК)', async () => {
             await page.goto(process.env.nkUrl as string)
@@ -165,7 +165,7 @@ test.describe('Работа с задачами на пересменку', () =
             await expect(page.locator('[class="Toastify__toast Toastify__toast-theme--light Toastify__toast--success Toastify__toast--close-on-click"]')).toBeVisible();
         })
         await test.step('вызов фонового таска на создание задач и проверка данных созданной задачи', async () => {
-            await debugApi.runTask('ICreateLogistTasksReminderGrain', await getAuthData(36))
+            await debugApi.runTask('ICreateLogistTasksReminderGrain', await getAuthData(process.env.rootId))
             await page.waitForTimeout(30000);
             await loginPage.goto(); // Переходим на страницу логина перед каждым тестом
             await page.locator('[title="Задачи"]').click();
@@ -198,7 +198,7 @@ test.describe('Работа с задачами на пересменку', () =
         });
         await test.step('создание и привязка новой машины и т д', async () => {
             await debugApi.init();
-            newEntity = await debugApi.newCarTracker(await getAuthData(adminId), await getAuthData(36), await emulatorApi.generateCarNumber(), await emulatorApi.generateTrackerNumber('ict'), moment().subtract(7, 'd').format("YYYY-MM-DDT00:00:00+03:00"), 1380601)
+            newEntity = await debugApi.newCarTracker(await getAuthData(adminId), await getAuthData(process.env.rootId), await emulatorApi.generateCarNumber(), await emulatorApi.generateTrackerNumber('ict'), moment().subtract(7, 'd').format("YYYY-MM-DDT00:00:00+03:00"), 1380601)
             console.log(newEntity)
             await page.waitForTimeout(5000)
             await bidApi.init();
@@ -215,8 +215,8 @@ test.describe('Работа с задачами на пересменку', () =
             const bidFixture = new BidCreateInfo(page);
             bidInfo = await bidFixture.ApiCommonBid({
                 price: 100000,
-                paymentTypeId: 176,
-                ndsTypeId: 175,
+                paymentTypeId: process.env.paymentTypeId,
+                ndsTypeId: process.env.ndsTypeId,
                 planEnterLoadDate: moment().subtract(7, 'd').format('YYYY-MM-DDTHH:mm'),
                 planEnterUnloadDate: moment().subtract(6, 'd').format('YYYY-MM-DDTHH:mm'),
                 carFilter: `id eq ${await newEntity.newCarId}`,
@@ -233,7 +233,7 @@ test.describe('Работа с задачами на пересменку', () =
 
             await emulatorApi.coordinatSend(bidInfo.carOption.carTracker, moment().subtract(7, 'd').format("YYYY-MM-DDTHH:mm:ss+00:00"), bidInfoResponse.bidPoints[0].geozone.location.coordinates, [bidInfoResponse.bidPoints[0].geozone.location.coordinates, bidInfoResponse.bidPoints[1].geozone.location.coordinates], null, "08:10:00")
             await page.waitForTimeout(500);
-            await debugApi.applyOdometerValues(await getAuthData(36), newEntity.newTrackerId, startValue, startDate, 200)
+            await debugApi.applyOdometerValues(await getAuthData(process.env.rootId), newEntity.newTrackerId, startValue, startDate, 200)
         });
         await test.step('создание машины и смены с в Эксплуатации(НК)', async () => {
             await page.goto(process.env.nkUrl as string)
@@ -331,7 +331,7 @@ test.describe('Работа с задачами на пересменку', () =
             await expect(page.locator('[class="Toastify__toast Toastify__toast-theme--light Toastify__toast--success Toastify__toast--close-on-click"]')).toBeVisible();
         })
         await test.step('вызов фонового таска на создание задач и проверка данных созданной задачи', async () => {
-            await debugApi.runTask('ICreateLogistTasksReminderGrain', await getAuthData(36))
+            await debugApi.runTask('ICreateLogistTasksReminderGrain', await getAuthData(process.env.rootId))
             await page.waitForTimeout(30000);
             await loginPage.goto(); // Переходим на страницу логина перед каждым тестом
             await page.locator('[title="Задачи"]').click();

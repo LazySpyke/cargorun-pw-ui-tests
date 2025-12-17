@@ -28,9 +28,9 @@ test.describe('Работа с ЭТРН', () => {
             const bidFixture = new BidCreateInfo(page);
             bidInfo = await bidFixture.ApiCommonBid({
                 price: 100000,
-                paymentTypeId: 176,
+                paymentTypeId: process.env.paymentTypeId,
                 carFilter: `(isDeleted eq false and lastFixedAt le ${moment().subtract(7, 'd').format("YYYY-MM-DDTHH:mm:ss")}.000Z)`,
-                ndsTypeId: 175,
+                ndsTypeId: process.env.ndsTypeId,
                 planEnterLoadDate: moment().subtract(2, 'd').format('YYYY-MM-DDTHH:mm'),
                 planEnterUnloadDate: moment().add(1, 'd').format('YYYY-MM-DDTHH:mm'),
                 loadAddress: 'Челны',
@@ -65,7 +65,7 @@ test.describe('Работа с ЭТРН', () => {
             await clienApi.getToken(driverAuth[0].user.phoneNumber as string, driverAuth[0].password as string);
             const getDriverUserId = await clienApi.GetObjectResponse(
                 `${process.env.url}/api/adminpanel/getAllDrivers?$filter=(isDeleted eq false and contains(cast(id, Model.String),'${bidInfo.driver.id}'))&$top=30&$skip=0`,
-                await getAuthData(36)
+                await getAuthData(process.env.rootId)
             )
             await page.waitForTimeout(6000); //вынужденная пауза
             const driverCurrentBidResponse = await clienApi.GetObjectResponse(

@@ -10,7 +10,7 @@ const clienApi = new APIRequestsClient();
 const bidApi = new APIBid();
 const apiUse = new api();
 let bidInfo: any;
-const adminId = 36
+const adminId = process.env.rootId
 test.describe('Отчёты по Изменению стоимости заявки', () => {
     let loginPage: LoginPage;
     let bidResponse: any;
@@ -28,8 +28,8 @@ test.describe('Отчёты по Изменению стоимости заяв�
             const bidFixture = new BidCreateInfo(page);
             bidInfo = await bidFixture.ApiCommonBid({
                 price: 100000,
-                paymentTypeId: 176,
-                ndsTypeId: 175,
+                paymentTypeId: process.env.paymentTypeId,
+                ndsTypeId: process.env.ndsTypeId,
                 planEnterLoadDate: moment().subtract(2, 'd').format('YYYY-MM-DDTHH:mm'),
                 planEnterUnloadDate: moment().add(1, 'h').format('YYYY-MM-DDTHH:mm'),
                 loadAddress: 'Челны',
@@ -98,8 +98,8 @@ test.describe('Отчёты по Изменению стоимости заяв�
             const bidFixture = new BidCreateInfo(page);
             bidInfo = await bidFixture.ApiCommonBid({
                 price: 100000,
-                paymentTypeId: 176,
-                ndsTypeId: 175,
+                paymentTypeId: process.env.paymentTypeId,
+                ndsTypeId: process.env.ndsTypeId,
                 planEnterLoadDate: moment().subtract(2, 'd').format('YYYY-MM-DDTHH:mm'),
                 planEnterUnloadDate: moment().add(1, 'h').format('YYYY-MM-DDTHH:mm'),
                 loadAddress: 'Челны',
@@ -165,8 +165,8 @@ test.describe('Отчёты по Изменению стоимости заяв�
             const bidFixture = new BidCreateInfo(page);
             bidInfo = await bidFixture.ApiCommonBid({
                 price: 500,
-                paymentTypeId: 176,
-                ndsTypeId: 175,
+                paymentTypeId: process.env.paymentTypeId,
+                ndsTypeId: process.env.ndsTypeId,
                 planEnterLoadDate: moment().subtract(2, 'd').format('YYYY-MM-DDTHH:mm'),
                 planEnterUnloadDate: moment().add(1, 'h').format('YYYY-MM-DDTHH:mm'),
                 loadAddress: 'Челны',

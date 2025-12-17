@@ -10,8 +10,8 @@ const clienApi = new APIRequestsClient();
 const bidApi = new APIBid();
 const apiUse = new api();
 let bidInfo: any;
-const adminId = 36
-const emptyCompanyAdmin = 1305211
+const adminId = process.env.rootId
+const emptyCompanyAdmin = process.env.emptyCompanyAddminId
 const envelopeCode = Math.floor(Math.random() * 99999999);
 const postamatCode = '1122334455131'
 import fs from 'fs'
@@ -33,8 +33,8 @@ test.describe('Отчёты по работе водителей с задани
             const bidFixture = new BidCreateInfo(page);
             bidInfo = await bidFixture.ApiCommonBid({
                 price: 100000,
-                paymentTypeId: 176,
-                ndsTypeId: 175,
+                paymentTypeId: process.env.paymentTypeId,
+                ndsTypeId: process.env.ndsTypeId,
                 planEnterLoadDate: moment().subtract(4, 'd').format('YYYY-MM-DDTHH:mm'),
                 planEnterUnloadDate: moment().subtract(3, 'd').format('YYYY-MM-DDTHH:mm'),
                 loadAddress: 'Челны',
@@ -149,8 +149,8 @@ test.describe('Отчёты по работе водителей с задани
             const bidFixture = new BidCreateInfo(page);
             bidInfo = await bidFixture.ApiCommonBid({
                 price: 100000,
-                paymentTypeId: 176,
-                ndsTypeId: 175,
+                paymentTypeId: process.env.paymentTypeId,
+                ndsTypeId: process.env.ndsTypeId,
                 planEnterLoadDate: moment().subtract(4, 'd').format('YYYY-MM-DDTHH:mm'),
                 planEnterUnloadDate: moment().subtract(3, 'd').format('YYYY-MM-DDTHH:mm'),
                 loadAddress: 'Челны',

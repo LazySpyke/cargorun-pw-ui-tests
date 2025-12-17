@@ -10,7 +10,7 @@ const clienApi = new APIRequestsClient();
 const bidApi = new APIBid();
 const emulatorApi = new SupportAPIRequestsClient();
 let bidInfo: any;
-const adminId = 36
+const adminId = process.env.rootId
 test.describe('Запрос GetCarsList', () => {
     let loginPage: LoginPage;
     let bidResponse: any;
@@ -27,8 +27,8 @@ test.describe('Запрос GetCarsList', () => {
             const bidFixture = new BidCreateInfo(page);
             bidInfo = await bidFixture.ApiCommonBid({
                 price: 100000,
-                paymentTypeId: 176,
-                ndsTypeId: 175,
+                paymentTypeId: process.env.paymentTypeId,
+                ndsTypeId: process.env.ndsTypeId,
                 planEnterLoadDate: moment().subtract(6, 'h').format('YYYY-MM-DDTHH:mm'),
                 planEnterUnloadDate: moment().subtract(1, 'h').format('YYYY-MM-DDTHH:mm'),
                 loadAddress: 'Челны',

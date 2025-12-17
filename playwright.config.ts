@@ -18,7 +18,7 @@ export default defineConfig({
   expect: {
     timeout: 30000,
   },
-  timeout: 6000 * 1000, //надо из-за тестов с датчиками
+  timeout: 60 * 10 * 1000, //надо из-за тестов с датчиками
   /* Fail the build on CI if you accidentally left test.only in the source code. */
   forbidOnly: !!process.env.CI,
   /* Retry on CI only */
@@ -29,7 +29,7 @@ export default defineConfig({
   reporter: 'html',
   /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
   use: {
-    baseURL: 'https://test.cargorun.ru',
+    baseURL: 'https://test.cargorun.ru/',
     testIdAttribute: 'data-test-id',
     headless: false, // Установите true для безголового режима
     // viewport: { width: 1920, height: 1080 }, // Установите размеры для окна браузера
