@@ -72,7 +72,7 @@ class APIRequestsClient {
     if (!this.context) {
       throw new Error('APIRequestContext is not initialized. Call init() first.');
     }
-    const response = await this.context.post(`${process.env.url}/api/bids/cancel`, {
+    const response = await this.context.post(`${process.env.url}/api/bids/revert`, {
       data: { bidId: bidId },
       headers: {
         'Content-Type': 'application/json',

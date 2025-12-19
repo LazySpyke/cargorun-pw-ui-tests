@@ -103,6 +103,26 @@ test.describe('Самостоятельная регистрация', () => {
       const trackerAttachDate = await page.textContent("div[role='rowgroup'] div:nth-child(13)"); //текст трекера
       expect(trackerAttachDate).not.toBeNull();
     })
+    await test.step('проверка создания ВИС юзера', async () => {
+      await page.getByTestId('header-dropd').click();
+      await page.getByTestId('header-organization').click();
+      // Получаем данные из localStorage
+      const localStorageData = await page.evaluate(() => {
+        const data: Record<string, string> = {};
+        for (let i = 0; i < localStorage.length; i++) {
+          const key = localStorage.key(i);
+          if (key) {
+            data[key] = localStorage.getItem(key) || '';
+          }
+        }
+        return data;
+      });
+      console.log(JSON.parse(localStorageData.currentUser))
+      console.log(JSON.parse(localStorageData.currentUser).organizationId);
+      await expect(page.locator(`//td[normalize-space()='CRSync_${JSON.parse(localStorageData.currentUser).organizationId}_ForLoads@cargorun.ru']`)).toBeVisible();
+      await expect(page.locator("//td[contains(text(),'Чтение с подтверждением')]")).toBeVisible();
+      await expect(page.locator("//td[contains(text(),'Изменения для Экспедиции')]")).toBeVisible();
+    })
     await test.step('удаление созданного Relay', async () => {
       await page.goto(process.env.relayTestHost as string);
       await page.locator('[type="email"]').fill(process.env.relayTestMail as string)
@@ -133,7 +153,19 @@ test.describe('Самостоятельная регистрация', () => {
       await page.locator("//span[contains(text(),'Админка')]").click();
       await page.locator("//span[contains(text(),'Все организации')]").click();
       await page.locator('select[class="r-item__filter-select r-item__filter-select--wide field-wrap__input"]').first().selectOption({ label: 'Да' });
-      await page.waitForTimeout(60000)
+      // await page.waitForTimeout(60000)
+    })
+    await test.step('Проверка появления в списке организации У загрузок', async () => {
+      await page.goto(process.env.forwardingUrl as string)
+      await page.locator('[type="email"]').fill(process.env.forwardingRootLogin as string)
+      await page.locator('[type="password"]').fill(process.env.forwardingRootPassword as string)
+      await page.locator('[type="submit"]').click();
+
+      await page.locator('[title="Cargorun"]').click();
+      await page.locator('[title="Компании"]').nth(1).click();
+      await page.locator('[name="name"]').fill(newCompany.name as string)
+      await page.waitForTimeout(5000)
+      await expect(page.locator('[class="ms-3 text-description align-self-center"]')).toContainText('Всего 1 элемент') //проверяем что есть компания
     })
   });
 });
