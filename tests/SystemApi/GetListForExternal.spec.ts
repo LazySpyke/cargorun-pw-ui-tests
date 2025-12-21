@@ -217,7 +217,7 @@ test.describe('Проверка запроса GetListForExternal', () => {
             await expect(page.getByTestId('clientBidNumber')).toHaveText('clientBidNumber');
             await expect(page.getByTestId('clientBidDate')).toHaveText(moment().format('DD.MM.YYYY'));
             await expect(page.locator('[data-point-external-city="0"]').nth(0)).toHaveText(/Челны_externalCity_0/);
-            await expect(page.locator('[data-point-external-city="1"]').nth(1)).toHaveText(/Уфа_externalCity_1/);
+            await expect(page.locator('[data-point-external-city="1"]').nth(0)).toHaveText(/Уфа_externalCity_1/);
         })
         await test.step('getListForExternal', async () => {
             await bidApi.init();
