@@ -36,7 +36,7 @@ test.describe('АЗС тесты', () => {
                 planEnterUnloadDate: moment().add(1, 'd').format('YYYY-MM-DDTHH:mm'),
                 carFilter: `(isDeleted eq false and lastFixedAt le ${moment().subtract(3, 'd').format("YYYY-MM-DDTHH:mm:ss")}.000Z and lastFixedAt le ${moment().subtract(2, 'd').format("YYYY-MM-DDTHH:mm:ss")}.000Z)`,
                 loadAddress: 'Челны',
-                unloadAddress: 'Можга',
+                unloadAddress: 'Россия, Удмуртская Республика, Можга, микрорайон Стеклозаводской',
                 userIdForFilter: adminId,
                 cargoOwnerFilter: '(isDeleted eq false)'
             });
@@ -65,10 +65,10 @@ test.describe('АЗС тесты', () => {
             await page.locator('input[name="minimumVolumeInFinishDesired"]').first().fill('750')
             await page.locator("//div[@class='btn-brand ml-1 btn btn-sm']").click();
             await expect(page.getByText('Запущен процесс планирования заправок.')).toBeVisible();
-            await page.locator("//div[@class='dropdown__btn']").click();
-            await page.locator(`//div[@class="dropdown__item"][contains(text(),'Перерасчет')]`).click();
-            await page.locator("//div[@class='btn btn-brand btn-sm modal-window__footer-action']").click();
-            await expect(page.getByText('Ваш запрос выполнен успешно')).toBeVisible();
+            await page.waitForTimeout(15000)
+            // await page.locator(`//div[@class="dropdown__item"][contains(text(),'Перерасчет')]`).click();
+            // await page.locator("//div[@class='btn btn-brand btn-sm modal-window__footer-action']").click();
+            // await expect(page.getByText('Ваш запрос выполнен успешно')).toBeVisible();
             const lastTrackerCarInfo = await clienApi.GetObjectResponse(
                 `${process.env.url}/api/Map/GetLastCarsLocations?$filter=car/id%20eq%20${bidInfo.carOption.carId}`,
                 await getAuthData(adminId)

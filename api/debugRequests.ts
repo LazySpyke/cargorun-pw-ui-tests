@@ -183,7 +183,7 @@ class DebugAPIRequestsClient {
                 // другие заголовки, если нужны
             },
         });
-        console.log(`статус деактивации Планирования по городам ${response.status} у компании ${orgId}`)
+        console.log(`статус деактивации Планирования по городам ${response.status()} у компании ${orgId}`)
     }
 }
 

@@ -72,7 +72,24 @@ class APIRequestsClient {
     if (!this.context) {
       throw new Error('APIRequestContext is not initialized. Call init() first.');
     }
-    const response = await this.context.post(`${process.env.url}/api/bids/revert`, {
+    const response = await this.context.post(`${process.env.url}/api/bids/cancel`, {
+      data: { bidId: bidId },
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: bearerToken,
+        // другие заголовки, если нужны
+      },
+    });
+    console.log(response);
+    const jsonResponse = await response.json();
+    return jsonResponse;
+  }
+
+  async revertBid(bidId: any, bearerToken: string): Promise<any> {
+    if (!this.context) {
+      throw new Error('APIRequestContext is not initialized. Call init() first.');
+    }
+    const response = await this.context.post(`${process.env.url}/api/truckingbids/revert`, {
       data: { bidId: bidId },
       headers: {
         'Content-Type': 'application/json',

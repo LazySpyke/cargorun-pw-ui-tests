@@ -97,8 +97,8 @@ test.describe('Создание транзакций по азс', () => {
                             "cost": 65.5,
                             "description": `тест по заявке ${bidResponse.id}`,
                             "address": `тестовый адресс`,
-                            "x": planningRefuelingsArray.plannedRefuelings[0].mapObject.location.coordinates[1],
-                            "y": planningRefuelingsArray.plannedRefuelings[0].mapObject.location.coordinates[0]
+                            "x": planningRefuelingsArray.plannedRefuelings[0].mapObject.location.coordinates[0],
+                            "y": planningRefuelingsArray.plannedRefuelings[0].mapObject.location.coordinates[1]
                         }
                     ]
                 }
@@ -116,8 +116,8 @@ test.describe('Создание транзакций по азс', () => {
                             "cost": 65.5,
                             "description": `тест по заявке ${bidResponse.id}`,
                             "address": `тестовый адресс`,
-                            "x": planningRefuelingsArray.plannedRefuelings[0].mapObject.location.coordinates[1],
-                            "y": planningRefuelingsArray.plannedRefuelings[0].mapObject.location.coordinates[0]
+                            "x": planningRefuelingsArray.plannedRefuelings[0].mapObject.location.coordinates[0],
+                            "y": planningRefuelingsArray.plannedRefuelings[0].mapObject.location.coordinates[1]
                         }
                     ]
                 }
@@ -135,8 +135,8 @@ test.describe('Создание транзакций по азс', () => {
                             "cost": 65.5,
                             "description": `тест по заявке ${bidResponse.id}`,
                             "address": `тестовый адресс`,
-                            "x": planningRefuelingsArray.plannedRefuelings[0].mapObject.location.coordinates[1],
-                            "y": planningRefuelingsArray.plannedRefuelings[0].mapObject.location.coordinates[0]
+                            "x": planningRefuelingsArray.plannedRefuelings[0].mapObject.location.coordinates[0],
+                            "y": planningRefuelingsArray.plannedRefuelings[0].mapObject.location.coordinates[1]
                         }
                     ]
                 }
@@ -282,8 +282,8 @@ test.describe('Создание транзакций по азс', () => {
                             "cost": 65.5,
                             "description": `тест по заявке ${bidResponse.id}`,
                             "address": `тестовый адресс`,
-                            "x": planningRefuelingsArray.plannedRefuelings[0].mapObject.location.coordinates[1],
-                            "y": planningRefuelingsArray.plannedRefuelings[0].mapObject.location.coordinates[0]
+                            "x": planningRefuelingsArray.plannedRefuelings[0].mapObject.location.coordinates[0],
+                            "y": planningRefuelingsArray.plannedRefuelings[0].mapObject.location.coordinates[1]
                         }
                     ]
                 }
@@ -301,8 +301,8 @@ test.describe('Создание транзакций по азс', () => {
                             "cost": 65.5,
                             "description": `тест по заявке ${bidResponse.id}`,
                             "address": `тестовый адресс`,
-                            "x": planningRefuelingsArray.plannedRefuelings[0].mapObject.location.coordinates[1],
-                            "y": planningRefuelingsArray.plannedRefuelings[0].mapObject.location.coordinates[0]
+                            "x": planningRefuelingsArray.plannedRefuelings[0].mapObject.location.coordinates[0],
+                            "y": planningRefuelingsArray.plannedRefuelings[0].mapObject.location.coordinates[1]
                         }
                     ]
                 }
@@ -320,8 +320,8 @@ test.describe('Создание транзакций по азс', () => {
                             "cost": 65.5,
                             "description": `тест по заявке ${bidResponse.id}`,
                             "address": `тестовый адресс`,
-                            "x": planningRefuelingsArray.plannedRefuelings[0].mapObject.location.coordinates[1],
-                            "y": planningRefuelingsArray.plannedRefuelings[0].mapObject.location.coordinates[0]
+                            "x": planningRefuelingsArray.plannedRefuelings[0].mapObject.location.coordinates[0],
+                            "y": planningRefuelingsArray.plannedRefuelings[0].mapObject.location.coordinates[1]
                         }
                     ]
                 }
@@ -422,7 +422,7 @@ test.describe('Создание транзакций по азс', () => {
                 await getAuthData(adminId)
             );
             bidList.forEach(async (element: any) => {
-                bidApi.cancelBid(element.id, await getAuthData(adminId));
+                bidApi.revertBid(element.id, await getAuthData(adminId));
             });
             bidResponse = await bidApi.apply(bidInfo, await getAuthData(adminId));
             await bidApi.setStatus(bidResponse.id, await getAuthData(adminId));
@@ -467,8 +467,8 @@ test.describe('Создание транзакций по азс', () => {
                             "cost": 65.5,
                             "description": `тест по заявке ${bidResponse.id}`,
                             "address": `тестовый адресс`,
-                            "x": planningRefuelingsArray.plannedRefuelings[0].mapObject.location.coordinates[1],
-                            "y": planningRefuelingsArray.plannedRefuelings[0].mapObject.location.coordinates[0]
+                            "x": planningRefuelingsArray.plannedRefuelings[0].mapObject.location.coordinates[0],
+                            "y": planningRefuelingsArray.plannedRefuelings[0].mapObject.location.coordinates[1]
                         }
                     ]
                 }
@@ -486,8 +486,8 @@ test.describe('Создание транзакций по азс', () => {
                             "cost": 65.5,
                             "description": `тест по заявке ${bidResponse.id}`,
                             "address": `тестовый адресс`,
-                            "x": planningRefuelingsArray.plannedRefuelings[0].mapObject.location.coordinates[1],
-                            "y": planningRefuelingsArray.plannedRefuelings[0].mapObject.location.coordinates[0]
+                            "x": planningRefuelingsArray.plannedRefuelings[0].mapObject.location.coordinates[0],
+                            "y": planningRefuelingsArray.plannedRefuelings[0].mapObject.location.coordinates[1]
                         }
                     ]
                 }
@@ -505,8 +505,8 @@ test.describe('Создание транзакций по азс', () => {
                             "cost": 65.5,
                             "description": `тест по заявке ${bidResponse.id}`,
                             "address": `тестовый адресс`,
-                            "x": planningRefuelingsArray.plannedRefuelings[0].mapObject.location.coordinates[1],
-                            "y": planningRefuelingsArray.plannedRefuelings[0].mapObject.location.coordinates[0]
+                            "x": planningRefuelingsArray.plannedRefuelings[0].mapObject.location.coordinates[0],
+                            "y": planningRefuelingsArray.plannedRefuelings[0].mapObject.location.coordinates[1]
                         }
                     ]
                 }
