@@ -79,7 +79,7 @@ test.describe('АЗС тесты', () => {
                 await getAuthData(adminId)
             );
             const orderSort = bidInfoResponse.bidPoints.sort((a, b) => a.order - b.order);
-            if (bidInfoResponse.bidPoints.length > 2) {
+            if (bidInfoResponse.bidPoints.length < 3) {
                 await emulatorApi.coordinatSend(bidInfo.carOption.carTracker, moment().subtract(1, 'd').format("YYYY-MM-DDTHH:mm:ss+03:00"), lastTrackerCarInfo[0].location.coordinates, [orderSort[0].geozone.location.coordinates, planningRefuelingsArray.plannedRefuelings[planningRefuelingsArray.plannedRefuelings.length - 1].mapObject.location.coordinates],
                     [
                         { Number: 7, Address: 65535, Value: 200, ChangePer100Km: 0 },
