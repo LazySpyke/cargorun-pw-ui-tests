@@ -65,10 +65,10 @@ test.describe('АЗС тесты', () => {
             await page.locator('input[name="minimumVolumeInFinishDesired"]').first().fill('750')
             await page.locator("//div[@class='btn-brand ml-1 btn btn-sm']").click();
             await expect(page.getByText('Запущен процесс планирования заправок.')).toBeVisible();
-            await page.waitForTimeout(15000)
-            // await page.locator(`//div[@class="dropdown__item"][contains(text(),'Перерасчет')]`).click();
-            // await page.locator("//div[@class='btn btn-brand btn-sm modal-window__footer-action']").click();
-            // await expect(page.getByText('Ваш запрос выполнен успешно')).toBeVisible();
+            await page.waitForTimeout(60000)
+            await page.locator(`//div[@class="dropdown__item"][contains(text(),'Перерасчет')]`).click();
+            await page.locator("//div[@class='btn btn-brand btn-sm modal-window__footer-action']").click();
+            await expect(page.getByText('Ваш запрос выполнен успешно')).toBeVisible();
             const lastTrackerCarInfo = await clienApi.GetObjectResponse(
                 `${process.env.url}/api/Map/GetLastCarsLocations?$filter=car/id%20eq%20${bidInfo.carOption.carId}`,
                 await getAuthData(adminId)
