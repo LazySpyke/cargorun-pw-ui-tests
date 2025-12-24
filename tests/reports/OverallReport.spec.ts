@@ -125,6 +125,16 @@ test.describe('Проверка общего отчёта', () => {
             await emulatorApi.coordinatSend(bidInfo.carOption.carTracker, `${moment().subtract(3, 'd').format("YYYY-MM-DDTHH:mm:ss")}+00:00`, null, [secondBidInfoResponse.bidPoints[0].geozone.location.coordinates, secondBidInfoResponse.bidPoints[1].geozone.location.coordinates, secondBidInfoResponse.bidPoints[0].geozone.location.coordinates], null, "05:30:00")
             //TODO допилить проверку на данные что активный км считается даже без выезда из нулевой
             await page.waitForTimeout(54000)
+            // const recalculateCar = await apiUse.postData(`${process.env.url}/api/adminpanel/recalculateCoordinates`, {
+            //     "carIds": [
+            //         bidInfo.carOption.carId
+            //     ],
+            //     "from": moment().subtract(30, 'd').format("YYYY-MM-DD"),
+            //     "to": moment().format("YYYY-MM-DD"),
+            //     "intCalculateFlags": 7
+            // }, await getAuthData(process.env.rootId))
+            // console.log(recalculateCar)
+            // await page.waitForTimeout(54000)
         })
         await test.step('проверка данных заявок', async () => {
             await page.waitForTimeout(180000)//ждём перерасчётов
@@ -218,6 +228,24 @@ test.describe('Проверка общего отчёта', () => {
             await page.locator('#legalPersonIdContainer').click();
             // await page.locator('div').filter({ hasText: /^Тип грузовика$/ }).nth(2).click();
             await page.getByRole('option', { name: `${legalPersonList[0].name}` }).click();
+            await page.waitForTimeout(500)
+            await page.locator('[class="book-show__title"]').click(); //чтоб датапикеры скрылись
+        })
+        await test.step('Проверка данных в модалке по заявкам', async () => {
+            await page.locator('[class="r-item__expander icon-uEAAE-angle-right-solid"]').click();
+            await page.locator('input[name="car"]').fill(bidInfo.carOption.number);
+            await page.locator(`[data-car="${bidInfo.carOption.number}"]`).nth(0).click();
+            await expect(page.locator(`[data-id="${secondBidResponse.id}"]`)).toHaveText(`${secondBidResponse.id}`)
+            await expect(page.locator(`[data-counterpartyname="${secondBidResponse.id}"]`)).toHaveText(`${bidInfoResponse.cargoOwnerDictionaryItem.name}`)
+            await expect(page.locator(`[data-route="${secondBidResponse.id}"]`)).toHaveText(`Набережные Челны - Нижний Новгород`)
+            console.log(`${JSON.stringify(secondBidInfoResponse.bidPoints[0].autoEnteredAt)},${secondBidInfoResponse.bidPoints}`)
+            await expect(page.locator(`[data-executiondaterange="${secondBidResponse.id}"]`)).toHaveText(`${moment(secondBidInfoResponse.bidPoints[0].autoEnteredAt).format("DD.MM.YYYY HH:mm")} (+03:00)-${moment(secondBidInfoResponse.bidPoints[1].autoLeavedAt).format("DD.MM.YYYY HH:mm")} (+03:00)`)
+            await expect(page.locator(`[data-activemileage="${secondBidResponse.id}"]`)).toContainText(`651`)
+            await expect(page.locator(`[data-emptymileage="${secondBidResponse.id}"]`)).toContainText(`672`)
+            await expect(page.locator(`[data-overallmileage="${secondBidResponse.id}"]`)).toContainText(`1 323,00`)
+            await expect(page.locator(`[data-overallbidprice="${secondBidResponse.id}"]`)).toContainText(`100 000,00`)
+            await page.locator("//span[contains(text(),'Отобразить даты в часовом поясе компании')]").click();
+            await expect(page.locator(`[data-executiondaterange="${secondBidResponse.id}"]`)).toHaveText(`${moment(secondBidInfoResponse.bidPoints[0].autoEnteredAt).add(1, 'h').format("DD.MM.YYYY HH:mm")} (+04:00)-${moment(secondBidInfoResponse.bidPoints[1].autoLeavedAt).add(1, 'h').format("DD.MM.YYYY HH:mm")} (+04:00)`)
         })
     })
 })
