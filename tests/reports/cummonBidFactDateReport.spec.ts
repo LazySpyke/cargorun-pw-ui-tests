@@ -86,12 +86,6 @@ test.describe('Проверка отчётов с данными одометр�
         })
         await test.step('проверка данных заявок', async () => {
             await apiUse.init();
-            await page.waitForTimeout(180000)//ждём перерасчётов
-            await page.goto(`${process.env.url}/bids/bid/${bidResponse.id}`)
-            await expect(page.getByTestId('fact-distance')).toHaveText('284') //активный
-            await page.goto(`${process.env.url}/bids/bid/${secondBidResponse.id}`)
-            await expect(page.getByTestId('fact-distance')).toHaveText('646') //активный
-            await expect(page.getByTestId('fact-empty-mileage-distance')).toHaveText('294') //порожний
             const recalculateCar = await apiUse.postData(`${process.env.url}/api/adminpanel/recalculateCoordinates`, {
                 "carIds": [
                     bidInfo.carOption.carId
@@ -101,6 +95,12 @@ test.describe('Проверка отчётов с данными одометр�
                 "intCalculateFlags": 7
             }, await getAuthData(process.env.rootId))
             console.log(recalculateCar)
+            await page.waitForTimeout(180000)//ждём перерасчётов
+            await page.goto(`${process.env.url}/bids/bid/${bidResponse.id}`)
+            await expect(page.getByTestId('fact-distance')).toHaveText('284') //активный
+            await page.goto(`${process.env.url}/bids/bid/${secondBidResponse.id}`)
+            await expect(page.getByTestId('fact-distance')).toHaveText('646') //активный
+            await expect(page.getByTestId('fact-empty-mileage-distance')).toHaveText('294') //порожний
         })
         await test.step('Проверка 1.Общего отчёта', async () => {
             await page.waitForTimeout(180000)//ждём перерасчётов
