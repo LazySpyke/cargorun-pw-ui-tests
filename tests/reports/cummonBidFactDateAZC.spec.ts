@@ -35,7 +35,7 @@ test.describe('Проверка отчётов с азс', () => {
                 planEnterLoadDate: moment().subtract(2, 'd').format('YYYY-MM-DDTHH:mm'),
                 planEnterUnloadDate: moment().add(1, 'd').format('YYYY-MM-DDTHH:mm'),
                 carFilter: `(isDeleted eq false and lastFixedAt le ${moment().subtract(3, 'd').format("YYYY-MM-DDTHH:mm:ss")}.000Z and lastFixedAt le ${moment().subtract(1, 'd').format("YYYY-MM-DDTHH:mm:ss")}.000Z)`,
-                loadAddress: 'Челны',
+                loadAddress: 'Елабуга',
                 unloadAddress: 'Россия, Удмуртская Республика, Можга, микрорайон Стеклозаводской', //другой адресс, чтоб от прошлых тестов сразу заявка не учлась
                 userIdForFilter: adminId,
                 cargoOwnerFilter: '(isDeleted eq false)'
@@ -56,24 +56,37 @@ test.describe('Проверка отчётов с азс', () => {
         });
         await test.step('Планирование заправок по заявке ', async () => {
             await page.goto(`${process.env.url}/bids/bid/${bidResponse.id}`)
-            await page.waitForTimeout(15000);
+            await page.locator("//div[@class='dropdown__btn']").click();
+            await page.locator(`//div[@class="dropdown__item"][contains(text(),'Запланировать заправки')]`).click();
+            await page.locator('input[name="fuelConsumption"]').first().fill('33')
+            await page.locator('input[name="minimumVolume"]').first().fill('200')
+            await page.locator('input[name="currentVolume"]').first().fill('250')
+            await page.locator('input[name="totalVolume"]').first().fill('800')
+            await page.locator('input[name="minimumVolumeInFinishDesired"]').first().fill('750')
+            await page.locator("//div[@class='btn-brand ml-1 btn btn-sm']").click();
+            await expect(page.getByText('Запущен процесс планирования заправок.')).toBeVisible();
+            await page.waitForTimeout(60000)
+            await page.locator(`//div[@class="dropdown__item"][contains(text(),'Перерасчет')]`).click();
+            await page.locator("//div[@class='btn btn-brand btn-sm modal-window__footer-action']").click();
+            await expect(page.getByText('Ваш запрос выполнен успешно')).toBeVisible();
             const lastTrackerCarInfo = await clienApi.GetObjectResponse(
                 `${process.env.url}/api/Map/GetLastCarsLocations?$filter=car/id%20eq%20${bidInfo.carOption.carId}`,
                 await getAuthData(adminId)
             );
+
             const planningRefuelingsArray = await clienApi.GetObjectResponse(
                 `${process.env.url}/api/refueling/getPlannedRefuelings/${bidResponse.id}`,
                 await getAuthData(adminId)
             );
-
-            if (bidInfoResponse.bidPoints.length > 2) {
-                await emulatorApi.coordinatSend(bidInfo.carOption.carTracker, moment().subtract(1, 'd').format("YYYY-MM-DDTHH:mm:ss+03:00"), lastTrackerCarInfo[0].location.coordinates, [bidInfoResponse.bidPoints[0].geozone.location.coordinates, planningRefuelingsArray.plannedRefuelings[planningRefuelingsArray.plannedRefuelings.length - 1].mapObject.location.coordinates],
+            const orderSort = bidInfoResponse.bidPoints.sort((a, b) => a.order - b.order);
+            if (bidInfoResponse.bidPoints.length < 3) {
+                await emulatorApi.coordinatSend(bidInfo.carOption.carTracker, moment().subtract(1, 'd').format("YYYY-MM-DDTHH:mm:ss+03:00"), lastTrackerCarInfo[0].location.coordinates, [orderSort[0].geozone.location.coordinates, planningRefuelingsArray.plannedRefuelings[planningRefuelingsArray.plannedRefuelings.length - 1].mapObject.location.coordinates],
                     [
                         { Number: 7, Address: 65535, Value: 200, ChangePer100Km: 0 },
                     ], "00:20:00")
             }
             else {
-                await emulatorApi.coordinatSend(bidInfo.carOption.carTracker, moment().subtract(1, 'd').format("YYYY-MM-DDTHH:mm:ss+03:00"), lastTrackerCarInfo[0].location.coordinates, [bidInfoResponse.bidPoints[0].geozone.location.coordinates, bidInfoResponse.bidPoints[1].geozone.location.coordinates, planningRefuelingsArray.plannedRefuelings[planningRefuelingsArray.plannedRefuelings.length - 1].mapObject.location.coordinates],
+                await emulatorApi.coordinatSend(bidInfo.carOption.carTracker, moment().subtract(1, 'd').format("YYYY-MM-DDTHH:mm:ss+03:00"), lastTrackerCarInfo[0].location.coordinates, [orderSort[0].geozone.location.coordinates, orderSort[1].geozone.location.coordinates, planningRefuelingsArray.plannedRefuelings[planningRefuelingsArray.plannedRefuelings.length - 1].mapObject.location.coordinates],
                     [
                         { Number: 7, Address: 65535, Value: 200, ChangePer100Km: 0 },
                     ], "00:20:00")

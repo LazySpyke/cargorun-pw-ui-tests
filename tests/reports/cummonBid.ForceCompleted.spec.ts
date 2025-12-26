@@ -411,7 +411,13 @@ test.describe('Отчёты с обычной завершенной вручн�
         .click();
       await page.locator('[name="ТС"]').fill(`${bidInfo.carOption.number}`)
       await page.waitForTimeout(2500)
-      await expect(page.locator('[data-brandtype]')).toHaveText(`Проверочная модель машины`) //TODo доделать на нормальную проверку пока так
+      const brandList = await clienApi.GetObjectResponse(
+        `${process.env.url}/api/catalogs/getSimple?$filter=propertyName eq 'CarBrandType'`,
+        await getAuthData(adminId)
+      );
+      const filterBrand = brandList[0].items.filter(item => item.id == bidInfo.carOption.carBrandId)
+      console.log(filterBrand)
+      await expect(page.locator('[data-brandtype]')).toHaveText(`${filterBrand[0].displayName}`) //TODo доделать на нормальную проверку пока так
       await expect(page.locator('[data-logists]')).toHaveText(`${filterLogist[0].fullName}`)
       await expect(page.locator('[data-overallmileage]')).toContainText(Math.ceil(bidInfoResponse.planMileage / 1000).toLocaleString('ru-RU', {
         minimumFractionDigits: 2,
@@ -454,11 +460,10 @@ test.describe('Отчёты с обычной завершенной вручн�
       await expect(page.locator(`//div[@data-city='${filterCargoOwner[0].name}Набережные Челны']`)).toHaveText(`Набережные Челны`) //адресс
       await expect(page.locator(`//div[@data-address='${filterCargoOwner[0].name}Набережные Челны']`)).toHaveText(`Россия, Республика Татарстан, Набережные Челны`) //адресс
       await expect(page.locator(`//div[@data-loadunloadtime='${filterCargoOwner[0].name}Набережные Челны']`)).toHaveText(`1м`) //время загрузки/выгркзки
-      await expect(page.locator(`//div[@data-planenterdateoffset='${filterCargoOwner[0].name}Набережные Челны']`)).toHaveText(`${bidInfo.bidPoints[0].planEnterDate}`)//плн время въезда
-      await expect(page.locator(`//div[@data-planleavedateoffset='${filterCargoOwner[0].name}Набережные Челны']`)).toHaveText(`${moment(bidInfo.bidPoints[0].planEnterDate).add(1, 'h')}`)//плн время выезда
-
-      await expect(page.locator(`//div[@startloadunloaddatetimeoffset='${filterCargoOwner[0].name}Набережные Челны']`)).toHaveText(`${bidInfo.bidPoints[0].planEnterDate}`)//факт время выезда
-      await expect(page.locator(`//div[@data-endloadunloaddatetimeoffset='${filterCargoOwner[0].name}Набережные Челны']`)).toHaveText(`${moment(bidInfo.bidPoints[0].planEnterDate).add(1, 'm')}`)//факи время выезда
+      await expect(page.locator(`//div[@data-planenterdateoffset='${filterCargoOwner[0].name}Набережные Челны']`)).toHaveText(`${moment(bidInfo.bidPoints[0].planEnterDate).format("DD.MM.YYYY HH:mm")}`)//плн время въезда
+      await expect(page.locator(`//div[@data-planleavedateoffset='${filterCargoOwner[0].name}Набережные Челны']`)).toHaveText(`${moment(bidInfo.bidPoints[0].planEnterDate).add(1, 'h').format("DD.MM.YYYY HH:mm")}`)//плн время выезда
+      await expect(page.locator(`//div[@data-startloadunloaddatetimeoffset='${filterCargoOwner[0].name}Набережные Челны']`)).toHaveText(`${moment(bidInfo.bidPoints[0].planEnterDate).format("DD.MM.YYYY HH:mm")}`)//факт время выезда
+      await expect(page.locator(`//div[@data-endloadunloaddatetimeoffset='${filterCargoOwner[0].name}Набережные Челны']`)).toHaveText(`${moment(bidInfo.bidPoints[0].planEnterDate).add(1, 'm').format("DD.MM.YYYY HH:mm")}`)//факи время выезда
     })
     await test.step('Проверка данных в Планировании по машинам', async () => {
       await page.locator("//span[contains(text(),'Планирование')]").click();
@@ -500,8 +505,8 @@ test.describe('Отчёты с обычной завершенной вручн�
         useGrouping: true, // группировка тысяч
       }))
       await expect(page.locator('[class="badge badge-pill badge-secondary"]')).toContainText(carMountKm[0].output.toLocaleString('ru-RU', {
-        minimumFractionDigits: 0,
-        maximumFractionDigits: 0,
+        minimumFractionDigits: 1,
+        maximumFractionDigits: 1,
         style: 'decimal', // обычное число, без валюты
         useGrouping: true, // группировка тысяч
       }))

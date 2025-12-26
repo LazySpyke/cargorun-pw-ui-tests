@@ -319,7 +319,9 @@ export class BidCreateInfo {
         number: carForBid.number,
         carId: carForBid.id,
         carTracker: carForBid.trackerDeviceNumber,
-        carLogistId: carForBid.logistId
+        carLogistId: carForBid.logistId,
+        carTypeId: carForBid.typeId,
+        carBrandId: carForBid.brandTypeId
       },
       trailerOption: {
         trailerId: trailerForBid[0].id,

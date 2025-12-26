@@ -5,10 +5,12 @@ import { BidCreateInfo } from '../../pages/Fixtures';
 import moment from 'moment';
 import DebugAPIRequestsClient from '../../api/debugRequests'
 import APIRequestsClient from '../../api/clienApiRequsets';
+import api from '../../api/apiRequests';
 import APIBid from '../../api/bidApi';
 import SupportAPIRequestsClient from '../../api/testSupportRequsets'
 const clienApi = new APIRequestsClient();
 const bidApi = new APIBid();
+const apiUse = new api();
 const emulatorApi = new SupportAPIRequestsClient();
 const debugApi = new DebugAPIRequestsClient();
 let bidInfo: any;
@@ -43,7 +45,7 @@ test.describe('Проверка отчётов с данными одометр�
                 paymentTypeId: process.env.paymentTypeId,
                 ndsTypeId: process.env.ndsTypeId,
                 planEnterLoadDate: moment().subtract(7, 'd').format('YYYY-MM-DDTHH:mm'),
-                planEnterUnloadDate: moment().subtract(6, 'd').format('YYYY-MM-DDTHH:mm'),
+                planEnterUnloadDate: moment().subtract(3, 'd').format('YYYY-MM-DDTHH:mm'),
                 carFilter: `id eq ${await newEntity.newCarId}`,
                 loadAddress: 'Челны',
                 unloadAddress: 'Уфа',
@@ -56,7 +58,7 @@ test.describe('Проверка отчётов с данными одометр�
             bidInfoResponse = await bidApi.GetBidInfo(bidResponse.id, await getAuthData(adminId));
 
             await emulatorApi.coordinatSend(bidInfo.carOption.carTracker, moment().subtract(7, 'd').format("YYYY-MM-DDTHH:mm:ss+00:00"), bidInfoResponse.bidPoints[0].geozone.location.coordinates, [bidInfoResponse.bidPoints[0].geozone.location.coordinates, bidInfoResponse.bidPoints[1].geozone.location.coordinates], null, "00:10:00")
-            await page.waitForTimeout(50000);
+            await page.waitForTimeout(75000);
         });
         await test.step('создание второй заявки где дата позже', async () => {
             const bidFixture = new BidCreateInfo(page);
@@ -64,7 +66,7 @@ test.describe('Проверка отчётов с данными одометр�
                 price: 100000,
                 paymentTypeId: process.env.paymentTypeId,
                 ndsTypeId: process.env.ndsTypeId,
-                planEnterLoadDate: moment().subtract(4, 'd').format('YYYY-MM-DDTHH:mm'),
+                planEnterLoadDate: moment().subtract(3, 'd').format('YYYY-MM-DDTHH:mm'),
                 planEnterUnloadDate: moment().subtract(1, 'h').format('YYYY-MM-DDTHH:mm'),
                 carFilter: `(isDeleted eq false and id eq ${bidInfo.carOption.carId})`,
                 loadAddress: 'Набережные Челны',
@@ -76,23 +78,38 @@ test.describe('Проверка отчётов с данными одометр�
             secondBidResponse = await bidApi.apply(secondBidInfo, await getAuthData(adminId));
             await bidApi.setStatus(secondBidResponse.id, await getAuthData(adminId));
             secondBidInfoResponse = await bidApi.GetBidInfo(secondBidResponse.id, await getAuthData(adminId));
-            await emulatorApi.coordinatSend(bidInfo.carOption.carTracker, `${moment().subtract(3, 'd').format("YYYY-MM-DDTHH:mm:ss")}+00:00`, null, [secondBidInfoResponse.bidPoints[0].geozone.location.coordinates, secondBidInfoResponse.bidPoints[1].geozone.location.coordinates], null, "00:10:00")
+            const orderSort = secondBidInfoResponse.bidPoints.sort((a, b) => a.order - b.order);
+            console.log(orderSort)
+            await emulatorApi.coordinatSend(bidInfo.carOption.carTracker, `${moment().subtract(3, 'd').format("YYYY-MM-DDTHH:mm:ss")}+00:00`, bidInfoResponse.bidPoints[1].geozone.location.coordinates, [orderSort[0].geozone.location.coordinates, orderSort[1].geozone.location.coordinates, orderSort[2].geozone.location.coordinates], null, "00:10:00")
             //TODO допилить проверку на данные что активный км считается даже без выезда из нулевой
             await page.waitForTimeout(54000)
         })
         await test.step('проверка данных заявок', async () => {
+            await apiUse.init();
             await page.waitForTimeout(180000)//ждём перерасчётов
             await page.goto(`${process.env.url}/bids/bid/${bidResponse.id}`)
             await expect(page.getByTestId('fact-distance')).toHaveText('284') //активный
             await page.goto(`${process.env.url}/bids/bid/${secondBidResponse.id}`)
-            await expect(page.getByTestId('fact-distance')).toHaveText('646') //активный по одометру
-            await expect(page.getByTestId('fact-empty-mileage-distance')).toHaveText('676') //порожний по одометру
+            await expect(page.getByTestId('fact-distance')).toHaveText('646') //активный
+            await expect(page.getByTestId('fact-empty-mileage-distance')).toHaveText('294') //порожний
+            const recalculateCar = await apiUse.postData(`${process.env.url}/api/adminpanel/recalculateCoordinates`, {
+                "carIds": [
+                    bidInfo.carOption.carId
+                ],
+                "from": moment().subtract(30, 'd').format("YYYY-MM-DD"),
+                "to": moment().format("YYYY-MM-DD"),
+                "intCalculateFlags": 7
+            }, await getAuthData(process.env.rootId))
+            console.log(recalculateCar)
         })
         await test.step('Проверка 1.Общего отчёта', async () => {
+            await page.waitForTimeout(180000)//ждём перерасчётов
             await page.locator('[title="Отчеты"]').click();
             await page.locator('[name="Общий отчет"]').click();
             await page.locator('input[name="startDate"]').fill(moment().subtract(14, 'd').format('DD.MM.YYYY HH:mm'));
             await page.locator('input[name="endDate"]').fill(moment().add(1, 'd').format('DD.MM.YYYY HH:mm'));
+            await page.waitForTimeout(500)
+            await page.locator('[class="book-show__title"]').click(); //чтоб датапикеры скрылись
             await page
                 .locator("//div[@class='report__filters--left']//a[@class='btn btn-sm btn-brand'][contains(text(),'Обновить')]")
                 .click();
@@ -103,9 +120,8 @@ test.describe('Проверка отчётов с данными одометр�
             console.log(bidInfoResponse);
             secondBidInfoResponse = await bidApi.GetBidInfo(secondBidResponse.id, await getAuthData(adminId));
             console.log(secondBidInfoResponse);
-
             await expect(page.locator(`[data-activemileage="${bidInfo.carOption.number}"]`)).toHaveText(
-                Math.ceil((bidInfoResponse.planMileage + secondBidInfoResponse.planMileage) / 1000).toLocaleString('ru-RU', {
+                Math.ceil((bidInfoResponse.activeMileage + secondBidInfoResponse.activeMileage) / 1000).toLocaleString('ru-RU', {
                     minimumFractionDigits: 2,
                     maximumFractionDigits: 2,
                     style: 'decimal', // обычное число, без валюты
@@ -113,7 +129,7 @@ test.describe('Проверка отчётов с данными одометр�
                 })
             );
             await expect(page.locator(`[data-overallmileage="${bidInfo.carOption.number}"]`)).toHaveText(
-                Math.ceil((bidInfoResponse.planMileage + secondBidInfoResponse.planMileage) / 1000).toLocaleString('ru-RU', {
+                Math.ceil((bidInfoResponse.activeMileage + bidInfoResponse.factEmptyMileageFromStartPoint + secondBidInfoResponse.activeMileage + secondBidInfoResponse.factEmptyMileageFromStartPoint) / 1000).toLocaleString('ru-RU', {
                     minimumFractionDigits: 2,
                     maximumFractionDigits: 2,
                     style: 'decimal', // обычное число, без валюты
