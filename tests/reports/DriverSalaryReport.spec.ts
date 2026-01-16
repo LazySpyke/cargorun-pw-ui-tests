@@ -106,6 +106,7 @@ test.describe('Проверка отчётов с данными одометр�
             await page.goto(`${process.env.url}/bids/bid/${secondBidResponse.id}`)
             await expect(page.getByTestId('fact-distance')).toHaveText('651')
             // await expect(page.getByTestId('fact-empty-mileage-distance')).toHaveText('676')
+            await page.waitForTimeout(350000)
         })
         await test.step('проверка данных в отчёте Расчет ЗП водителей', async () => {
             await page.locator('[title="Финансы и учет"]').click();

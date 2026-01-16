@@ -402,9 +402,9 @@ test.describe('Отчёт по Дебиторской задолженности
             await expect(page.locator("//td[contains(text(),'300 000,00 ₽')]")).toBeVisible();//Общая сумма за период:
             await expect(page.locator("//td[contains(text(),'140 000,00 ₽')]")).toBeVisible();//Оплачено:
             await expect(page.locator("//td[contains(text(),'85 000,00 ₽')]")).toBeVisible();//Ожидаемая оплата:
-            await expect(page.locator("//tbody/tr[5]/td[2]")).toHaveText('1 день') // средняя просрочка
+            await expect(page.locator("//tbody/tr[2]/td[4]")).toHaveText('1 день') // средняя просрочка
             await expect(page.locator("//td[contains(text(),'75 000,00 ₽')]")).toBeVisible();//Долг:
-            await expect(page.locator("//tbody/tr[5]/td[2]")).toHaveText('1 заявка')//кол-во просрочнных
+            await expect(page.locator("//tbody/tr[4]/td[4]")).toHaveText('1 заявка')//кол-во просрочнных
         });
     });
 })

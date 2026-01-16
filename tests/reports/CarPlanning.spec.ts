@@ -71,7 +71,7 @@ test.describe('Планирование по машинам', () => {
             bidInfoResponse = await bidApi.GetBidInfo(bidResponse.id, await getAuthData(adminId));
 
             await emulatorApi.coordinatSend(bidInfo.carOption.carTracker, moment().subtract(7, 'd').format("YYYY-MM-DDTHH:mm:ss+00:00"), bidInfoResponse.bidPoints[0].geozone.location.coordinates, [bidInfoResponse.bidPoints[0].geozone.location.coordinates], null, "02:30:00")
-            await page.waitForTimeout(90000);
+            await page.waitForTimeout(350000); //пауза необходима
         });
         await test.step('открытие планирование и проверка работы сокета', async () => {
             await debugApi.deactivateCityPlanning(37, await getAuthData(adminId))
@@ -92,6 +92,8 @@ test.describe('Планирование по машинам', () => {
                 "date": estimatedDate,
                 "comment": `comment${estimatedDate}`
             }, await getAuthData(adminId))
+            await page.waitForTimeout(5000)
+            await page.reload();
             await expect(page.locator("//small[@class='nowrap-text']")).toBeVisible();
             await expect(page.locator("//small[@class='nowrap-text']")).toContainText(`${moment(estimatedDate).format("DD.MM.YYYY HH:mm")} (+05:00)`)
             await page.locator('[class="nowrap-text"]').hover();

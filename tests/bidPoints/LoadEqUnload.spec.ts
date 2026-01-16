@@ -7,13 +7,15 @@ import DebugAPIRequestsClient from '../../api/debugRequests'
 import APIRequestsClient from '../../api/clienApiRequsets';
 import APIBid from '../../api/bidApi';
 import SupportAPIRequestsClient from '../../api/testSupportRequsets'
+import api from '../../api/apiRequests';
+const apiUse = new api();
 const clienApi = new APIRequestsClient();
 const bidApi = new APIBid();
 const emulatorApi = new SupportAPIRequestsClient();
 const debugApi = new DebugAPIRequestsClient();
 let bidInfo: any;
 const adminId = process.env.compoundAdminId
-test.describe('Нулевая точка', () => {
+test.describe('Заявка с "простоем"', () => {
     let loginPage: LoginPage;
     let bidResponse: any;
     let bidInfoResponse: any;
@@ -26,7 +28,7 @@ test.describe('Нулевая точка', () => {
         await loginPage.goto(); // Переходим на страницу логина перед каждым тестом
     });
     //TODO сделать проверку по пробегу и то что нулевой нет у второй заявки
-    test('Создание 2 заявок без порожнего пробега', async ({ page }) => {
+    test('Заявка с идентичной загрузкой и выгрузкой ', async ({ page }) => {
         await test.step('Логин', async () => {
             await loginPage.login(process.env.compoundCompanyEmail as string, process.env.compoundCompanyPassword as string);
         });
@@ -44,10 +46,10 @@ test.describe('Нулевая точка', () => {
                 paymentTypeId: process.env.paymentTypeId,
                 ndsTypeId: process.env.ndsTypeId,
                 planEnterLoadDate: moment().subtract(7, 'd').format('YYYY-MM-DDTHH:mm'),
-                planEnterUnloadDate: moment().subtract(6, 'd').format('YYYY-MM-DDTHH:mm'),
+                planEnterUnloadDate: moment().subtract(7, 'd').add(2, 'h').format('YYYY-MM-DDTHH:mm'),
                 carFilter: `id eq ${await newEntity.newCarId}`,
                 loadAddress: 'Челны',
-                unloadAddress: 'Уфа',
+                unloadAddress: 'Казань',
                 userIdForFilter: adminId
             });
             await bidApi.init();
@@ -59,7 +61,7 @@ test.describe('Нулевая точка', () => {
             await emulatorApi.coordinatSend(bidInfo.carOption.carTracker, moment().subtract(7, 'd').format("YYYY-MM-DDTHH:mm:ss+00:00"), bidInfoResponse.bidPoints[0].geozone.location.coordinates, [bidInfoResponse.bidPoints[0].geozone.location.coordinates, bidInfoResponse.bidPoints[1].geozone.location.coordinates], null, "00:10:00")
             await page.waitForTimeout(50000);
         });
-        await test.step('создание второй заявки где дата позже', async () => {
+        await test.step('создание второй заявки где дата позже и одинаковые точки', async () => {
             const bidFixture = new BidCreateInfo(page);
             secondBidInfo = await bidFixture.ApiCommonBid({
                 price: 100000,
@@ -69,7 +71,7 @@ test.describe('Нулевая точка', () => {
                 planEnterUnloadDate: moment().add(1, 'h').format('YYYY-MM-DDTHH:mm'),
                 carFilter: `(isDeleted eq false and id eq ${bidInfo.carOption.carId})`,
                 loadAddress: 'Уфа',
-                unloadAddress: 'Нижний Новгород',
+                unloadAddress: 'Уфа',
                 userIdForFilter: adminId,
                 reuseCar: true
             });
@@ -77,17 +79,34 @@ test.describe('Нулевая точка', () => {
             secondBidResponse = await bidApi.apply(secondBidInfo, await getAuthData(adminId));
             await bidApi.setStatus(secondBidResponse.id, await getAuthData(adminId));
             secondBidInfoResponse = await bidApi.GetBidInfo(secondBidResponse.id, await getAuthData(adminId));
-            await emulatorApi.coordinatSend(bidInfo.carOption.carTracker, `${moment().subtract(3, 'd').format("YYYY-MM-DDTHH:mm:ss")}+00:00`, null, [secondBidInfoResponse.bidPoints[0].geozone.location.coordinates, secondBidInfoResponse.bidPoints[1].geozone.location.coordinates], null, "00:10:00")
+            await emulatorApi.coordinatSend(bidInfo.carOption.carTracker, `${moment().subtract(6, 'd').format("YYYY-MM-DDTHH:mm:ss")}+00:00`, null, [secondBidInfoResponse.bidPoints[0].geozone.location.coordinates, secondBidInfoResponse.bidPoints[1].geozone.location.coordinates, bidInfoResponse.bidPoints[1].geozone.location.coordinates], null, "00:10:00")
             //TODO допилить проверку на данные что активный км считается даже без выезда из нулевой
             await page.waitForTimeout(54000)
         })
         await test.step('проверка данных заявок', async () => {
+            await apiUse.init();
+            const recalculateBids = await apiUse.postData(`${process.env.url}/api/truckingBids/addToRecalculation`, {
+                "bids": [
+                    { "id": bidResponse.id, "flags": 1 },
+                    { "id": secondBidResponse.id, "flags": 1 }
+                ]
+            }, await getAuthData(process.env.rootId))
+            console.log(recalculateBids)
+            const recalculateCar = await apiUse.postData(`${process.env.url}/api/adminpanel/recalculateCoordinates`, {
+                "carIds": [
+                    bidInfo.carOption.carId
+                ],
+                "from": moment().subtract(30, 'd').format("YYYY-MM-DD"),
+                "to": moment().format("YYYY-MM-DD"),
+                "intCalculateFlags": 7
+            }, await getAuthData(process.env.rootId))
+            console.log(recalculateCar)
             await page.waitForTimeout(180000)//ждём перерасчётов
             await page.goto(`${process.env.url}/bids/bid/${bidResponse.id}`)
-            await expect(page.getByTestId('fact-distance')).toHaveText('284') //активный
+            await expect(page.getByTestId('fact-distance')).toHaveText('234') //активный
             await page.goto(`${process.env.url}/bids/bid/${secondBidResponse.id}`)
-            await expect(page.getByTestId('fact-distance')).toHaveText('646') //активный по одометру
-            await expect(page.getByTestId('fact-empty-mileage-distance')).toHaveText('676') //порожний по одометру
+            await expect(page.getByTestId('fact-distance')).toHaveText('0') //активный
+            await expect(page.getByTestId('fact-empty-mileage-distance')).toHaveText('539') //порожний
         })
         await test.step('Проверка 1.Общего отчёта', async () => {
             await page.locator('[title="Отчеты"]').click();
@@ -104,9 +123,8 @@ test.describe('Нулевая точка', () => {
             console.log(bidInfoResponse);
             secondBidInfoResponse = await bidApi.GetBidInfo(secondBidResponse.id, await getAuthData(adminId));
             console.log(secondBidInfoResponse);
-
             await expect(page.locator(`[data-activemileage="${bidInfo.carOption.number}"]`)).toHaveText(
-                Math.ceil((bidInfoResponse.planMileage + secondBidInfoResponse.planMileage) / 1000).toLocaleString('ru-RU', {
+                Math.ceil((bidInfoResponse.activeMileage - 1) / 1000).toLocaleString('ru-RU', {
                     minimumFractionDigits: 2,
                     maximumFractionDigits: 2,
                     style: 'decimal', // обычное число, без валюты
@@ -114,7 +132,7 @@ test.describe('Нулевая точка', () => {
                 })
             );
             await expect(page.locator(`[data-overallmileage="${bidInfo.carOption.number}"]`)).toHaveText(
-                Math.ceil((bidInfoResponse.planMileage + secondBidInfoResponse.planMileage) / 1000).toLocaleString('ru-RU', {
+                Math.ceil((bidInfoResponse.activeMileage + secondBidInfoResponse.activeMileage + secondBidInfoResponse.factEmptyMileageFromStartPoint) / 1000).toLocaleString('ru-RU', {
                     minimumFractionDigits: 2,
                     maximumFractionDigits: 2,
                     style: 'decimal', // обычное число, без валюты
@@ -207,25 +225,6 @@ test.describe('Нулевая точка', () => {
                 throw new TypeError(`не совпадает ожидаемое значение ${numberValue} текст такой, ${finalprofit} расчёт такой`);
             }
         });
-        //TODO изменения дат использования одометра
-        //         Новый запрос на получение одометров: GET api / dev / Organization / GetOdometerHistoryItems / { organizationId }
-
-        // Новый запрос на изменение дат одометра: POST api / dev / Organization / UpdateOdometerHistoryItem
-        //         {
-        //     public long Id { get; set; }
-
-        //     public long OrganizationId { get; set; }
-
-        //     public DateTimeOffset StartedAt { get; set; }
-        //     public DateTimeOffset ? EndedAt { get; set; }
-        // }
-
-        // Новый запрос на удаление записи по одометру: POST api / dev / Organization / DeleteOdometerHistoryItem
-        // {
-        //         public long Id { get; set; }
-
-        //     public long OrganizationId { get; set; }
-        // }
     })
 })
 

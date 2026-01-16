@@ -66,6 +66,7 @@ test.describe('Проверка отчётов с азс', () => {
             await page.locator("//div[@class='btn-brand ml-1 btn btn-sm']").click();
             await expect(page.getByText('Запущен процесс планирования заправок.')).toBeVisible();
             await page.waitForTimeout(60000)
+            await page.locator('[class="dropdown__btn"]').click();
             await page.locator(`//div[@class="dropdown__item"][contains(text(),'Перерасчет')]`).click();
             await page.locator("//div[@class='btn btn-brand btn-sm modal-window__footer-action']").click();
             await expect(page.getByText('Ваш запрос выполнен успешно')).toBeVisible();

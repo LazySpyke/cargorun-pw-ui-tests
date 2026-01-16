@@ -143,6 +143,16 @@ test.describe('Проверка общего отчёта', () => {
             await page.goto(`${process.env.url}/bids/bid/${secondBidResponse.id}`)
             await expect(page.getByTestId('fact-distance')).toHaveText('651')
             // await expect(page.getByTestId('fact-empty-mileage-distance')).toHaveText('676')
+
+            const recalculateCar = await apiUse.postData(`${process.env.url}/api/adminpanel/recalculateCoordinates`, {
+                "carIds": [
+                    bidInfo.carOption.carId
+                ],
+                "from": moment().subtract(30, 'd').format("YYYY-MM-DD"),
+                "to": moment().format("YYYY-MM-DD"),
+                "intCalculateFlags": 7
+            }, await getAuthData(process.env.rootId))
+            console.log(recalculateCar)
         })
         await test.step('Проверка фильтров в общем отчёте', async () => {
             await page.locator('[title="Отчеты"]').click();
@@ -172,25 +182,25 @@ test.describe('Проверка общего отчёта', () => {
             await expect(page.getByRole('rowgroup')).toContainText('938,00'); //акивный
             await expect(page.getByRole('rowgroup')).toContainText('0,00 (0,00 %)');//порожка
 
-            await expect(page.getByRole('rowgroup')).toContainText('600,00 (39,01 %)');//порожний без заявки
-            await expect(page.getByRole('rowgroup')).toContainText('1 538,00');//общий
+            await expect(page.getByRole('rowgroup')).toContainText('889,00 (48,69 %)');//порожний без заявки
+            await expect(page.getByRole('rowgroup')).toContainText('1 826,00');//общий
             await expect(page.getByRole('rowgroup')).toContainText('0,00');//средний вес
             await expect(page.getByRole('rowgroup')).toContainText('200 000,00'); //ВАЛ
-            await expect(page.getByRole('rowgroup')).toContainText('130,04');//выработку руб/км
+            await expect(page.getByRole('rowgroup')).toContainText('109,53');//выработку руб/км
             // await expect(page.getByRole('rowgroup')).toContainText('1 179,07');
             await page.getByTestId('toggle-with-nds').locator('i').click(); //переключалка БЕЗ НДС
             await expect(page.getByRole('rowgroup')).toContainText('183 333,30');// вал без ндс
-            await expect(page.getByRole('rowgroup')).toContainText('119,20');//выработка без ндс
+            await expect(page.getByRole('rowgroup')).toContainText('100,40');//выработка без ндс
             await page.getByTestId('toggle-with-nds').locator('i').click();// переключение
             await expect(page.getByRole('table')).toContainText('1 (Общее количество машин)');
             await expect(page.getByRole('table')).toContainText('1 (Количество активных машин)');
             await expect(page.getByRole('table')).toContainText('938,00');// футер активный
             await expect(page.getByRole('table')).toContainText('0,00 (0,00 %)'); //футер порожний по заявке
-            await expect(page.getByRole('table')).toContainText('600,00 (39,00 %)');// футер порожний без заявки
-            await expect(page.getByRole('table')).toContainText('1 538,00');// футер общий
+            await expect(page.getByRole('table')).toContainText('889,00 (49,00 %)');// футер порожний без заявки
+            await expect(page.getByRole('table')).toContainText('1 826,00');// футер общий
             await expect(page.getByRole('table')).toContainText('0,00');// футер средний вес
             await expect(page.getByRole('table')).toContainText('200 000,00 (Всего)100 000,00 (сумма заявок с НДС)100 000,00 (сумма заявок без НДС)'); //футер ВАЛ
-            await expect(page.getByRole('table')).toContainText('130,03 (с учетом НДС)119,19 (без учета НДС)'); //футер выработка
+            await expect(page.getByRole('table')).toContainText('109,51 (с учетом НДС)100,38 (без учета НДС)'); //футер выработка
             // await expect(page.getByRole('table')).toContainText('1 179,07');
 
             // await page.getByRole('cell', { name: `${logist.lastName} ${logist.firstName} ${logist.patronymic}` }).click();
@@ -203,25 +213,25 @@ test.describe('Проверка общего отчёта', () => {
             await page.waitForTimeout(10000)
             await expect(page.getByRole('rowgroup')).toContainText('938,00'); //акивный
             await expect(page.getByRole('rowgroup')).toContainText('0,00 (0,00 %)');//порожка
-            await expect(page.getByRole('rowgroup')).toContainText('600,00 (39,01 %)');//порожний без заявки
-            await expect(page.getByRole('rowgroup')).toContainText('1 538,00');//общий
+            await expect(page.getByRole('rowgroup')).toContainText('889,00 (48,69 %)');//порожний без заявки
+            await expect(page.getByRole('rowgroup')).toContainText('1 826,00');//общий
             await expect(page.getByRole('rowgroup')).toContainText('0,00');//средний вес
             await expect(page.getByRole('rowgroup')).toContainText('200 000,00'); //ВАЛ
-            await expect(page.getByRole('rowgroup')).toContainText('130,04');//выработку руб/км
+            await expect(page.getByRole('rowgroup')).toContainText('109,53');//выработку руб/км
             // await expect(page.getByRole('rowgroup')).toContainText('1 179,07');
             await page.getByTestId('toggle-with-nds').locator('i').click(); //переключалка БЕЗ НДС
             await expect(page.getByRole('rowgroup')).toContainText('183 333,30');// вал без ндс
-            await expect(page.getByRole('rowgroup')).toContainText('119,20');//выработка без ндс
+            await expect(page.getByRole('rowgroup')).toContainText('100,40');//выработка без ндс
             await page.getByTestId('toggle-with-nds').locator('i').click();// переключение
             await expect(page.getByRole('table')).toContainText('1 (Общее количество машин)');
             await expect(page.getByRole('table')).toContainText('1 (Количество активных машин)');
             await expect(page.getByRole('table')).toContainText('938,00');// футер активный
             await expect(page.getByRole('table')).toContainText('0,00 (0,00 %)'); //футер порожний по заявке
-            await expect(page.getByRole('table')).toContainText('600,00 (39,00 %)');// футер порожний без заявки
-            await expect(page.getByRole('table')).toContainText('1 538,00');// футер общий
+            await expect(page.getByRole('table')).toContainText('889,00 (49,00 %)');// футер порожний без заявки
+            await expect(page.getByRole('table')).toContainText('1 826,00');// футер общий
             await expect(page.getByRole('table')).toContainText('0,00');// футер средний вес
             await expect(page.getByRole('table')).toContainText('200 000,00 (Всего)100 000,00 (сумма заявок с НДС)100 000,00 (сумма заявок без НДС)'); //футер ВАЛ
-            await expect(page.getByRole('table')).toContainText('130,03 (с учетом НДС)119,19 (без учета НДС)'); //футер выработка
+            await expect(page.getByRole('table')).toContainText('109,51 (с учетом НДС)100,38 (без учета НДС)'); //футер выработка
             // await expect(page.getByRole('table')).toContainText('1 179,07');
         })
         await test.step('Проверка фильтра по организациям', async () => {
@@ -232,6 +242,7 @@ test.describe('Проверка общего отчёта', () => {
             await page.locator('[class="book-show__title"]').click(); //чтоб датапикеры скрылись
         })
         await test.step('Проверка данных в модалке по заявкам', async () => {
+            secondBidInfoResponse = await bidApi.GetBidInfo(secondBidResponse.id, await getAuthData(adminId));
             await page.locator('[class="r-item__expander icon-uEAAE-angle-right-solid"]').click();
             await page.locator('input[name="car"]').fill(bidInfo.carOption.number);
             await page.locator(`[data-car="${bidInfo.carOption.number}"]`).nth(0).click();
@@ -239,13 +250,13 @@ test.describe('Проверка общего отчёта', () => {
             await expect(page.locator(`[data-counterpartyname="${secondBidResponse.id}"]`)).toHaveText(`${bidInfoResponse.cargoOwnerDictionaryItem.name}`)
             await expect(page.locator(`[data-route="${secondBidResponse.id}"]`)).toHaveText(`Набережные Челны - Нижний Новгород`)
             console.log(`${JSON.stringify(secondBidInfoResponse.bidPoints[0].autoEnteredAt)},${secondBidInfoResponse.bidPoints}`)
-            await expect(page.locator(`[data-executiondaterange="${secondBidResponse.id}"]`)).toHaveText(`${moment(secondBidInfoResponse.bidPoints[0].autoEnteredAt).format("DD.MM.YYYY HH:mm")} (+03:00)-${moment(secondBidInfoResponse.bidPoints[1].autoLeavedAt).format("DD.MM.YYYY HH:mm")} (+03:00)`)
+            await expect(page.locator(`[data-executiondaterange="${secondBidResponse.id}"]`)).toHaveText(`${moment(secondBidInfoResponse.bidPoints[0].autoEnteredAt).format("DD.MM.YYYY HH:mm")} (+03:00) - ${moment(secondBidInfoResponse.bidPoints[1].autoLeavedAt).format("DD.MM.YYYY HH:mm")} (+03:00)`)
             await expect(page.locator(`[data-activemileage="${secondBidResponse.id}"]`)).toContainText(`651`)
             await expect(page.locator(`[data-emptymileage="${secondBidResponse.id}"]`)).toContainText(`672`)
             await expect(page.locator(`[data-overallmileage="${secondBidResponse.id}"]`)).toContainText(`1 323,00`)
             await expect(page.locator(`[data-overallbidprice="${secondBidResponse.id}"]`)).toContainText(`100 000,00`)
             await page.locator("//span[contains(text(),'Отобразить даты в часовом поясе компании')]").click();
-            await expect(page.locator(`[data-executiondaterange="${secondBidResponse.id}"]`)).toHaveText(`${moment(secondBidInfoResponse.bidPoints[0].autoEnteredAt).add(1, 'h').format("DD.MM.YYYY HH:mm")} (+04:00)-${moment(secondBidInfoResponse.bidPoints[1].autoLeavedAt).add(1, 'h').format("DD.MM.YYYY HH:mm")} (+04:00)`)
+            await expect(page.locator(`[data-executiondaterange="${secondBidResponse.id}"]`)).toHaveText(`${moment(secondBidInfoResponse.bidPoints[0].autoEnteredAt).add(1, 'h').format("DD.MM.YYYY HH:mm")} (+04:00) - ${moment(secondBidInfoResponse.bidPoints[1].autoLeavedAt).add(1, 'h').format("DD.MM.YYYY HH:mm")} (+04:00)`)
         })
     })
 })

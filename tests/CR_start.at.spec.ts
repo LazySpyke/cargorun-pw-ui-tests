@@ -73,11 +73,11 @@ test.describe('Самостоятельная регистрация', () => {
       await page.waitForTimeout(5000);
     });
     await test.step('авторизация и ввод данных системы мониторинга', async () => {
-      await page.selectOption('#type', { label: 'Виалон (Wialon)' });
+      await page.selectOption('#type', { label: 'Автограф (AutoGraph)' });
       await page.waitForTimeout(5000);
-      await page.locator('[name="host"]').fill(process.env.relayCopyWialonHost as string)
-      await page.locator('[name="login"]').fill(process.env.relayCopyWialonLogin as string)
-      await page.locator('[name="password"]').fill(process.env.relayCopyWialonPassword as string)
+      await page.locator('[name="host"]').fill(process.env.relayCopyAutoGraphHost as string)
+      await page.locator('[name="login"]').fill(process.env.relayCopyAutoGraphLogin as string)
+      await page.locator('[name="password"]').fill(process.env.relayCopyAutoGraphPassword as string)
       await page.locator('[type="submit"]').click();
       await page.waitForTimeout(2500);
     })
@@ -122,6 +122,16 @@ test.describe('Самостоятельная регистрация', () => {
       await expect(page.locator(`//td[normalize-space()='CRSync_${JSON.parse(localStorageData.currentUser).organizationId}_ForLoads@cargorun.ru']`)).toBeVisible();
       await expect(page.locator("//td[contains(text(),'Чтение с подтверждением')]")).toBeVisible();
       await expect(page.locator("//td[contains(text(),'Изменения для Экспедиции')]")).toBeVisible();
+    })
+    await test.step('Проверка создания шаблонов документов', async () => {
+      await page.locator("//span[contains(text(),'Администрирование')]").click();
+      await page.locator('[title="Шаблоны документов"]').click();
+
+      await expect(page.locator("//a[contains(text(),'Шаблон договор-заявка')]")).toBeVisible();
+      await page.locator('[title="Типы номенклатур"]').click();
+      await expect(page.locator("//a[contains(text(),'Транспортные услуги по маршруту.')]")).toBeVisible();
+      await page.locator("//a[contains(text(),'Транспортные услуги по маршруту.')]").click();
+      await expect(page.locator('input[type="text"]').nth(1)).toHaveValue('Транспортные услуги по маршруту {Маршрут полный} по заявке №{Номер заявки/заказа} ТС {Госномер ТС}, прицеп {Госномер прицепа}, водитель {ФИО водителя}');
     })
     await test.step('удаление созданного Relay', async () => {
       await page.goto(process.env.relayTestHost as string);

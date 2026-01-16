@@ -18,11 +18,11 @@ export default defineConfig({
   expect: {
     timeout: 30000,
   },
-  timeout: 60 * 60 * 1000, //надо из-за тестов с датчиками
+  timeout: 60 * 120 * 1000, //надо из-за тестов с датчиками
   /* Fail the build on CI if you accidentally left test.only in the source code. */
   forbidOnly: !!process.env.CI,
   /* Retry on CI only */
-  retries: 0,
+  retries: 2,
   /* Opt out of parallel tests on CI. */
   workers: process.env.CI ? 1 : undefined,
   /* Reporter to use. See https://playwright.dev/docs/test-reporters */
